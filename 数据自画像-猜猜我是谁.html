@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据自画像</title>
+<style>
+  :root{
+    --ink:#1f2a3d; --muted:#6b7686;
+    --blue:#3b82f6; --blue-d:#2563eb;
+    --bg:#f4f7fb; --card:#ffffff; --line:#e3e9f2;
+    --green:#10b981; --good:#16a34a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Comic Sans MS","Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+    color:var(--ink); min-height:100vh;
+    background:linear-gradient(180deg,#eef3fb 0%,#f8fafd 220px,#f4f7fb);
+    background-attachment:fixed; padding:20px clamp(10px,3vw,24px) 50px;
+  }
+  .wrap{max-width:720px;margin:0 auto}
+
+  /* 页头 */
+  header{text-align:center;margin-bottom:24px}
+  header h1{
+    margin:0;font-size:clamp(24px,5vw,32px);font-weight:800;color:var(--ink);
+    letter-spacing:.5px;display:inline-block;position:relative;padding-bottom:10px;
+  }
+  header h1::after{
+    content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    width:44px;height:4px;border-radius:2px;background:var(--blue);
+  }
+  header p{margin:10px 0 0;color:var(--muted);font-size:clamp(14px,3vw,16px)}
+
+  /* 主卡片 */
+  section.card{
+    background:var(--card);border:1px solid var(--line);border-radius:22px;
+    padding:clamp(20px,5vw,32px);box-shadow:0 8px 28px rgba(31,42,61,.08);transition:box-shadow .2s;
+  }
+
+  /* 分组 */
+  .group{margin-bottom:26px}
+  .group h2{
+    margin:0 0 14px;font-size:clamp(17px,4vw,20px);font-weight:800;color:var(--ink);
+    padding-left:12px;border-left:4px solid var(--blue);line-height:1.3;
+  }
+  .hint{color:var(--muted);font-size:13px;margin:-6px 0 16px}
+
+  /* 表单 */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:560px){
+    .grid{grid-template-columns:1fr}
+  }
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-weight:700;font-size:clamp(14px,3vw,16px);line-height:1.4}
+  input[type=text], input[type=number], textarea{
+    font-family:inherit;font-size:clamp(16px,3vw,18px);
+    border:1px solid var(--line);border-radius:12px;padding:0 14px;
+    color:var(--ink);background:#fbfcfe;width:100%;outline:none;height:48px;
+    transition:border-color .15s,box-shadow .15s,background .15s;
+  }
+  input:hover,textarea:hover{border-color:#cfd8e6}
+  input:focus,textarea:focus{
+    border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.14);
+  }
+  textarea{height:auto;min-height:88px;padding:11px 14px;resize:vertical}
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield;appearance:textfield}
+  .stack{display:flex;flex-direction:column;gap:14px}
+
+  /* 按钮 */
+  .actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+  button.btn{
+    border:none;cursor:pointer;border-radius:12px;padding:13px 26px;
+    font-family:inherit;font-size:16px;font-weight:800;transition:filter .15s,transform .1s,box-shadow .15s;
+  }
+  button.btn:hover{filter:brightness(.97);box-shadow:0 6px 16px rgba(59,130,246,.22)}
+  button.btn:active{transform:translateY(1px)}
+  .btn.primary{background:linear-gradient(180deg,#4a8ff7,#3b82f6);color:#fff;box-shadow:0 4px 12px rgba(59,130,246,.28)}
+  .btn.ghost{background:#eef2f8;color:var(--ink)}
+
+  /* 提交后封存 */
+  #modA{position:relative}
+  #modA.sealed > *:not(.seal-watermark){
+    filter:blur(5px);pointer-events:none;user-select:none;opacity:.4;
+  }
+  .seal-watermark{
+    position:absolute;inset:0;display:none;flex-direction:column;gap:6px;
+    align-items:center;justify-content:center;z-index:10;
+    background:rgba(244,247,251,.7);border-radius:20px;text-align:center;
+  }
+  #modA.sealed .seal-watermark{display:flex}
+  .seal-watermark .t{font-size:24px;font-weight:800;color:var(--blue-d)}
+  .seal-watermark .s{font-size:14px;color:var(--muted)}
+
+  /* 弹窗 */
+  .overlay{position:fixed;inset:0;background:rgba(20,28,40,.5);display:none;align-items:center;justify-content:center;z-index:10000;padding:18px}
+  .overlay.show{display:flex}
+  .modal{
+    background:#fff;border-radius:18px;box-shadow:0 16px 40px rgba(20,28,40,.25);
+    max-width:520px;width:100%;padding:24px;animation:pop .25s ease;max-height:88vh;overflow:auto;
+  }
+  .modal h2{margin:0 0 14px;font-size:clamp(19px,4.5vw,24px);color:var(--ink);text-align:center}
+  .modal .close{float:right;border:none;background:#eef2f8;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:17px;color:var(--ink)}
+  .preview-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fafcff}
+  .preview-card .p-h{font-size:26px;text-align:center;margin-bottom:6px}
+  .modal .actions{justify-content:center;margin-top:16px}
+  .s-moji{font-size:56px;line-height:1;text-align:center;margin-bottom:6px}
+  .s-text{margin:0 0 6px;color:var(--muted);font-size:16px;text-align:center;line-height:1.6}
+  @keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+
+  /* 预览行 */
+  .m-row{margin:7px 0;font-size:15px;line-height:1.6}
+  .m-row b{color:var(--blue-d)}
+  .m-row .val{font-weight:700}
+
+  /* 提示条 */
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:20000;
+    background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(20,28,40,.16);
+    padding:12px 20px;font-weight:700;font-size:15px;color:var(--ink);display:none;
+  }
+  .toast.show{display:block;animation:pop .25s ease}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>数据自画像</h1>
+    <p>用数字和文字介绍自己，完成后大家一起来猜一猜</p>
+  </header>
+
+  <section class="card" id="modA">
+    <div class="seal-watermark">
+      <div class="t">已提交</div>
+      <div class="s">信息已封存，大家看不到啦</div>
+    </div>
+
+    <div class="group">
+      <h2>数字类数据</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="age">我的年龄</label>
+          <input type="number" id="age" placeholder="例如：10" min="0" max="99">
+        </div>
+        <div class="field">
+          <label for="height">我的身高（cm）</label>
+          <input type="number" id="height" placeholder="例如：140" min="0" max="300">
+        </div>
+        <div class="field">
+          <label for="weight">我的体重（kg）</label>
+          <input type="number" id="weight" placeholder="例如：35" min="0" max="300">
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>文字类数据</h2>
+      <div class="stack">
+        <div class="field">
+          <label for="hobby">我的爱好</label>
+          <textarea id="hobby" placeholder="例如：爱画画、踢足球、看书"></textarea>
+        </div>
+        <div class="field">
+          <label for="diet">我的饮食习惯</label>
+          <textarea id="diet" placeholder="例如：爱吃苹果，不喜欢吃辣椒"></textarea>
+        </div>
+        <div class="field">
+          <label for="extra">补充小特点</label>
+          <textarea id="extra" placeholder="例如：性格开朗，擅长跳绳"></textarea>
+        </div>
+        <div class="field">
+          <label for="nick">我的昵称</label>
+          <input type="text" id="nick" placeholder="例如：小画笔 / 飞毛腿">
+        </div>
+      </div>
+    </div>
+
+    <p class="hint">请把以上内容都填完，才能提交。</p>
+
+    <div class="actions">
+      <button class="btn ghost" id="btnPreview">预览</button>
+      <button class="btn primary" id="btnSubmit">提交自画像</button>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="close" id="btnClose">✕</button>
+    <h2>我的自画像预览</h2>
+    <div id="previewBody" class="preview-card"></div>
+    <div class="actions">
+      <button class="btn ghost" id="btnEdit">继续修改</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="successOverlay">
+  <div class="modal">
+    <div class="s-moji">🎉</div>
+    <h2>提交成功</h2>
+    <p class="s-text">你的自画像已经进入猜猜我是谁题库。</p>
+    <div class="actions">
+      <button class="btn primary" id="btnSuccessOk">好的</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+  var KEY = 'data_self_portraits';
+  var POST_URL = 'https://quickform.cn/api/gkdflsn3kw';
+
+  function $(id){ return document.getElementById(id); }
+  function readStore(){
+    try{ var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : []; }
+    catch(e){ return []; }
+  }
+  function writeStore(list){
+    try{ localStorage.setItem(KEY, JSON.stringify(list)); }
+    catch(e){}
+  }
+  function val(id){ return $(id).value.trim(); }
+  function collect(){
+    return {
+      age: val('age'), height: val('height'), weight: val('weight'),
+      hobby: val('hobby'), diet: val('diet'), extra: val('extra'), nick: val('nick')
+    };
+  }
+  function isEmpty(d){
+    return !d.age && !d.height && !d.weight && !d.hobby && !d.diet && !d.extra && !d.nick;
+  }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[<>&"]/g, function(c){
+      return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];
+    });
+  }
+  function row(label, value){
+    return '<div class="m-row"><b>' + label + '</b>：<span class="val">' +
+      (value ? esc(value) : '<span style="color:#b7c0cc">未填写</span>') + '</span></div>';
+  }
+  function previewHTML(d){
+    var html = '<div class="p-h">🪞</div>';
+    html += row('我的年龄', d.age + ' 岁');
+    html += row('我的身高', d.height ? d.height + ' cm' : '');
+    html += row('我的体重', d.weight ? d.weight + ' kg' : '');
+    html += row('我的爱好', d.hobby);
+    html += row('我的饮食习惯', d.diet);
+    html += row('补充小特点', d.extra);
+    html += row('我的昵称', d.nick);
+    return html;
+  }
+  function toast(msg){
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._tm);
+    t._tm = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+
+  $('btnPreview').addEventListener('click', function(){
+    var d = collect();
+    if(isEmpty(d)){ toast('请先填写一些内容再预览'); return; }
+    $('previewBody').innerHTML = previewHTML(d);
+    $('overlay').classList.add('show');
+  });
+  $('btnClose').addEventListener('click', function(){ $('overlay').classList.remove('show'); });
+  $('btnEdit').addEventListener('click', function(){ $('overlay').classList.remove('show'); });
+  $('btnSuccessOk').addEventListener('click', function(){ $('successOverlay').classList.remove('show'); });
+
+  var submitting = false;
+  $('btnSubmit').addEventListener('click', function(){
+    if(submitting) return;
+    var d = collect();
+    var missing = [];
+    if(!d.age) missing.push('年龄');
+    if(!d.height) missing.push('身高');
+    if(!d.weight) missing.push('体重');
+    if(!d.hobby) missing.push('爱好');
+    if(!d.diet) missing.push('饮食习惯');
+    if(!d.extra) missing.push('补充小特点');
+    if(!d.nick) missing.push('昵称');
+    if(missing.length){ toast('还有没填完的：' + missing.join('、')); return; }
+
+    var list = readStore();
+    var record = {
+      id: 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+      ...d,
+      createdAt: new Date().toLocaleString('zh-CN')
+    };
+    list.push(record);
+    writeStore(list);
+
+    $('modA').classList.add('sealed');
+    $('successOverlay').classList.add('show');
+
+    submitting = true;
+    fetch(POST_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source: 'data_self_portrait',
+        type: '数据自画像',
+        age: record.age, height: record.height, weight: record.weight,
+        hobby: record.hobby, diet: record.diet, extra: record.extra,
+        nick: record.nick, createdAt: record.createdAt
+      })
+    }).catch(function(){}).finally(function(){ submitting = false; });
+  });
+})();
+</script>
+</body>
+</html>

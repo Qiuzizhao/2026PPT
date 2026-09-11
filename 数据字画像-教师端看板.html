@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教师端 · 数据总览</title>
+<style>
+  :root{
+    --ink:#1f2a3d; --muted:#6b7686;
+    --blue:#3b82f6; --blue-d:#2563eb;
+    --bg:#f4f7fb; --card:#ffffff; --line:#e3e9f2;
+    --green:#10b981; --good:#16a34a; --bad:#dc2626;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Comic Sans MS","Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+    color:var(--ink); background:var(--bg); padding:20px clamp(10px,3vw,24px) 50px;
+  }
+  .wrap{max-width:960px;margin:0 auto}
+
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  header h1{margin:0;font-size:clamp(20px,4.5vw,28px);font-weight:800;color:var(--ink)}
+  header .sub{color:var(--muted);font-size:14px;margin-top:4px}
+  .stat{text-align:right}
+  .stat .n{font-size:clamp(28px,6vw,36px);font-weight:800;color:var(--blue-d);line-height:1}
+  .stat .l{color:var(--muted);font-size:14px;margin-top:2px}
+
+  .toolbar{margin-bottom:8px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .auto{color:var(--muted);font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer}
+  .auto input{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}
+  .filter{color:var(--muted);font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+  .filter input{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:14px;color:var(--ink);accent-color:var(--blue)}
+  .btn.ghost{background:#eef2f8;color:var(--ink)}
+  button.btn{
+    border:none;cursor:pointer;border-radius:12px;padding:11px 20px;
+    font-family:inherit;font-size:15px;font-weight:700;color:#fff;background:var(--blue);
+    transition:filter .15s,transform .1s;
+  }
+  button.btn:hover{filter:brightness(.95)}
+  button.btn:active{transform:translateY(1px)}
+
+  .msg{min-height:22px;font-size:14px;color:var(--muted);margin:6px 0 12px}
+  .msg.err{color:var(--bad)}
+  .msg.ok{color:var(--good)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:0 2px 8px rgba(31,42,61,.04);cursor:pointer;transition:box-shadow .15s,border-color .15s}
+  .card:hover{border-color:var(--blue);box-shadow:0 4px 14px rgba(31,42,61,.10)}
+  .card .head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .card .head .num{font-weight:700;font-size:16px;color:var(--muted)}
+  .card .head .badge{font-size:13px;font-weight:700;color:#fff;background:var(--blue);border-radius:8px;padding:3px 10px;margin-left:auto;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card .head .badge.none{background:#cbd5e1}
+  .row{margin:6px 0;font-size:14px;line-height:1.6}
+  .row b{color:var(--blue-d)}
+  .row .v{font-weight:600}
+  .extra{border-top:1px solid var(--line);margin-top:10px;padding-top:8px;font-size:13px;color:var(--muted);line-height:1.6}
+  .meta{margin-top:8px;font-size:12px;color:var(--muted);line-height:1.5}
+
+  .empty{color:var(--muted);font-size:16px;font-weight:600;background:#fff;border:1px solid var(--line);border-radius:16px;padding:36px 20px;text-align:center}
+
+  /* 放大弹窗 */
+  .overlay{position:fixed;inset:0;background:rgba(20,28,40,.5);display:none;align-items:center;justify-content:center;z-index:10000;padding:18px}
+  .overlay.show{display:flex}
+  .modal{
+    background:#fff;border-radius:16px;box-shadow:0 16px 40px rgba(20,28,40,.25);
+    max-width:560px;width:100%;padding:24px;max-height:88vh;overflow:auto;animation:pop .22s ease;
+  }
+  .modal h2{margin:0 0 14px;font-size:clamp(19px,4.5vw,24px);color:var(--ink)}
+  .modal .close{float:right;border:none;background:#eef2f8;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;color:var(--ink)}
+  .modal .big-row{margin:10px 0;font-size:19px;line-height:1.7}
+  .modal .big-row b{color:var(--blue-d);font-weight:700}
+  .modal .big-meta{margin-top:16px;font-size:13px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:10px}
+  @keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>教师端 · 数据总览</h1>
+      <div class="sub" id="taskSub">加载中…</div>
+    </div>
+    <div class="stat">
+      <div class="n" id="total">–</div>
+      <div class="l">份自画像</div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <button class="btn" id="btnRefresh">刷新数据</button>
+    <label class="auto"><input type="checkbox" id="auto"> 自动更新</label>
+    <label class="filter">提交时间从 <input type="datetime-local" id="timeFrom"></label>
+    <button class="btn ghost" id="btnClearFilter">清除</button>
+  </div>
+
+  <div class="msg" id="msg"></div>
+  <div class="cards" id="cards"></div>
+</div>
+
+<div class="overlay" id="viewOverlay">
+  <div class="modal">
+    <button class="close" id="viewClose">✕</button>
+    <h2 id="viewTitle">自画像详情</h2>
+    <div id="viewBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var API = 'https://quickform.cn/api/gkdflsn3kw/all';
+  var lastJson = null;
+
+  function $(id){ return document.getElementById(id); }
+
+  function getVal(obj, keys){
+    for(var i = 0; i < keys.length; i++){
+      var v = obj[keys[i]];
+      if(v !== undefined && v !== null && v !== '') return v;
+    }
+    return '';
+  }
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[<>&"]/g, function(c){
+      return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];
+    });
+  }
+
+  function isCorrupt(s){
+    var t = String(s == null ? '' : s);
+    for(var i = 0; i < t.length; i++){
+      if(t.charCodeAt(i) === 0xFFFD) return true;
+    }
+    return false;
+  }
+
+  function parseTime(s){
+    if(!s) return null;
+    var t = String(s).trim();
+    var m = t.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})\D?(\d{1,2})?:?(\d{1,2})?:?(\d{1,2})?/);
+    if(m){
+      var d = new Date(+m[1], (+m[2]) - 1, +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+      return isNaN(d.getTime()) ? null : d.getTime();
+    }
+    var d2 = new Date(t);
+    return isNaN(d2.getTime()) ? null : d2.getTime();
+  }
+
+  var KNOWN = {
+    age: ['age','年龄','我的年龄'],
+    height: ['height','身高','我的身高'],
+    weight: ['weight','体重','我的体重'],
+    hobby: ['hobby','爱好','我的爱好'],
+    diet: ['diet','饮食习惯','我的饮食习惯'],
+    extra: ['extra','补充','小特点','补充小特点'],
+    nick: ['nick','昵称','我的昵称']
+  };
+
+  var KNOWN_KEYS = [];
+  Object.keys(KNOWN).forEach(function(k){ KNOWN_KEYS = KNOWN_KEYS.concat(KNOWN[k]); });
+
+  function parseSubmission(s){
+    var out = {
+      age: getVal(s, KNOWN.age),
+      height: getVal(s, KNOWN.height),
+      weight: getVal(s, KNOWN.weight),
+      hobby: getVal(s, KNOWN.hobby),
+      diet: getVal(s, KNOWN.diet),
+      extra: getVal(s, KNOWN.extra),
+      nick: getVal(s, KNOWN.nick),
+      submittedAt: getVal(s, ['submitted_at','createdAt','created_at','提交时间','时间'])
+    };
+    out.corrupt = isCorrupt(out.hobby) || isCorrupt(out.diet) || isCorrupt(out.extra) || isCorrupt(out.nick) || isCorrupt(out.submittedAt);
+    var coreCount = 0;
+    ['age','height','weight','hobby','diet','extra'].forEach(function(k){ if(out[k]) coreCount++; });
+    out.valid = !!out.nick || coreCount >= 2;
+    var others = [];
+    Object.keys(s).forEach(function(k){
+      if(KNOWN_KEYS.indexOf(k) > -1) return;
+      if(['submitted_at','createdAt','created_at','_ip','ip','source','type','task_id','task_title','id','submission_id'].indexOf(k) > -1) return;
+      if(s[k] !== undefined && s[k] !== null && s[k] !== '') others.push(esc(k) + '：' + esc(s[k]));
+    });
+    out.others = others;
+    return out;
+  }
+
+  function row(label, value){
+    if(!value) return '';
+    return '<div class="row"><b>' + label + '</b>：<span class="v">' + esc(value) + '</span></div>';
+  }
+
+  function bigRow(label, value){
+    if(!value) return '';
+    return '<div class="big-row"><b>' + label + '</b>：' + esc(value) + '</div>';
+  }
+
+  function showView(d, idx){
+    var html = '<div class="head"><span class="num" style="color:var(--muted)">#' + (idx + 1) + '</span></div>';
+    html += bigRow('年龄', d.age);
+    html += bigRow('身高', d.height ? d.height + ' cm' : '');
+    html += bigRow('体重', d.weight ? d.weight + ' kg' : '');
+    html += bigRow('爱好', d.hobby);
+    html += bigRow('饮食习惯', d.diet);
+    html += bigRow('小特点', d.extra);
+    html += bigRow('昵称', d.nick);
+    if(d.others.length){
+      html += '<div class="extra">其他字段<br>' + d.others.join('<br>') + '</div>';
+    }
+    if(d.submittedAt) html += '<div class="big-meta">提交时间：' + esc(d.submittedAt) + '</div>';
+    $('viewBody').innerHTML = html;
+    $('viewOverlay').classList.add('show');
+  }
+
+  function render(json){
+    lastJson = json;
+    var allSubs = (json && json.submissions) || [];
+    var fromVal = $('timeFrom').value;
+    var fromTs = fromVal ? new Date(fromVal).getTime() : null;
+    var items = [];
+    allSubs.forEach(function(s){
+      var d = parseSubmission(s);
+      if(!d.valid) return;
+      if(d.corrupt) return;
+      if(fromTs){
+        var t = parseTime(d.submittedAt);
+        if(t === null || t < fromTs) return;
+      }
+      items.push({ s: s, d: d });
+    });
+    $('total').textContent = items.length;
+    $('taskSub').textContent = (json && json.task_title) ? json.task_title : '—';
+    var cards = $('cards');
+    cards.innerHTML = '';
+    if(items.length === 0){
+      cards.innerHTML = '<div class="empty">还没有收到有效数据。</div>';
+      return;
+    }
+    items.forEach(function(it, idx){
+      var d = it.d;
+      var card = document.createElement('div');
+      card.className = 'card';
+      var html = '<div class="head"><span class="num">#' + (idx + 1) + '</span>' +
+        '<span class="badge' + (d.nick ? '' : ' none') + '">' +
+        (d.nick ? esc(d.nick) : '未填昵称') + '</span></div>';
+      html += row('年龄', d.age);
+      html += row('身高', d.height ? d.height + ' cm' : '');
+      html += row('体重', d.weight ? d.weight + ' kg' : '');
+      html += row('爱好', d.hobby);
+      html += row('饮食习惯', d.diet);
+      html += row('小特点', d.extra);
+      if(d.others.length){
+        html += '<div class="extra">其他字段<br>' + d.others.join('<br>') + '</div>';
+      }
+      if(d.submittedAt) html += '<div class="meta">提交时间：' + esc(d.submittedAt) + '</div>';
+      card.innerHTML = html;
+      card.addEventListener('click', function(){ showView(d, idx); });
+      cards.appendChild(card);
+    });
+  }
+
+  function setMsg(text, cls){
+    var m = $('msg');
+    m.className = 'msg' + (cls ? ' ' + cls : '');
+    m.textContent = text || '';
+  }
+
+  function load(){
+    setMsg('正在加载…');
+    fetch(API, { method: 'GET', cache: 'no-store' })
+      .then(function(r){
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function(json){
+        render(json);
+        setMsg((json && json.note) || '', 'ok');
+      })
+      .catch(function(err){
+        setMsg('加载失败：' + err.message, 'err');
+      });
+  }
+
+  $('btnRefresh').addEventListener('click', load);
+  $('viewClose').addEventListener('click', function(){ $('viewOverlay').classList.remove('show'); });
+  $('viewOverlay').addEventListener('click', function(e){
+    if(e.target === $('viewOverlay')) $('viewOverlay').classList.remove('show');
+  });
+  $('timeFrom').addEventListener('change', function(){ if(lastJson) render(lastJson); });
+  $('btnClearFilter').addEventListener('click', function(){
+    $('timeFrom').value = '';
+    if(lastJson) render(lastJson);
+  });
+
+  var timer = null;
+  function applyAuto(){
+    if(timer){ clearInterval(timer); timer = null; }
+    if($('auto').checked){ timer = setInterval(load, 10000); }
+  }
+  $('auto').addEventListener('change', applyAuto);
+  applyAuto(); // 默认关闭，由勾选框控制
+
+  load();
+})();
+</script>
+</body>
+</html>

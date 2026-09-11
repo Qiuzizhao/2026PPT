@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🖱️ 鼠标小乐园</title>
+<style>
+  :root{
+    --ink:#2b2b45; --muted:#8a8aa8;
+    --card:#ffffff; --line:#ffe3ee;
+    --blue:#44a3ff; --orange:#ff9f45; --green:#4ed47e; --cyan:#43d2e8;
+    --purple:#a577ff; --pink:#ff6fa5; --yellow:#ffd23f;
+    --good:#2ec77b; --good-soft:#e4f9ec;
+    --bad:#ff6a5e; --bad-soft:#ffe9e7;
+    --shadow:0 10px 22px rgba(90,70,160,.18);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Comic Sans MS","Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+    color:var(--ink); min-height:100vh;
+    background:linear-gradient(160deg,#c9ecff,#dcd3ff 55%,#ffe0ea);
+    background-attachment:fixed;
+    padding:18px clamp(8px,3vw,36px) 50px;
+    user-select:none;
+  }
+  .wrap{max-width:900px;margin:0 auto}
+
+  /* bubbles in background */
+  .bg-bubbles{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+  .bg-bubbles span{position:absolute;border-radius:50%;opacity:.5;animation:float 9s ease-in-out infinite}
+
+  /* ===== Header / mascot ===== */
+  header{display:flex;align-items:center;gap:16px;margin:0 auto 16px;position:relative;z-index:1}
+  .mascot{
+    width:88px;height:88px;flex-shrink:0;border-radius:50%;background:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:50px;
+    box-shadow:var(--shadow);border:4px solid #fff;animation:bob 2.6s ease-in-out infinite;
+  }
+  .bubble{
+    background:#fff;border-radius:22px 22px 22px 6px;padding:16px 20px;
+    box-shadow:var(--shadow);font-size:clamp(19px,3vw,27px);font-weight:800;line-height:1.5;
+    flex:1;min-height:70px;display:flex;align-items:center;
+  }
+  .bubble b{color:var(--blue)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  @keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-40px) scale(1.1)}}
+
+  /* ===== Nav ===== */
+  nav{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:0 auto 16px;position:relative;z-index:1}
+  nav button{
+    border:none;cursor:pointer;border-radius:20px;padding:12px 18px;
+    font-family:inherit;font-size:clamp(16px,2.4vw,19px);font-weight:800;color:#fff;
+    display:flex;align-items:center;gap:8px;box-shadow:0 6px 0 rgba(0,0,0,.12), var(--shadow);
+    transition:transform .1s ease;min-width:74px;justify-content:center;
+  }
+  nav button:hover{transform:translateY(-3px)}
+  nav button:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.12)}
+  nav button.b-home{background:var(--purple)}
+  nav button.b-left{background:var(--blue)}
+  nav button.b-right{background:var(--orange)}
+  nav button.b-double{background:var(--green)}
+  nav button.b-wheel{background:var(--cyan)}
+  nav button.b-menu{background:var(--pink)}
+  nav button span.emo{font-size:22px}
+  nav button.n-done::after{content:" ✓";font-size:.72em;opacity:.9}
+
+  /* completed (frozen) state */
+  .done-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:20px}
+  .done-wrap .trophy{font-size:min(120px,24vw);line-height:1;animation:bob 2.6s ease-in-out infinite}
+  .done-wrap .done-title{font-size:clamp(26px,6vw,38px);font-weight:900;color:var(--blue);text-shadow:0 3px 0 rgba(255,255,255,.6)}
+  .done-wrap .done-sub{font-size:clamp(15px,3vw,20px);color:var(--muted);font-weight:700;max-width:420px}
+
+  /* ===== Progress stars ===== */
+  .stars{display:flex;gap:8px;justify-content:center;margin:0 auto 14px;flex-wrap:wrap;position:relative;z-index:1;min-height:36px}
+  .stars .star{transition:transform .2s ease}
+  .stars .star .s-in{display:inline-block;font-size:30px;filter:grayscale(1);opacity:.4;transition:all .2s ease}
+  .stars .star.pop .s-in{filter:none;opacity:1;transform:scale(1.25)}
+  .stars .big-count{color:#fff;font-weight:900;font-size:20px;text-shadow:0 2px 6px rgba(60,40,120,.3);margin-left:8px}
+
+  /* ===== Play ===== */
+  .play{
+    position:relative;background:linear-gradient(180deg,#ffffff,#f2f8ff);
+    border-radius:28px;height:clamp(320px,52vh,460px);overflow:hidden;
+    box-shadow:var(--shadow);border:4px solid #fff;
+  }
+  .play .ground{
+    position:absolute;left:0;right:0;bottom:0;height:60px;
+    background:linear-gradient(180deg,transparent,#eafff1);opacity:.8;
+  }
+  .home-grid{position:absolute;inset:18px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center}
+  .homebtn{
+    width:140px;height:140px;border-radius:50%;border:none;cursor:pointer;color:#fff;
+    box-shadow:0 8px 0 rgba(0,0,0,.12), var(--shadow);transition:transform .12s ease;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:inherit;
+  }
+  .homebtn:hover{transform:translateY(-4px) scale(1.05)}
+  .homebtn:active{transform:translateY(2px)}
+  .homebtn .face{font-size:40px;line-height:1}
+  .homebtn .lbl{font-weight:800;font-size:20px}
+  .homebtn.done2{filter:saturate(.75);opacity:.9}
+  .homebtn.done2 .lbl::after{content:" ✓";color:#fff;opacity:.95}
+
+  /* top-right total star counter */
+  .star-total{
+    position:fixed;top:12px;right:12px;z-index:2000;
+    background:#fff;border-radius:999px;padding:9px 16px;
+    display:flex;align-items:center;gap:8px;
+    box-shadow:0 8px 18px rgba(60,40,120,.22);border:3px solid #ffe08a;
+    font-weight:900;font-size:21px;color:var(--ink);
+  }
+  .star-total .st-ico{font-size:24px}
+  .star-total .st-lbl{font-size:14px;color:var(--muted);font-weight:800}
+  @media(max-width:640px){
+    .star-total{top:8px;right:8px;padding:7px 12px;font-size:18px}
+    .star-total .st-lbl{display:none}
+    .bubble{padding-right:64px}
+  }
+
+  .target{position:absolute;user-select:none;cursor:pointer;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 0 rgba(0,0,0,.14), var(--shadow);
+    transition:transform .12s ease;will-change:transform;
+  }
+  .target:active{transform:scale(.9)}
+  .target .face{font-size:clamp(38px,6vw,64px);line-height:1}
+  .target.pop-in{animation:popin .3s ease}
+  @keyframes popin{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+  .target.burst{animation:burst .45s ease forwards}
+  @keyframes burst{40%{transform:scale(1.35)}100%{transform:scale(0);opacity:0}}
+
+  /* message under mascot for actions */
+  .bubble.shake{animation:shake .4s ease}
+  @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+  /* confetti */
+  .cf{position:fixed;top:0;width:12px;height:16px;z-index:99999;pointer-events:none;
+    border-radius:3px;animation:fall 1.1s ease-in forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.2}}
+
+  /* ===== Wheel ===== */
+  .wheel-zone{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:clamp(16px,4vw,40px);flex-wrap:wrap;padding:16px}
+  .pic-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .bottle{width:min(180px,44vw);height:min(300px,46vh);background:#eef4fb;border-radius:18px;position:relative;overflow:hidden;border:3px solid #cfdcf0}
+  .bottle .fill{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,#6fd6ff,#3aa3ff);transition:height .12s ease}
+  .bottle .goal{position:absolute;left:0;right:0;border-top:4px solid #ff6a5e;z-index:3}
+  .bottle .goal::after{content:"🎯";position:absolute;right:-2px;top:-16px;font-size:20px}
+  .wheel-num{font-size:clamp(34px,7vw,54px);font-weight:900;color:var(--blue);text-align:center}
+  .wheel-sub{font-size:clamp(14px,2.6vw,18px);color:var(--muted);text-align:center;font-weight:700}
+
+  /* ===== Menu ===== */
+  .menu-zone{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;cursor:context-menu}
+  .menu-zone .task{font-size:clamp(18px,3vw,24px);font-weight:800;line-height:1.8;text-align:center;padding:0 18px;color:var(--muted)}
+  .menu-zone .req{color:#fff;background:var(--pink);padding:4px 16px;border-radius:14px;display:inline-block;margin:4px}
+  .ctmenu{position:fixed;z-index:9999;min-width:190px;background:#fff;border-radius:18px;
+    box-shadow:0 16px 40px rgba(40,30,90,.35);border:3px solid #f3e2ff;padding:8px;display:none;animation:menuin .15s ease}
+  @keyframes menuin{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+  .ctmenu .mi{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;cursor:pointer;font-size:18px;font-weight:700}
+  .ctmenu .mi:hover{background:var(--good-soft)}
+  .ctmenu .mi .ic{font-size:22px}
+  .ctmenu .sep{height:2px;background:#f3e2ff;margin:5px 8px}
+
+  /* ===== Modal ===== */
+  .overlay{position:fixed;inset:0;background:rgba(40,30,80,.4);display:none;align-items:center;justify-content:center;z-index:10000;padding:18px}
+  .overlay.show{display:flex}
+  .modal{background:#fff;border-radius:30px;box-shadow:var(--shadow);max-width:460px;width:100%;padding:30px 24px;text-align:center;animation:popin .32s ease}
+  .modal .moji{font-size:74px;line-height:1}
+  .modal h2{margin:10px 0 6px;font-size:clamp(24px,6vw,32px);color:var(--blue)}
+  .modal p{margin:0 0 18px;color:var(--muted);font-size:17px;line-height:1.7}
+  .modal .mstars{font-size:26px;letter-spacing:4px;margin-bottom:18px}
+  .modal .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .btn{border:none;cursor:pointer;border-radius:18px;padding:15px 22px;font-family:inherit;font-size:18px;font-weight:800;transition:transform .1s ease;box-shadow:0 5px 0 rgba(0,0,0,.12)}
+  .btn:hover{transform:translateY(-2px)}
+  .btn:active{transform:translateY(2px)}
+  .btn.primary{background:var(--green);color:#fff}
+  .btn.ghost{background:#eef2ff;color:var(--ink)}
+
+
+</style>
+</head>
+<body>
+<div class="bg-bubbles" id="bg"></div>
+
+<div class="wrap">
+  <div class="star-total" aria-live="polite"><span class="st-ico">⭐</span><span id="starNum">0</span><span class="st-lbl">颗星</span></div>
+
+  <header>
+    <div class="mascot" id="mascot">🐭</div>
+    <div class="bubble" id="bubble">点一个圆圈玩游戏吧！</div>
+  </header>
+
+  <nav id="nav">
+    <button class="b-home" data-mode="home"><span class="emo">🏠</span>开始</button>
+    <button class="b-left" data-mode="left"><span class="emo">👆</span>左键</button>
+    <button class="b-right" data-mode="right"><span class="emo">🖱️</span>右键</button>
+    <button class="b-double" data-mode="double"><span class="emo">✌️</span>双击</button>
+    <button class="b-wheel" data-mode="wheel"><span class="emo">🌀</span>滚轮</button>
+    <button class="b-menu" data-mode="menu"><span class="emo">📋</span>选菜单</button>
+  </nav>
+
+  <div class="stars" id="stars"></div>
+
+  <div class="play" id="play"></div>
+
+</div>
+
+<div class="ctmenu" id="ctmenu"></div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="moji" id="mMoji">🎉</div>
+    <h2 id="mTitle">真棒！</h2>
+    <p id="mText"></p>
+    <div class="mstars" id="mStars"></div>
+    <div class="actions">
+      <button class="btn primary" id="mOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = s=>document.querySelector(s);
+  const play = $('#play');
+  const bubble = $('#bubble');
+  const mascot = $('#mascot');
+  const stars = $('#stars');
+  const ctmenu = $('#ctmenu');
+  const overlay = $('#overlay');
+  const doneSet = new Set();
+  function markDone(m){
+    doneSet.add(m);                       // completed -> locked, cannot replay
+    const b=document.querySelector('#nav [data-mode="'+m+'"]');
+    if(b) b.classList.add('n-done');      // show a ✓ on the nav button
+  }
+  const TOTALS={left:10,right:10,double:10,wheel:10,menu:10};
+
+  /* running total of stars earned (best per mode, so it never double-counts) */
+  const starBest={left:0,right:0,double:0,wheel:0,menu:0};
+  function recordStars(mode,got){
+    if(got>starBest[mode]) starBest[mode]=got;
+    const tot=Object.values(starBest).reduce((a,b)=>a+b,0);
+    const n=document.getElementById('starNum');
+    if(n) n.textContent=tot;
+  }
+  let modeToken = 0;
+  let cleanups = [];
+  function addListen(el,ev,fn,o){el.addEventListener(ev,fn,o||false);cleanups.push(()=>el.removeEventListener(ev,fn));}
+  function cleanup(){while(cleanups.length){const c=cleanups.pop();c();}}
+  function say(html, shake){
+    bubble.innerHTML = html;
+    if(shake){ bubble.classList.remove('shake'); void bubble.offsetWidth; bubble.classList.add('shake'); }
+  }
+  let toastTimer=null;
+  function toast(msg,color){
+    bubble.style.background = color||'#fff';
+    bubble.innerHTML = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>{bubble.style.background='#fff';}, 1600);
+  }
+  function confetti(){
+    const colors=['#ff6fa5','#ffd23f','#44a3ff','#4ed47e','#a577ff','#43d2e8'];
+    for(let i=0;i<28;i++){
+      const c=document.createElement('div'); c.className='cf';
+      c.style.left=Math.random()*100+'vw';
+      c.style.background=colors[Math.floor(Math.random()*colors.length)];
+      c.style.animationDelay=(Math.random()*.25)+'s';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),1500);
+    }
+  }
+  function setStars(done,total){
+    stars.innerHTML='';
+    let txt='';
+    for(let i=0;i<total;i++){
+      const s=document.createElement('span'); s.className='star'+(i<done?' pop':'');
+      s.innerHTML='<span class="s-in">⭐</span>';
+      stars.appendChild(s);
+    }
+    if(total>0) txt = done+' / '+total;
+    if(txt){ const b=document.createElement('span'); b.className='big-count'; b.textContent=txt; stars.appendChild(b); }
+  }
+
+  function showModal(moji,title,text,mstarStr){
+    $('#mMoji').textContent=moji;
+    $('#mTitle').textContent=title;
+    $('#mText').innerHTML=text;
+    $('#mStars').textContent=mstarStr;
+    overlay.classList.add('show');
+  }
+  function hideModal(){overlay.classList.remove('show');}
+
+  /* targets */
+  function makeTarget(size,face,bg){
+    const t=document.createElement('div');
+    t.className='target pop-in';
+    t.style.width=size+'px'; t.style.height=size+'px';
+    t.style.background=bg;
+    t.innerHTML='<span class="face">'+face+'</span>';
+    return t;
+  }
+  function place(t){
+    const b=16, sz=t.offsetWidth;
+    const mx=Math.max(b, play.clientWidth-sz-b);
+    const my=Math.max(b, play.clientHeight-sz-b-10);
+    t.style.left=(Math.random()*mx)+'px';
+    t.style.top=(Math.random()*my)+'px';
+  }
+
+  /* ============ MODES ============ */
+  function modeHome(){
+    mascot.textContent='🐭';
+    say('点一个<b>圆圈</b>开始！');
+    setStars(0,0);
+    const games=[
+      ['left','👆','左键','用左键点我','#44a3ff'],
+      ['right','🖱️','右键','用右键点我','#ff9f45'],
+      ['double','✌️','双击','快速点两下','#4ed47e'],
+      ['wheel','🌀','滚轮','转一转小轮子','#43d2e8'],
+      ['menu','📋','选菜单','开菜单选一个','#ff6fa5'],
+    ];
+    play.innerHTML='<div class="ground"></div><div class="home-grid"></div>';
+    play.style.cursor='default';
+    const grid=play.querySelector('.home-grid');
+    games.forEach((g)=>{
+      const b=document.createElement('button');
+      b.className='homebtn'+(doneSet.has(g[0])?' done2':'');
+      b.style.background=g[4];
+      b.innerHTML='<span class="face">'+g[1]+'</span><span class="lbl">'+g[2]+'</span>';
+      b.onclick=()=>showMode(g[0]);
+      grid.appendChild(b);
+    });
+  }
+
+  function modeLeft(){
+    mascot.textContent='👆';
+    say('用<b>左键</b>点小星星！');
+    const TOTAL=10; let got=0; const tok=modeToken;
+    setStars(0,TOTAL);
+    play.innerHTML='<div class="ground"></div>';
+    function next(){
+      const t=makeTarget(120,'⭐','linear-gradient(150deg,#ffd23f,#ffb52e)');
+      play.appendChild(t); place(t);
+      addListen(t,'click',(e)=>{
+        e.stopPropagation();
+        t.classList.add('burst');
+        setTimeout(()=>t.remove(),460); got++;
+        setStars(got,TOTAL); recordStars('left',got);
+        if(got>=TOTAL){ confetti(); showModal('🎉','好厉害！','你会用左键啦！<br>点按钮、点链接都要靠它。','⭐'.repeat(TOTAL)); markDone('left'); }
+        else setTimeout(()=>{ if(tok===modeToken) next(); },320);
+      });
+    }
+    addListen(play,'click',()=>say('用<b>左键</b>点那个星星哦！'));
+    next();
+  }
+
+  function modeRight(){
+    mascot.textContent='🖱️';
+    say('这次用<b>右键</b>点它！');
+    const TOTAL=10; let got=0; const tok=modeToken;
+    setStars(0,TOTAL);
+    play.innerHTML='<div class="ground"></div>';
+    addListen(play,'contextmenu',(e)=>e.preventDefault());
+    addListen(play,'click',()=>toast('要用<b>右键</b>哦！👈','#fff'));
+    function next(){
+      const t=makeTarget(120,'🎈','linear-gradient(150deg,#ff9f45,#ff8a3d)');
+      play.appendChild(t); place(t);
+      addListen(t,'contextmenu',(e)=>{
+        e.preventDefault(); e.stopPropagation();
+        t.classList.add('burst'); setTimeout(()=>t.remove(),460); got++;
+        setStars(got,TOTAL); recordStars('right',got);
+        if(got>=TOTAL){ confetti(); showModal('🎉','真棒！','你会用右键啦！<br>右键常常会弹出小菜单。','⭐'.repeat(TOTAL)); markDone('right'); }
+        else setTimeout(()=>{ if(tok===modeToken) next(); },320);
+      });
+      addListen(t,'click',(e)=>{e.stopPropagation(); toast('这是左键～ 试试<b>右键</b>！','#fff');});
+    }
+    next();
+  }
+
+  function modeDouble(){
+    mascot.textContent='✌️';
+    say('对着它<b>快速点两下</b>！');
+    const TOTAL=10; let got=0; const tok=modeToken;
+    setStars(0,TOTAL);
+    play.innerHTML='<div class="ground"></div>';
+    function next(){
+      const t=makeTarget(130,'🍎','linear-gradient(150deg,#ff7a9c,#ff6fa5)');
+      play.appendChild(t); place(t);
+      addListen(t,'dblclick',(e)=>{
+        e.stopPropagation();
+        t.classList.add('burst'); setTimeout(()=>t.remove(),460); got++;
+        setStars(got,TOTAL); recordStars('double',got);
+        if(got>=TOTAL){ confetti(); showModal('🎉','太快啦！','双击可以打开东西，你学会啦！','⭐'.repeat(TOTAL)); markDone('double'); }
+        else setTimeout(()=>{ if(tok===modeToken) next(); },320);
+      });
+      addListen(t,'click',()=>toast('再点一下！<b>快一点</b>😄','#fff'));
+    }
+    next();
+  }
+
+  function modeWheel(){
+    mascot.textContent='🌀';
+    say('转小轮子，把水装到<b>红线</b>！');
+    const TOTAL=10; let got=0; const tok=modeToken;
+    setStars(0,TOTAL);
+    play.innerHTML='';
+    const z=document.createElement('div'); z.className='wheel-zone';
+    z.innerHTML='<div class="pic-wrap"><div class="wheel-num" id="wnum">0</div><div class="wheel-sub">转动滚轮·装到红线🎯</div></div>'
+      +'<div class="bottle"><div class="fill" id="fill" style="height:0%"></div><div class="goal" id="goal" style="top:40%"></div></div>';
+    play.appendChild(z);
+    const fill=z.querySelector('#fill'), wnum=z.querySelector('#wnum'), goalEl=z.querySelector('#goal');
+    let goal=60, cur=0, live=false;
+    function newGoal(){
+      let g; do{ g=Math.floor(Math.random()*15)*5+20; }while(g===goal);
+      goal=g; cur=0; live=true;
+      goalEl.style.top=(100-goal)+'%';
+      draw();
+    }
+    function draw(){
+      fill.style.height=cur+'%';
+      wnum.textContent=cur+' / '+goal;
+      fill.style.background = (live && cur===goal) ? '#2ec77b' : 'linear-gradient(180deg,#6fd6ff,#3aa3ff)';
+    }
+    addListen(z,'wheel',(e)=>{
+      e.preventDefault();
+      if(!live) return;
+      cur = e.deltaY<0 ? Math.min(100,cur+5) : Math.max(0,cur-5);
+      draw();
+      if(cur===goal){
+        live=false; got++; setStars(got,TOTAL); recordStars('wheel',got);
+        if(got>=TOTAL){ confetti(); showModal('🎉','装满了！','你会用滚轮啦！<br>它能帮你上下看页面。','⭐'.repeat(TOTAL)); markDone('wheel'); }
+        else { toast('装满了！再来一关😄','#fff'); setTimeout(()=>{ if(tok===modeToken) newGoal(); },500); }
+      }
+    },{passive:false});
+    addListen(play,'contextmenu',(e)=>e.preventDefault());
+    newGoal();
+  }
+
+  function modeMenu(){
+    mascot.textContent='📋';
+    const ROUNDS=10; let got=0; const tok=modeToken;
+    const ALL=['复制','粘贴','删除','重命名','查看属性','另存为'];
+    setStars(0,ROUNDS);
+    play.innerHTML='';
+    const z=document.createElement('div'); z.className='menu-zone';
+    play.appendChild(z);
+    addListen(z,'contextmenu',(e)=>{e.preventDefault();e.stopPropagation(); say('用<b>左键</b>选一个：'); openMenu(e.clientX,e.clientY);});
+    addListen(document,'click',(e)=>{ if(!ctmenu.contains(e.target)) ctmenu.style.display='none'; });
+    let req='';
+    function drawTask(){
+      req=ALL[Math.floor(Math.random()*ALL.length)];
+      say('点<b>右键</b>打开菜单，选「<b style="color:var(--pink)">'+req+'</b>」');
+      z.innerHTML='<div class="task">在下面这里点右键👇<br><span class="req">'+req+'</span></div>';
+    }
+    function openMenu(x,y){
+      const ICONS={'复制':'📄','粘贴':'📋','删除':'🗑️','重命名':'✏️','查看属性':'🔍','另存为':'💾'};
+      const items=ALL.slice();
+      const idx=items.indexOf(req); const correct=items.splice(idx,1)[0];
+      items.sort(()=>Math.random()-.5);
+      const at=Math.floor(Math.random()*(items.length+1));
+      items.splice(at,0,correct);
+      ctmenu.innerHTML='';
+      items.forEach((it,i)=>{
+        if(i===2){const sep=document.createElement('div');sep.className='sep';ctmenu.appendChild(sep);}
+        const mi=document.createElement('div'); mi.className='mi';
+        mi.innerHTML='<span class="ic">'+ICONS[it]+'</span>'+it;
+        mi.onclick=()=>{
+          ctmenu.style.display='none';
+          if(it===req){
+            got++; setStars(got,ROUNDS); recordStars('menu',got);
+            if(got>=ROUNDS){ confetti(); showModal('🎉','选对啦！','你会用右键菜单啦！<br>右键能做好多事。','⭐'.repeat(ROUNDS)); markDone('menu'); }
+            else { toast('选对啦！再来一题😄','#fff'); drawTask(); }
+          } else { toast('不对哦，找「<b>'+req+'</b>」','#fff'); drawTask(); }
+        };
+        ctmenu.appendChild(mi);
+      });
+      ctmenu.style.display='block';
+      const w=ctmenu.offsetWidth,h=ctmenu.offsetHeight;
+      ctmenu.style.left=Math.min(x,innerWidth-w-8)+'px';
+      ctmenu.style.top=Math.min(y,innerHeight-h-8)+'px';
+    }
+    drawTask();
+  }
+
+  const MODES={home:modeHome,left:modeLeft,right:modeRight,double:modeDouble,wheel:modeWheel,menu:modeMenu};
+  let currentMode='home';
+  function showCompleted(name){
+    // frozen finished-state for an already-completed level (no replay)
+    mascot.textContent='🏆';
+    say('这一关<b>完成啦</b>！你真棒！');
+    setStars(TOTALS[name], TOTALS[name]);      // all stars lit
+    play.innerHTML='<div class="ground"></div><div class="done-wrap">'
+      +'<div class="trophy">🏆</div>'
+      +'<div class="done-title">已完成</div>'
+      +'<div class="done-sub">你已经学会「'+labelOf(name)+'」啦～<br>去玩别的游戏吧</div>'
+      +'</div>';
+  }
+  function labelOf(name){
+    const m={home:'开始',left:'左键',right:'右键',double:'双击',wheel:'滚轮',menu:'选菜单'};
+    return m[name]||name;
+  }
+  function showMode(name){
+    currentMode=name;
+    modeToken++; cleanup(); ctmenu.style.display='none'; hideModal();
+    document.querySelectorAll('#nav button').forEach(b=>b.style.outline = b.dataset.mode===name ? '3px solid #fff' : 'none');
+    if(doneSet.has(name)){ showCompleted(name); return; }   // completed: hold, no replay
+    MODES[name]();
+  }
+  document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>showMode(b.dataset.mode)));
+  $('#mOk').onclick=()=>{ hideModal(); showCompleted(currentMode); };   // OK -> show finished state
+
+  /* bubbles */
+  (function(){
+    const cols=['#ffffff','#ffffff','#ffe3f2','#d9f0ff'];
+    for(let i=0;i<14;i++){
+      const s=document.createElement('span');
+      const sz=(Math.random()*40+20);
+      s.style.width=sz+'px'; s.style.height=sz+'px';
+      s.style.left=(Math.random()*100)+'vw';
+      s.style.bottom=(-40)+'px';
+      s.style.background=cols[i%cols.length];
+      s.style.animationDuration=(Math.random()*6+6)+'s';
+      s.style.animationDelay=(Math.random()*4)+'s';
+      $('#bg').appendChild(s);
+    }
+  })();
+
+  showMode('home');
+})();
+</script>
+</body>
+</html>
