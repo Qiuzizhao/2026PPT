@@ -1,123 +1,96 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>课堂网页 · 索引</title>
+<title>课堂网页 · 教学目录</title>
 <style>
-  *{box-sizing:border-box}
   body{
-    margin:0;min-height:100vh;padding:min(9vh,80px) 24px 64px;
-    font-family:"Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
-    color:#111;background:#fff;
-    display:flex;flex-direction:column;align-items:center;
-    -webkit-font-smoothing:antialiased;
+    margin:0;padding:34px 20px 60px;
+    background:#f4f2ec;
+    color:#1a1a1a;
+    font-family:"Times New Roman",Times,"宋体",SimSun,serif;
+    font-size:15px;line-height:1.7;
   }
-  header{text-align:center;margin-bottom:52px}
-  h1{margin:0;font-size:clamp(24px,3.4vw,34px);font-weight:600;letter-spacing:.02em}
-  header p{margin:12px 0 0;color:#8b8b93;font-size:14px;letter-spacing:.08em}
-  main{width:100%;max-width:760px;display:flex;flex-direction:column;gap:44px}
-  .group h2{
-    margin:0 0 14px;font-size:12px;font-weight:600;color:#a0a0aa;
-    letter-spacing:.18em;text-transform:uppercase;
+  .page{width:100%;max-width:620px;margin:0 auto}
+
+  h1{
+    margin:0 0 4px;font-size:23px;font-weight:700;
+    color:#1c3d6e;letter-spacing:.06em;
   }
-  .list{display:grid;gap:10px}
+  .sub{margin:0 0 3px;font-size:13px;color:#6b6b5f;letter-spacing:.14em}
+  .rule{border:0;border-top:1px solid #b9b5a6;margin:14px 0 0}
+  .rule.thin{border-top:1px solid #ded9c9;margin-top:3px}
+
+  h2{
+    margin:30px 0 8px;font-size:15px;font-weight:700;
+    color:#1c3d6e;letter-spacing:.08em;
+  }
+
   a.item{
-    display:flex;align-items:center;gap:16px;
-    padding:16px 20px;border:1px solid #ececf1;border-radius:12px;
-    text-decoration:none;color:inherit;background:#fff;
-    transition:border-color .18s,box-shadow .18s,transform .18s;
+    display:flex;align-items:baseline;gap:6px;
+    padding:2px 0;color:#000080;text-decoration:underline;
   }
-  a.item:hover{
-    border-color:#cfd2da;box-shadow:0 6px 20px rgba(0,0,0,.06);
-    transform:translateY(-1px);
+  a.item:hover{color:#a00;text-decoration:underline}
+  a.item .t{white-space:nowrap}
+  a.item .lead{flex:1;border-bottom:1px dotted #b0aa96;transform:translateY(-4px);margin:0 10px 0 4px}
+  a.item .n{white-space:nowrap;font-size:12px;color:#7a7a6d}
+
+  .note{
+    margin:44px 0 0;padding-top:12px;border-top:1px solid #b9b5a6;
+    font-size:12px;color:#7a7a6d;line-height:1.9;
   }
-  a.item:active{transform:translateY(0)}
-  .icon{font-size:20px;line-height:1;width:26px;text-align:center;flex:none}
-  .text{flex:1;min-width:0}
-  .name{font-size:16px;font-weight:600}
-  .desc{margin-top:4px;font-size:13px;color:#8b8b93}
-  .arrow{flex:none;color:#c8c8d2;font-size:16px;transition:transform .18s,color .18s}
-  a.item:hover .arrow{color:#111;transform:translateX(3px)}
-  footer{margin-top:56px;font-size:12px;color:#c0c0c8;letter-spacing:.06em}
+  .note b{font-weight:400;color:#5d5d52}
 </style>
 </head>
 <body>
+<div class="page">
 
-<header>
-  <h1>课堂网页</h1>
-  <p>点击卡片直接进入</p>
-</header>
+  <h1>课堂网页 · 教学目录</h1>
+  <p class="sub">CLASSROOM WEB PAGES &nbsp;/&nbsp; 2026</p>
+  <hr class="rule"><hr class="rule thin">
 
-<main>
-  <section class="group">
-    <h2>键盘</h2>
-    <div class="list">
-      <a class="item" href="键盘练习营.html">
-        <span class="icon">⌨️</span>
-        <span class="text">
-          <span class="name">键盘练习营</span>
-          <span class="desc">认识键盘、指法练习</span>
-        </span>
-        <span class="arrow">→</span>
-      </a>
-    </div>
-  </section>
+  <h2>一、键盘</h2>
+  <a class="item" href="键盘练习营.html">
+    <span class="t">键盘练习营</span>
+    <span class="lead"></span>
+    <span class="n">认识键盘 · 指法练习</span>
+  </a>
 
-  <section class="group">
-    <h2>鼠标</h2>
-    <div class="list">
-      <a class="item" href="鼠标练习营.html">
-        <span class="icon">🖱️</span>
-        <span class="text">
-          <span class="name">鼠标练习营</span>
-          <span class="desc">单击、双击、拖拽、滚轮</span>
-        </span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="item" href="鼠标3D探索馆.html">
-        <span class="icon">🧊</span>
-        <span class="text">
-          <span class="name">鼠标 3D 探索馆</span>
-          <span class="desc">在三维场景里自由探索</span>
-        </span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="item" href="鼠标反应力实验室.html">
-        <span class="icon">⚡</span>
-        <span class="text">
-          <span class="name">鼠标反应力实验室</span>
-          <span class="desc">测一测你的反应速度</span>
-        </span>
-        <span class="arrow">→</span>
-      </a>
-    </div>
-  </section>
+  <h2>二、鼠标</h2>
+  <a class="item" href="鼠标练习营.html">
+    <span class="t">鼠标练习营</span>
+    <span class="lead"></span>
+    <span class="n">单击 · 双击 · 拖拽 · 滚轮</span>
+  </a>
+  <a class="item" href="鼠标3D探索馆.html">
+    <span class="t">鼠标 3D 探索馆</span>
+    <span class="lead"></span>
+    <span class="n">三维场景自由探索</span>
+  </a>
+  <a class="item" href="鼠标反应力实验室.html">
+    <span class="t">鼠标反应力实验室</span>
+    <span class="lead"></span>
+    <span class="n">反应速度测试</span>
+  </a>
 
-  <section class="group">
-    <h2>数据</h2>
-    <div class="list">
-      <a class="item" href="数据自画像-猜猜我是谁.html">
-        <span class="icon">🙋</span>
-        <span class="text">
-          <span class="name">数据自画像 · 猜猜我是谁</span>
-          <span class="desc">填写信息，生成自己的数据画像</span>
-        </span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="item" href="数据字画像-教师端看板.html">
-        <span class="icon">📊</span>
-        <span class="text">
-          <span class="name">教师端 · 数据总览</span>
-          <span class="desc">查看学生提交的画像数据</span>
-        </span>
-        <span class="arrow">→</span>
-      </a>
-    </div>
-  </section>
-</main>
+  <h2>三、数据</h2>
+  <a class="item" href="数据自画像-猜猜我是谁.html">
+    <span class="t">数据自画像 · 猜猜我是谁</span>
+    <span class="lead"></span>
+    <span class="n">学生填写</span>
+  </a>
+  <a class="item" href="数据字画像-教师端看板.html">
+    <span class="t">教师端 · 数据总览</span>
+    <span class="lead"></span>
+    <span class="n">查看提交数据</span>
+  </a>
 
-<footer>2026 课堂网页</footer>
+  <p class="note">
+    共收录课件 6 份，点击标题即可进入。<br>
+    <b>最后更新：</b>2026 年 9 月 11 日 &nbsp;|&nbsp; <b>建议分辨率：</b>1024 × 768 以上
+  </p>
 
+</div>
 </body>
 </html>
