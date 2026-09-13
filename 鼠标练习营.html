@@ -175,6 +175,76 @@
   .btn.primary{background:var(--green);color:#fff}
   .btn.ghost{background:#eef2ff;color:var(--ink)}
 
+  /* ===== Grand finale (all levels cleared) ===== */
+  body.locked{overflow:hidden}
+  .finale{
+    position:fixed;inset:0;z-index:30000;display:none;overflow:hidden;
+    align-items:center;justify-content:center;padding:16px;
+    background:radial-gradient(circle at 50% 36%,#4b3a8c 0%,#2c2356 48%,#16122f 100%);
+  }
+  .finale.show{display:flex}
+  .finale-fx{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+  .finale-card{
+    position:relative;z-index:3;text-align:center;color:#fff;max-width:780px;
+    opacity:0;transform:translateY(30px) scale(.82);
+  }
+  .finale.card-in .finale-card{animation:card-in .9s cubic-bezier(.18,1.5,.45,1) forwards}
+  @keyframes card-in{
+    0%{opacity:0;transform:translateY(34px) scale(.8)}
+    60%{opacity:1;transform:translateY(-8px) scale(1.04)}
+    100%{opacity:1;transform:none}
+  }
+  .trophy-wrap{
+    position:relative;display:inline-flex;align-items:center;justify-content:center;
+    width:min(250px,54vw);height:min(250px,54vw);
+  }
+  .trophy-wrap::before{
+    content:"";position:absolute;inset:4%;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,210,63,.45),rgba(255,210,63,0) 68%);
+    animation:glowpulse 2.4s ease-in-out infinite;
+  }
+  .trophy-rays{
+    position:absolute;inset:-20%;border-radius:50%;opacity:.75;
+    background:conic-gradient(from 0deg,rgba(255,224,120,.75) 0 5deg,transparent 5deg 22deg);
+    -webkit-mask:radial-gradient(circle,#000 30%,transparent 72%);
+    mask:radial-gradient(circle,#000 30%,transparent 72%);
+    animation:spin 18s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes glowpulse{0%,100%{opacity:.6;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}
+  .big-trophy{
+    position:relative;font-size:min(178px,38vw);line-height:1;
+    filter:drop-shadow(0 14px 26px rgba(255,178,40,.6));
+    animation:bob 2.6s ease-in-out infinite;
+  }
+  .finale-title{
+    margin:6px 0 10px;font-size:clamp(30px,8vw,58px);font-weight:900;letter-spacing:3px;
+    background:linear-gradient(180deg,#fffbe4,#ffd23f 46%,#ff9f45);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 4px 0 rgba(0,0,0,.28));
+  }
+  .finale-sub{margin:0 0 16px;font-size:clamp(15px,3.2vw,21px);font-weight:700;color:#e4dcff}
+  .finale-chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:16px}
+  .finale-chips .chip{
+    display:flex;align-items:center;gap:7px;
+    background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.3);
+    border-radius:999px;padding:7px 15px;font-weight:800;
+    font-size:clamp(13px,2.4vw,16px);backdrop-filter:blur(2px);
+  }
+  .finale-chips .chip i{font-style:normal;font-size:1.2em}
+  .finale-chips .chip b{color:#ffd23f}
+  .finale-stars{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.16);border:2px solid rgba(255,210,63,.6);
+    border-radius:999px;padding:8px 20px;font-weight:900;
+    font-size:clamp(15px,3vw,20px);color:#fff6cf;
+  }
+  @media(max-height:620px){
+    .trophy-wrap{width:min(180px,42vw);height:min(180px,42vw)}
+    .big-trophy{font-size:min(126px,30vw)}
+    .finale-sub{margin-bottom:10px}
+  }
+
 
 </style>
 </head>
@@ -215,6 +285,20 @@
     <div class="actions">
       <button class="btn primary" id="mOk">确定</button>
     </div>
+  </div>
+</div>
+
+<div class="finale" id="finale">
+  <canvas class="finale-fx" id="fxCanvas"></canvas>
+  <div class="finale-card">
+    <div class="trophy-wrap">
+      <div class="trophy-rays"></div>
+      <div class="big-trophy">🏆</div>
+    </div>
+    <h2 class="finale-title">全部关卡已通关</h2>
+    <p class="finale-sub">鼠标的五个本领你全学会啦，真是电脑小达人！</p>
+    <div class="finale-chips" id="finaleChips"></div>
+    <div class="finale-stars"><span>⭐</span><span id="finaleStarTxt">满星通关</span></div>
   </div>
 </div>
 
@@ -347,7 +431,7 @@
         t.classList.add('burst');
         setTimeout(()=>t.remove(),460); got++;
         setStars(got,TOTAL); recordStars('left',got);
-        if(got>=TOTAL){ confetti(); showModal('🎉','好厉害！','你会用左键啦！<br>点按钮、点链接都要靠它。','⭐'.repeat(TOTAL)); markDone('left'); }
+        if(got>=TOTAL){ celebrate('left','🎉','好厉害！','你会用左键啦！<br>点按钮、点链接都要靠它。','⭐'.repeat(TOTAL)); }
         else setTimeout(()=>{ if(tok===modeToken) next(); },320);
       });
     }
@@ -370,7 +454,7 @@
         e.preventDefault(); e.stopPropagation();
         t.classList.add('burst'); setTimeout(()=>t.remove(),460); got++;
         setStars(got,TOTAL); recordStars('right',got);
-        if(got>=TOTAL){ confetti(); showModal('🎉','真棒！','你会用右键啦！<br>右键常常会弹出小菜单。','⭐'.repeat(TOTAL)); markDone('right'); }
+        if(got>=TOTAL){ celebrate('right','🎉','真棒！','你会用右键啦！<br>右键常常会弹出小菜单。','⭐'.repeat(TOTAL)); }
         else setTimeout(()=>{ if(tok===modeToken) next(); },320);
       });
       addListen(t,'click',(e)=>{e.stopPropagation(); toast('这是左键～ 试试<b>右键</b>！','#fff');});
@@ -391,7 +475,7 @@
         e.stopPropagation();
         t.classList.add('burst'); setTimeout(()=>t.remove(),460); got++;
         setStars(got,TOTAL); recordStars('double',got);
-        if(got>=TOTAL){ confetti(); showModal('🎉','太快啦！','双击可以打开东西，你学会啦！','⭐'.repeat(TOTAL)); markDone('double'); }
+        if(got>=TOTAL){ celebrate('double','🎉','太快啦！','双击可以打开东西，你学会啦！','⭐'.repeat(TOTAL)); }
         else setTimeout(()=>{ if(tok===modeToken) next(); },320);
       });
       addListen(t,'click',()=>toast('再点一下！<b>快一点</b>😄','#fff'));
@@ -429,7 +513,7 @@
       draw();
       if(cur===goal){
         live=false; got++; setStars(got,TOTAL); recordStars('wheel',got);
-        if(got>=TOTAL){ confetti(); showModal('🎉','装满了！','你会用滚轮啦！<br>它能帮你上下看页面。','⭐'.repeat(TOTAL)); markDone('wheel'); }
+        if(got>=TOTAL){ celebrate('wheel','🎉','装满了！','你会用滚轮啦！<br>它能帮你上下看页面。','⭐'.repeat(TOTAL)); }
         else { toast('装满了！再来一关😄','#fff'); setTimeout(()=>{ if(tok===modeToken) newGoal(); },500); }
       }
     },{passive:false});
@@ -469,7 +553,7 @@
           ctmenu.style.display='none';
           if(it===req){
             got++; setStars(got,ROUNDS); recordStars('menu',got);
-            if(got>=ROUNDS){ confetti(); showModal('🎉','选对啦！','你会用右键菜单啦！<br>右键能做好多事。','⭐'.repeat(ROUNDS)); markDone('menu'); }
+            if(got>=ROUNDS){ celebrate('menu','🎉','选对啦！','你会用右键菜单啦！<br>右键能做好多事。','⭐'.repeat(ROUNDS)); }
             else { toast('选对啦！再来一题😄','#fff'); drawTask(); }
           } else { toast('不对哦，找「<b>'+req+'</b>」','#fff'); drawTask(); }
         };
@@ -500,15 +584,197 @@
     const m={home:'开始',left:'左键',right:'右键',double:'双击',wheel:'滚轮',menu:'选菜单'};
     return m[name]||name;
   }
+  /* ===== finale: every level cleared -> fireworks + big trophy, page frozen here ===== */
+  const LEVELS=[
+    ['left','左键','👆'],['right','右键','🖱️'],['double','双击','✌️'],
+    ['wheel','滚轮','🌀'],['menu','选菜单','📋']
+  ];
+  function allCleared(){ return LEVELS.every(l=>doneSet.has(l[0])); }
+  let finaleOn=false;
+  function finishLevel(name){
+    if(allCleared()) startFinale(); else showCompleted(name);
+  }
+  function celebrate(name,moji,title,text,starStr){
+    markDone(name);
+    if(allCleared()){                       // 最后一关：不弹小窗，直接进通关大奖
+      hideModal();
+      setTimeout(startFinale,420);
+      return;
+    }
+    confetti();
+    showModal(moji,title,text,starStr);
+  }
+  function bigConfetti(){
+    const colors=['#ff6fa5','#ffd23f','#44a3ff','#4ed47e','#a577ff','#43d2e8','#ff9f45','#fff7d6'];
+    for(let i=0;i<70;i++){
+      const c=document.createElement('div'); c.className='cf';
+      const sz=8+Math.random()*12;
+      c.style.left=(Math.random()*100)+'vw';
+      c.style.width=sz+'px'; c.style.height=(sz*1.4)+'px';
+      c.style.background=colors[Math.floor(Math.random()*colors.length)];
+      c.style.borderRadius=Math.random()<0.4?'50%':'3px';
+      c.style.animationDuration=(2.2+Math.random()*2)+'s';
+      c.style.animationDelay=(Math.random()*1.2)+'s';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),5000);
+    }
+  }
+  function startFireworks(){
+    const cv=$('#fxCanvas'), ctx=cv.getContext('2d');
+    let W=0,H=0,dpr=1,S=1;
+    function resize(){
+      dpr=Math.min(2,window.devicePixelRatio||1);
+      W=window.innerWidth; H=window.innerHeight;
+      S=Math.max(0.62,Math.min(1.5,H/900));
+      cv.width=Math.max(1,Math.round(W*dpr)); cv.height=Math.max(1,Math.round(H*dpr));
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      ctx.lineCap='round';
+    }
+    resize();
+    window.addEventListener('resize',resize);
+    const COLORS=['#ff6fa5','#ffd23f','#44a3ff','#4ed47e','#a577ff','#43d2e8','#ff9f45','#fff7d6'];
+    const pick=()=>COLORS[Math.floor(Math.random()*COLORS.length)];
+    const rockets=[], sparks=[], confs=[];
+    function launch(x){
+      rockets.push({
+        x:(x==null? W*(0.12+Math.random()*0.76) : Math.max(24,Math.min(W-24,x))),
+        y:H+14, vy:-(H*0.0105+Math.random()*H*0.0042),
+        ty:H*(0.10+Math.random()*0.34), col:pick(), trail:[]
+      });
+    }
+    function explode(x,y,col){
+      const n=62+Math.floor(Math.random()*40);
+      const spread=0.85+Math.random()*0.3;
+      for(let i=0;i<n;i++){
+        const a=(Math.PI*2*i)/n+Math.random()*0.12;
+        const sp=(1.5+Math.random()*4.2)*S;
+        sparks.push({
+          x:x,y:y,vx:Math.cos(a)*sp*spread,vy:Math.sin(a)*sp*spread,
+          life:1, decay:0.0055+Math.random()*0.011,
+          col:(Math.random()<0.7? col : pick()), r:1.5+Math.random()*2.1
+        });
+      }
+      sparks.push({x:x,y:y,vx:0,vy:0,life:1,decay:0.06,col:col,r:10*S,flash:true});
+    }
+    function rainConfetti(n){
+      for(let i=0;i<n;i++){
+        confs.push({
+          x:Math.random()*W, y:-Math.random()*H*0.9,
+          vx:(Math.random()-.5)*1.6, vy:0.8+Math.random()*2.2,
+          w:6+Math.random()*8, h:9+Math.random()*10,
+          rot:Math.random()*6.283, vr:(Math.random()-.5)*0.4,
+          col:pick(), seed:Math.random()*100
+        });
+      }
+    }
+    rainConfetti(150);
+    let start=0, last=0, nextLaunch=0;
+    function frame(now){
+      if(!start){ start=now; last=now; }
+      const d=Math.min(2.6,(now-last)/16.667); last=now;
+      const el=now-start;
+      /* crisp redraw each frame; trails come from the particles themselves */
+      ctx.clearRect(0,0,W,H);
+      ctx.globalCompositeOperation='lighter';
+      ctx.lineCap='round';
+      /* launch schedule: busy burst first, then an ambient show */
+      if(el>nextLaunch){
+        launch();
+        if(el<2600){ launch(); if(Math.random()<0.5) launch(); }
+        nextLaunch=el+(el<4000? 210+Math.random()*170 : 850+Math.random()*950);
+      }
+      for(let i=rockets.length-1;i>=0;i--){
+        const r=rockets[i];
+        r.trail.push({x:r.x,y:r.y}); if(r.trail.length>9) r.trail.shift();
+        r.y+=r.vy*d; r.vy+=0.05*d*S;
+        for(let k=0;k<r.trail.length;k++){
+          const q=r.trail[k], a=(k+1)/r.trail.length;
+          ctx.globalAlpha=a*0.85; ctx.fillStyle=r.col;
+          ctx.beginPath(); ctx.arc(q.x,q.y,1.7*a+0.5,0,6.283); ctx.fill();
+        }
+        ctx.globalAlpha=1; ctx.fillStyle='#fff';
+        ctx.beginPath(); ctx.arc(r.x,r.y,2.6,0,6.283); ctx.fill();
+        if(r.y<=r.ty||r.vy>=0){ explode(r.x,r.y,r.col); rockets.splice(i,1); }
+      }
+      for(let i=sparks.length-1;i>=0;i--){
+        const p=sparks[i];
+        if(p.flash){
+          p.life-=p.decay*d;
+          if(p.life<=0){ sparks.splice(i,1); continue; }
+          ctx.globalAlpha=p.life*0.38; ctx.fillStyle=p.col;
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.r*(1.25-p.life),0,6.283); ctx.fill();
+          continue;
+        }
+        p.px=p.x; p.py=p.y;
+        p.x+=p.vx*d; p.y+=p.vy*d;
+        p.vy+=0.035*d*S;
+        p.vx*=Math.pow(0.986,d); p.vy*=Math.pow(0.986,d);
+        p.life-=p.decay*d*1.6;
+        if(p.life<=0){ sparks.splice(i,1); continue; }
+        const rr=p.r*(0.35+p.life*0.95);
+        ctx.globalAlpha=Math.min(1,p.life)*0.9;
+        ctx.strokeStyle=p.col; ctx.lineWidth=rr*1.7;
+        ctx.beginPath(); ctx.moveTo(p.px,p.py); ctx.lineTo(p.x,p.y); ctx.stroke();
+        ctx.globalAlpha=Math.min(1,p.life);
+        ctx.fillStyle='#fff';
+        ctx.beginPath(); ctx.arc(p.x,p.y,rr*0.55,0,6.283); ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      ctx.globalCompositeOperation='source-over';
+      for(let i=confs.length-1;i>=0;i--){
+        const c=confs[i];
+        c.x+=c.vx*d; c.y+=c.vy*d;
+        c.vy=Math.min(c.vy+0.03*d*S,3.4*S);
+        c.vx+=Math.sin((c.y+c.seed)/70)*0.02*d;
+        c.rot+=c.vr*d;
+        if(c.y>H+40){ confs.splice(i,1); continue; }
+        ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.rot);
+        ctx.globalAlpha=0.95; ctx.fillStyle=c.col;
+        ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+        ctx.restore();
+      }
+      ctx.globalAlpha=1;
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+  function startFinale(){
+    if(finaleOn) return;
+    finaleOn=true;
+    const box=$('#finale');
+    $('#finaleChips').innerHTML=LEVELS.map(l=>'<span class="chip"><i>'+l[2]+'</i>'+l[1]+'<b>✓</b></span>').join('');
+    const total=LEVELS.reduce((a,l)=>a+Math.max(starBest[l[0]]||0, doneSet.has(l[0])?(TOTALS[l[0]]||0):0),0);
+    $('#finaleStarTxt').textContent='满星 '+total+' / 50';
+    document.documentElement.style.overflow='hidden';
+    document.body.classList.add('locked');
+    document.querySelectorAll('#nav button').forEach(b=>b.disabled=true);
+    ctmenu.style.display='none'; hideModal();
+    box.classList.add('show');
+    bigConfetti();                              /* 撒花 */
+    startFireworks();                           /* 烟花 */
+    setTimeout(()=>box.classList.add('card-in'),1500);   /* 大奖杯 */
+    setTimeout(()=>bigConfetti(),2700);
+    /* 锁定：画面停在这里，不接受任何滚动/操作 */
+    const block=e=>{e.preventDefault();e.stopPropagation();};
+    const stopKeys=[' ','Spacebar','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown','Home','End'];
+    document.addEventListener('wheel',block,{passive:false,capture:true});
+    document.addEventListener('touchmove',block,{passive:false,capture:true});
+    document.addEventListener('contextmenu',block,{capture:true});
+    document.addEventListener('dragstart',block,{capture:true});
+    document.addEventListener('selectstart',block,{capture:true});
+    document.addEventListener('keydown',e=>{ if(stopKeys.indexOf(e.key)>=0) block(e); },true);
+    document.addEventListener('click',e=>{ if(!box.contains(e.target)) block(e); },true);
+  }
   function showMode(name){
     currentMode=name;
     modeToken++; cleanup(); ctmenu.style.display='none'; hideModal();
     document.querySelectorAll('#nav button').forEach(b=>b.style.outline = b.dataset.mode===name ? '3px solid #fff' : 'none');
+    if(allCleared()){ showCompleted(name); return; }       // everything cleared: hold on the award screen
     if(doneSet.has(name)){ showCompleted(name); return; }   // completed: hold, no replay
     MODES[name]();
   }
   document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>showMode(b.dataset.mode)));
-  $('#mOk').onclick=()=>{ hideModal(); showCompleted(currentMode); };   // OK -> show finished state
+  $('#mOk').onclick=()=>{ hideModal(); finishLevel(currentMode); };   // OK -> finished level or grand finale
 
   /* bubbles */
   (function(){
