@@ -249,6 +249,23 @@
 
 
 </style>
+<script>
+/* ===== 防误退兜底 =====
+   Edge 的鼠标手势（右键按住向左拖动）和误按后退键都会触发浏览器后退，
+   直接把学生从练习页带走。这里压两层 history 哨兵：任何后退/前进都只会
+   落回本页，popstate 一响立刻再压一层，页面始终留在原地。
+   本页不使用 hash / history 导航，哨兵不影响页内任何功能（含右键练习）。 */
+(function () {
+  if (location.protocol === 'file:') return;      /* file:// 下浏览器禁止 pushState */
+  function guard() {
+    try { history.pushState({ mtSentinel: 1 }, '', location.href); } catch (e) {}
+  }
+  try {
+    guard(); guard();
+    window.addEventListener('popstate', guard);
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
 <div class="bg-bubbles" id="bg"></div>

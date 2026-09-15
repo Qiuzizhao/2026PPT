@@ -75,6 +75,23 @@
   .modal .big-meta{margin-top:16px;font-size:13px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:10px}
   @keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
 </style>
+<script>
+/* ===== 防误退兜底 =====
+   Edge 的鼠标手势（右键按住向左拖动）和误按后退键都会触发浏览器后退，
+   把看板带走、自动更新也会中断。这里压两层 history 哨兵：任何后退/前进
+   都只会落回本页，popstate 一响立刻再压一层。
+   本页不使用 hash / history 导航，哨兵不影响筛选和弹窗。 */
+(function () {
+  if (location.protocol === 'file:') return;      /* file:// 下浏览器禁止 pushState */
+  function guard() {
+    try { history.pushState({ mtSentinel: 1 }, '', location.href); } catch (e) {}
+  }
+  try {
+    guard(); guard();
+    window.addEventListener('popstate', guard);
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
 <div class="wrap">
