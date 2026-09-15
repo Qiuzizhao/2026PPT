@@ -834,7 +834,7 @@
   function gameAim(s){
     const DUR = 30;
     let hits = 0, miss = 0, combo = 0, bestCombo = 0, escape = 0;
-    let left = DUR, running = false, startAt = 0, target = null;
+    let left = DUR, running = false, startAt = 0, target = null, spawnQueued = false;
     drawHud();
 
     function drawHud(){
@@ -846,8 +846,13 @@
         { k:'剩余', v: left.toFixed(1) + ' s', tone: left<=5?'bad':'' }
       ]);
     }
+    function queueSpawn(delay){
+      if(spawnQueued) return;
+      spawnQueued = true;
+      s.timeout(()=>{ spawnQueued = false; spawn(); }, delay);
+    }
     function spawn(){
-      if(s.dead || !running) return;
+      if(s.dead || !running || target) return;
       const rect = s.stage.getBoundingClientRect();
       const r = Math.max(22, 38 - hits*0.6);
       const life = Math.max(700, 1600 - hits*35);
@@ -865,6 +870,7 @@
         t.el.classList.add('flee');
         s.timeout(()=>t.el.remove(), 220);
         escape++; combo = 0; drawHud();
+        queueSpawn(60);
       }, life);
       target = t;
     }
@@ -877,7 +883,7 @@
       popText(s.stage, '+1', t.x, t.y);
       sfx.pop();
       drawHud();
-      s.timeout(spawn, 50);
+      queueSpawn(50);
     }
     s.stage.addEventListener('pointerdown', e=>{
       if(!running) return;
@@ -895,6 +901,7 @@
         s.interval(()=>{
           left = Math.max(0, DUR - (performance.now()-startAt)/1000);
           drawHud();
+          if(!target) queueSpawn(0);
           if(left <= 0 && running){
             running = false;
             if(target){ s.clear(target.timer); target.el.remove(); target = null; }
