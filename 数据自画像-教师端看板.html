@@ -76,12 +76,31 @@
   @keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
 </style>
 <script>
-/* ===== 防误退兜底 =====
-   Edge 的鼠标手势（右键按住向左拖动）和误按后退键都会触发浏览器后退，
-   把看板带走、自动更新也会中断。这里压两层 history 哨兵：任何后退/前进
-   都只会落回本页，popstate 一响立刻再压一层。
-   本页不使用 hash / history 导航，哨兵不影响筛选和弹窗。 */
+/* ===== 防误触兜底 =====
+   1) 右键菜单：学生鼠标不熟练，乱按时很容易弹出系统右键菜单挡住画面。
+      这里全局取消默认菜单，但只调 preventDefault、绝不 stopPropagation。
+      输入框除外——本页有时间筛选等控件，保留原生菜单。
+   2) 拖拽：防止图片/文字被拖出页面。
+   3) 防误退：Edge 的鼠标手势（右键按住向左拖动）和误按后退键都会触发浏览器
+      后退，把看板带走、自动更新中断。压两层 history 哨兵，任何后退/前进
+      都只会落回本页，popstate 一响立刻再压一层。
+   本页不使用 hash / history 导航，以上都不影响筛选和弹窗。 */
 (function () {
+  /* 输入框里保留原生右键菜单，方便右键粘贴 */
+  function keepNative(el) {
+    return !!(el && el.closest &&
+      el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'));
+  }
+  document.addEventListener('contextmenu', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();                    /* 只取消默认菜单，不阻断页内逻辑 */
+  }, true);
+  document.addEventListener('dragstart', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();
+  }, true);
+
+  /* 防误退 */
   if (location.protocol === 'file:') return;      /* file:// 下浏览器禁止 pushState */
   function guard() {
     try { history.pushState({ mtSentinel: 1 }, '', location.href); } catch (e) {}
