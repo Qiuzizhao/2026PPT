@@ -270,16 +270,21 @@ flex gap 没法用 `CSS.supports('gap')` 判断——`gap` 从 Chrome 66 起就�
 
 ### 改完必须这样验证
 
-起本地服务器（`python -m http.server 8765`），两种页面各跑一遍：
+仓库自带自检脚本，见 `tools/qa/README.md`。起本地服务器（`python -m http.server 8765`）
+后两种页面各跑一遍：
 
-1. **正常页面**：七个页面都能载入、控制台零报错、无横向溢出；3D 页面
-   `window.__threeSource` 应该是 `importmap`、`window.__mouseReady` 为 true。
-2. **老内核模拟**：把页面复制一份，删掉 `clamp()/min()/max()`、`aspect-ratio`、
-   `backdrop-filter` 这些声明，并强制给 `<html>` 挂上 `no-flexgap`，再用无头
-   浏览器截图，跟正常页面对比应该只有细微差别（此时 3D 页面的
-   `window.__threeSource` 应该是 `jsdelivr`，说明回退链路通）。
-3. **防误触回归**：鼠标练习营右键关卡照常计分、选菜单关卡照常弹 6 项菜单、
+1. **正常页面**：`node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out` —— 七个页面
+   都能载入、控制台零报错、无横向溢出；3D 页面 `window.__threeSource` 应该是
+   `importmap`、`window.__mouseReady` 为 true。
+2. **老内核模拟**：`python tools/qa/sim-old-edge.py` 生成 `_oldsim/`，
+   再对 `http://127.0.0.1:8765/_oldsim/` 跑同一个脚本。此时 3D 页面的
+   `window.__threeSource` 应该是 `jsdelivr`，说明回退链路通。
+3. **视觉巡检**：`node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots`
+   把每个游戏/分镜截一张，人工核对视觉效果（关卡内布局、字号、弹层）。
+4. **防误触回归**：鼠标练习营右键关卡照常计分、选菜单关卡照常弹 6 项菜单、
    数据自画像输入框右键不被拦截、其余页面 `history.back()` 后留在原地。
+
+`_oldsim/`、`.qa-out/`、`.qa-shots/` 都是临时产物，跑完删掉，不要提交。
 
 ## 部署
 
