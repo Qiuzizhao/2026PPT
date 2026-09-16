@@ -217,6 +217,70 @@ HUD 显示"已完成 1 / 4"）。
 手势在浏览器层处理，网页 JS 拦不住手势本身。页面里这套只是兜底，根治要在学生机上
 关闭 Edge 鼠标手势（策略 `MouseGestureEnabled=0`）。
 
+## 老浏览器兼容层（Edge 79+ / 老内核）
+
+### 要解决的问题
+
+学生机上的 Edge 有的是 2020 年前后的老版本，还有的停在 Windows 10 自带的
+EdgeHTML 内核。这些浏览器认不出下面这些写法，而且是**整条声明作废**，不是"降级显示"，
+所以同一份代码在新电脑上正常、在老电脑上会整页塌掉：
+
+| 写法 | 需要 | 老内核的表现 |
+| --- | --- | --- |
+| `inset:0` | Edge 87+ | 元素没有四边定位，弹窗/舞台塌成内容大小 |
+| `clamp()` / `min()` / `max()` | Edge 79+ | 整条声明被丢弃，字号内边距回落到默认值 |
+| flex 容器的 `gap` | Edge 84+ | 间距全部消失，按钮挤成一团 |
+| `aspect-ratio` | Edge 88+ | 元素高度变 0，直接看不见 |
+| `import map` + 模块顶层 `await` | Edge 89+ | 3D 页面整段脚本不执行 |
+
+### 四条写法约定
+
+1. **不要用 `inset`。** 一律写 `top/right/bottom/left` 四边。
+2. **`clamp()` / `min()` / `max()` 必须在前面补一条静态回退声明**，例如
+   `font-size:26px;font-size:clamp(18px,4.2vw,26px);`。回退值取上限（教室机器
+   都是桌面宽度，取上限最接近实际效果）。`width/height` 上的 `min(A,B)` 写成
+   `width:A;max-width:B;`，比静态值更准。
+3. **flex 容器的 `gap` 要配一条 `html.no-flexgap` 回退规则**，跟着原规则写在后面：
+   `html.no-flexgap .toolbar > *:not(:last-child){margin-right:16px}`。
+   用 `margin-right`（而不是 `margin-left`）是因为页内多处用 `margin-left:auto`
+   做右对齐，加 `margin-left` 会把它盖掉、标题栏会错位。
+   **grid 容器的 `gap` 不要动**，老内核本来就支持 grid gap。
+4. **不要用 `aspect-ratio`。** 用 `height:0;padding-bottom:百分比` 代替，
+   百分比按"宽度 × 比例"算（例：`width:52%` + `1/1.05` → `padding-bottom:54.6%`）。
+
+### 能力探测脚本（每个页面 `<head>` 里都要有）
+
+flex gap 没法用 `CSS.supports('gap')` 判断——`gap` 从 Chrome 66 起就是 grid-gap 的
+别名，老版本会误报"支持"。所以用真实布局量一次宽度，量出来没有间距才给
+`<html>` 挂 `no-flexgap`。脚本放在 `<head>` 末尾（`</head>` 之前），只加类名，
+不碰任何页面事件，**不是**防误触那套的一部分。
+
+### 3D 探索馆的引擎加载
+
+那个页面原来是 `<script type="module">` + `import map`，两个都要 Edge 89+。
+现在改成普通脚本 + 动态 `import()`，按顺序试三个来源，第一个成功就用它：
+
+1. `importmap`（裸模块名 `three`）—— 新版浏览器仍走原来的 unpkg 线路；
+2. jsDelivr 的 `+esm` 构建 —— 它会把 addons 里的 `three` 重写成同一个 CDN 地址，
+   不会出现两份 three 实例；
+3. esm.sh 的 `?target=es2019` 构建 —— 兜底。
+
+三个都连不上才显示"3D 场景没能启动"。`window.__threeSource` 会记录实际用的是哪一个，
+排查时先看这个值。**不要**把 3D 页面改回模块 + import map。
+
+### 改完必须这样验证
+
+起本地服务器（`python -m http.server 8765`），两种页面各跑一遍：
+
+1. **正常页面**：七个页面都能载入、控制台零报错、无横向溢出；3D 页面
+   `window.__threeSource` 应该是 `importmap`、`window.__mouseReady` 为 true。
+2. **老内核模拟**：把页面复制一份，删掉 `clamp()/min()/max()`、`aspect-ratio`、
+   `backdrop-filter` 这些声明，并强制给 `<html>` 挂上 `no-flexgap`，再用无头
+   浏览器截图，跟正常页面对比应该只有细微差别（此时 3D 页面的
+   `window.__threeSource` 应该是 `jsdelivr`，说明回退链路通）。
+3. **防误触回归**：鼠标练习营右键关卡照常计分、选菜单关卡照常弹 6 项菜单、
+   数据自画像输入框右键不被拦截、其余页面 `history.back()` 后留在原地。
+
 ## 部署
 
 - 服务器连接信息见全局 AGENTS.md。

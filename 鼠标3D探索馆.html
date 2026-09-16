@@ -29,7 +29,7 @@
 
   /* ---------- 3D 画布 ---------- */
   #scene{
-    position:fixed; inset:0; width:100%; height:100%;
+    position:fixed; top:0;right:0;bottom:0;left:0; width:100%; height:100%;
     z-index:1; display:block; outline:none;
   }
 
@@ -37,13 +37,15 @@
   .topbar{
     position:fixed; top:0; left:0; right:0; z-index:6;
     display:flex; align-items:center; justify-content:space-between; gap:10px;
-    padding:10px clamp(12px,3vw,26px); pointer-events:none;
+    padding:10px 26px;padding:10px clamp(12px,3vw,26px); pointer-events:none;
   }
+  html.no-flexgap .topbar > *:not(:last-child){margin-right:10px}
   .logo{
-    display:flex; align-items:center; gap:8px; font-size:clamp(14px,1.6vw,17px); font-weight:800;
+    display:flex; align-items:center; gap:8px; font-size:17px;font-size:clamp(14px,1.6vw,17px); font-weight:800;
     background:rgba(255,255,255,.82); backdrop-filter:blur(8px);
     border:2px solid #fff; border-radius:999px; padding:7px 14px; box-shadow:var(--shadow-s);
   }
+  html.no-flexgap .logo > *:not(:last-child){margin-right:8px}
   .logo span{color:var(--muted); font-weight:700; font-size:.86em}
   .topbar .pill{
     background:rgba(255,255,255,.82); backdrop-filter:blur(8px); border:2px solid #fff;
@@ -61,30 +63,31 @@
   main{position:relative; z-index:2}
   .sec{
     min-height:100vh; display:flex; align-items:center;
-    padding:14vh clamp(14px,4vw,58px) 12vh;
+    padding:14vh 58px 12vh;padding:14vh clamp(14px,4vw,58px) 12vh;
   }
   .sec.left{justify-content:flex-start}
   .sec.right{justify-content:flex-end}
   .sec.center{justify-content:center}
   .panel{
-    width:min(500px,92vw);
+    width:500px;max-width:92vw;width:min(500px,92vw);
     background:rgba(255,255,255,.92);
     backdrop-filter:blur(10px);
     border:3px solid #fff; border-radius:26px;
     box-shadow:var(--shadow);
-    padding:clamp(18px,2.4vw,28px);
+    padding:28px;padding:clamp(18px,2.4vw,28px);
   }
-  .panel.narrow{width:min(430px,92vw)}
+  .panel.narrow{width:430px;max-width:92vw;width:min(430px,92vw)}
   .badge{
     display:inline-flex; align-items:center; gap:6px;
     background:linear-gradient(120deg,#eaf5ff,#f3eaff);
     color:#5a6ee0; border-radius:999px; padding:6px 14px;
     font-size:13px; font-weight:800; letter-spacing:.02em;
   }
+  html.no-flexgap .badge > *:not(:last-child){margin-right:6px}
   h1,h2{margin:14px 0 8px; line-height:1.2; font-weight:900}
-  h1{font-size:clamp(38px,6.4vw,62px); letter-spacing:.01em}
-  h2{font-size:clamp(24px,3.2vw,32px)}
-  .panel p{margin:10px 0; line-height:1.75; font-size:clamp(14px,1.35vw,16px); color:#3d3d5c}
+  h1{font-size:62px;font-size:clamp(38px,6.4vw,62px); letter-spacing:.01em}
+  h2{font-size:32px;font-size:clamp(24px,3.2vw,32px)}
+  .panel p{margin:10px 0; line-height:1.75; font-size:16px;font-size:clamp(14px,1.35vw,16px); color:#3d3d5c}
   .panel p.small{font-size:13px; color:var(--muted); line-height:1.7}
   .hl{
     background:linear-gradient(180deg,transparent 62%,#ffe08a 62%);
@@ -93,18 +96,20 @@
   b{color:var(--blue)}
   em{font-style:normal}
 
-  .lead{font-size:clamp(15px,1.6vw,18px); color:#4a4a6b}
+  .lead{font-size:18px;font-size:clamp(15px,1.6vw,18px); color:#4a4a6b}
   .hint{list-style:none; margin:16px 0 4px; padding:0; display:grid; gap:9px}
   .hint li{
     display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:#4a4a6b;
     background:#f6f9ff; border:2px solid #eaf2ff; border-radius:14px; padding:9px 13px;
   }
+  html.no-flexgap .hint li > *:not(:last-child){margin-right:8px}
   .scroll-cue{
     position:fixed; left:50%; bottom:16px; transform:translateX(-50%);
     z-index:5; font-size:12.5px; font-weight:800; color:#fff; text-shadow:0 2px 8px rgba(90,70,160,.45);
     display:flex; flex-direction:column; align-items:center; gap:3px;
     animation:bob 2s ease-in-out infinite; transition:opacity .4s ease; pointer-events:none;
   }
+  html.no-flexgap .scroll-cue > *:not(:last-child){margin-bottom:3px}
   @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,7px)}}
 
   .parts{list-style:none; margin:14px 0 6px; padding:0; display:grid; gap:8px}
@@ -112,6 +117,7 @@
     display:flex; align-items:center; gap:10px; font-size:14px; font-weight:700;
     background:#fbfcff; border:2px solid #eef2fa; border-radius:14px; padding:8px 12px;
   }
+  html.no-flexgap .parts li > *:not(:last-child){margin-right:10px}
   .parts i{
     flex:0 0 24px; height:24px; border-radius:50%; display:grid; place-items:center;
     background:var(--blue); color:#fff; font-size:13px; font-style:normal; font-weight:800;
@@ -189,7 +195,7 @@
   }
 
   /* ---------- 3D 标注点 ---------- */
-  #hotspots{position:fixed; inset:0; z-index:4; pointer-events:none}
+  #hotspots{position:fixed; top:0;right:0;bottom:0;left:0; z-index:4; pointer-events:none}
   .hs{
     position:absolute; pointer-events:auto; cursor:pointer;
     opacity:0; transition:opacity .3s ease; will-change:transform;
@@ -221,8 +227,8 @@
 
   /* ---------- 零件信息卡 ---------- */
   .card{
-    position:fixed; right:clamp(12px,3vw,28px); bottom:clamp(12px,3vw,26px); z-index:8;
-    width:min(340px,86vw);
+    position:fixed; right:28px;right:clamp(12px,3vw,28px); bottom:26px;bottom:clamp(12px,3vw,26px); z-index:8;
+    width:340px;max-width:86vw;width:min(340px,86vw);
     background:rgba(255,255,255,.96); backdrop-filter:blur(10px);
     border:3px solid #fff; border-radius:22px; box-shadow:0 16px 40px rgba(90,70,160,.28);
     padding:18px 20px 16px;
@@ -238,6 +244,7 @@
   .card h3{margin:8px 0 6px; font-size:21px}
   .card p{margin:0; font-size:13.6px; line-height:1.7; color:#3d3d5c}
   .card-meta{margin-top:11px; display:flex; flex-wrap:wrap; gap:6px}
+  html.no-flexgap .card-meta > *:not(:last-child){margin-right:6px}
   .card-meta span{
     background:#eef5ff; color:#5a6ee0; font-size:12px; font-weight:800;
     border-radius:999px; padding:4px 10px;
@@ -245,17 +252,19 @@
 
   /* ---------- 控制台 ---------- */
   .hud{
-    position:fixed; left:clamp(12px,3vw,28px); bottom:clamp(12px,3vw,26px); z-index:8;
-    width:min(330px,90vw);
+    position:fixed; left:28px;left:clamp(12px,3vw,28px); bottom:26px;bottom:clamp(12px,3vw,26px); z-index:8;
+    width:330px;max-width:90vw;width:min(330px,90vw);
     background:rgba(255,255,255,.9); backdrop-filter:blur(10px);
     border:3px solid #fff; border-radius:20px; box-shadow:var(--shadow);
     padding:11px 14px; display:grid; gap:9px;
   }
   .hud-row{display:flex; align-items:center; gap:9px}
+  html.no-flexgap .hud-row > *:not(:last-child){margin-right:9px}
   .hud-label{font-size:12.5px; font-weight:800; color:var(--muted); flex:0 0 auto}
   .hud-row input[type=range]{flex:1 1 auto; height:7px}
   .hud-row input[type=range]::-webkit-slider-thumb{width:19px;height:19px;border-width:3px}
   .swatches{display:flex; gap:7px}
+  html.no-flexgap .swatches > *:not(:last-child){margin-right:7px}
   .swatch{
     width:24px; height:24px; border-radius:50%; border:3px solid #fff; cursor:pointer;
     box-shadow:0 2px 6px rgba(90,70,160,.28); transition:transform .14s ease;
@@ -276,7 +285,7 @@
 
   /* ---------- 加载 / 错误 ---------- */
   #loader{
-    position:fixed; inset:0; z-index:20; display:grid; place-items:center; gap:14px;
+    position:fixed; top:0;right:0;bottom:0;left:0; z-index:20; display:grid; place-items:center; gap:14px;
     background:linear-gradient(165deg,#cdeeff,#dcd3ff 55%,#ffe0ea);
     transition:opacity .5s ease;
   }
@@ -295,7 +304,7 @@
   #loader p{margin:0; font-weight:800; color:#5a6ee0; font-size:15px}
   #loader.hide{opacity:0; pointer-events:none}
   #err{
-    position:fixed; inset:0; z-index:30; display:none; place-items:center; padding:24px;
+    position:fixed; top:0;right:0;bottom:0;left:0; z-index:30; display:none; place-items:center; padding:24px;
     background:rgba(255,255,255,.92); backdrop-filter:blur(6px); text-align:center;
   }
   #err.show{display:grid}
@@ -307,10 +316,11 @@
   @media (max-width:880px){
     .sec{padding:16vh 14px 30vh; align-items:flex-start}
     .sec.right,.sec.left{justify-content:center}
-    .panel{width:min(520px,94vw)}
+    .panel{width:520px;max-width:94vw;width:min(520px,94vw)}
     .topbar .pill{display:none}
     .hud{width:calc(100vw - 24px); left:12px; right:12px; bottom:10px; gap:7px; padding:9px 12px}
     .hud-row{gap:7px}
+  html.no-flexgap .hud-row > *:not(:last-child){margin-right:7px}
     .card{bottom:auto; top:64px; right:12px}
     #dots{display:none}
   }
@@ -328,6 +338,7 @@
     display:flex; align-items:center; gap:8px; border:none; background:transparent;
     cursor:pointer; font-family:inherit; padding:0;
   }
+  html.no-flexgap #dots button > *:not(:last-child){margin-right:8px}
   #dots .tp{
     font-size:12px; font-weight:800; color:#fff; background:rgba(90,70,160,.35);
     backdrop-filter:blur(6px); border-radius:999px; padding:4px 10px;
@@ -363,8 +374,8 @@
 
   /* ---- 文字 ---- */
   h1,h2{color:#0b1220}
-  h1{font-size:clamp(34px,5.4vw,52px); letter-spacing:-.03em; font-weight:800}
-  h2{font-size:clamp(22px,2.7vw,28px); letter-spacing:-.015em; font-weight:750}
+  h1{font-size:52px;font-size:clamp(34px,5.4vw,52px); letter-spacing:-.03em; font-weight:800}
+  h2{font-size:28px;font-size:clamp(22px,2.7vw,28px); letter-spacing:-.015em; font-weight:750}
   .hl{background:none; color:#2563eb; padding:0; border-radius:0}
   .kicker{display:none}
   .panel p{color:#334155}
@@ -391,14 +402,14 @@
   /* ---- 卡片 ---- */
   .panel{
     position:relative; overflow:hidden;
-    width:min(470px,92vw);
+    width:470px;max-width:92vw;width:min(470px,92vw);
     background:rgba(255,255,255,.86);
     border:1px solid var(--line);
     border-radius:14px;
     box-shadow:0 8px 28px rgba(15,23,42,.06);
     backdrop-filter:blur(14px);
   }
-  .panel.narrow{width:min(420px,92vw)}
+  .panel.narrow{width:420px;max-width:92vw;width:min(420px,92vw)}
   .panel::before{display:none}
   main{counter-reset:chapter}
   .sec{counter-increment:chapter}
@@ -413,6 +424,7 @@
     background:none; border:none; border-radius:0; padding:0;
     color:#2563eb; font-size:12px; font-weight:700; letter-spacing:.14em;
   }
+  html.no-flexgap .badge > *:not(:last-child){margin-right:8px}
   .badge::before{content:""; width:18px; height:1px; background:currentColor; opacity:.45}
 
   /* ---- 列表 ---- */
@@ -557,6 +569,28 @@
   try {
     guard(); guard();
     window.addEventListener('popstate', guard);
+  } catch (e) {}
+})();
+</script>
+<script>
+/* ===== 兼容层 A：flex gap 能力探测 =====
+   老内核（Edge 84 以前、EdgeHTML）的 flex 布局不支持 gap，间距会全部塌掉。
+   这里用真实布局量一次宽度来判断，支持就用原样，不支持就给 <html> 挂上
+   no-flexgap，样式表里预置的 margin 规则接管间距。
+   不用 CSS.supports('gap') 判断：gap 在 Chrome 66 起就作为 grid-gap 的别名存在，
+   老版本会误报"支持"。 */
+(function () {
+  try {
+    var box = document.createElement('div');
+    box.style.cssText = 'position:absolute;top:-9999px;left:-9999px;display:flex;gap:10px;width:auto;height:1px';
+    var a = document.createElement('i');
+    var b = document.createElement('i');
+    a.style.cssText = b.style.cssText = 'display:block;width:10px;height:1px';
+    box.appendChild(a); box.appendChild(b);
+    document.documentElement.appendChild(box);
+    var w = box.getBoundingClientRect().width || box.scrollWidth;
+    document.documentElement.removeChild(box);
+    if (!(w >= 30)) document.documentElement.className += ' no-flexgap';
   } catch (e) {}
 })();
 </script>
@@ -734,16 +768,73 @@
 }
 </script>
 
-<script type="module">
+<script>
+/* ===== 兼容层 B：3D 引擎加载（不再依赖 import map）=====
+   原来这个页面是 <script type="module"> + import map（裸模块名 'three'），
+   两个都要新版浏览器：import map 需要 Edge 89+，模块顶层 await 也需要 Edge 89+。
+   老版 Edge 打开只会在 15 秒后弹"3D 场景没能启动"。
+   现在改成普通脚本 + 动态 import()（Edge 79 就支持），按顺序试三个来源：
+     1. importmap —— 新版浏览器仍走原来的 unpkg 线路，行为不变；
+     2. jsDelivr 的 +esm 构建 —— 它会把 addons 里的 'three' 重写成同一个 CDN 地址，
+        不会出现两份 three 实例；实测产物语法不超过 Chrome 79 的能力；
+     3. esm.sh 的 es2019 目标构建 —— 兜底。
+   三个都连不上才走页面下方那段"没能启动"的提示。 */
+(async function () {
+'use strict';
+
+var PROVIDERS = [
+  {
+    id: 'importmap',
+    three: function () { return import('three'); },
+    addon: function (p) { return import('three/addons/' + p); }
+  },
+  {
+    id: 'jsdelivr',
+    three: function () { return import('https://cdn.jsdelivr.net/npm/three@0.160.0/+esm'); },
+    addon: function (p) { return import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/' + p + '/+esm'); }
+  },
+  {
+    id: 'esm.sh',
+    three: function () { return import('https://esm.sh/three@0.160.0?target=es2019'); },
+    addon: function (p) { return import('https://esm.sh/three@0.160.0/examples/jsm/' + p + '?target=es2019'); }
+  }
+];
+
+var SRC = null, THREE = null, OrbitControls = null, RoomEnvironment = null, RoundedBoxGeometry = null;
+for (var pi = 0; pi < PROVIDERS.length; pi++) {
+  try {
+    var t3 = await PROVIDERS[pi].three();
+    var addons = await Promise.all([
+      PROVIDERS[pi].addon('controls/OrbitControls.js'),
+      PROVIDERS[pi].addon('environments/RoomEnvironment.js'),
+      PROVIDERS[pi].addon('geometries/RoundedBoxGeometry.js')
+    ]);
+    THREE = t3;
+    OrbitControls = addons[0].OrbitControls;
+    RoomEnvironment = addons[1].RoomEnvironment;
+    RoundedBoxGeometry = addons[2].RoundedBoxGeometry;
+    SRC = PROVIDERS[pi];
+    break;
+  } catch (err) {
+    SRC = null;
+  }
+}
+if (!SRC) {
+  var errMsgEl = document.getElementById('errMsg');
+  if (errMsgEl) errMsgEl.textContent = '3D 引擎加载失败：三个 CDN 都没连上，请检查网络后刷新。';
+  var errEl = document.getElementById('err');
+  if (errEl) errEl.classList.add('show');
+  var loadEl = document.getElementById('loader');
+  if (loadEl) loadEl.classList.add('hide');
+  return;
+}
+window.__threeSource = SRC.id;
+
 /* =========================================================================
    鼠标 3D 探索馆 · 单文件实现
    - 鼠标外形由数学曲面生成（不是外部模型文件）
    - 可拖拽旋转 / 拆解 / 点击零件 / 光流小动画
    ========================================================================= */
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const $ = (s) => document.querySelector(s);
 const clamp = THREE.MathUtils.clamp;
@@ -1716,10 +1807,10 @@ function roundRect(ctx, x, y, w, h, r) {
 let composer = null, bloomPass = null;
 try {
   const [{ EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
-    import('three/addons/postprocessing/EffectComposer.js'),
-    import('three/addons/postprocessing/RenderPass.js'),
-    import('three/addons/postprocessing/UnrealBloomPass.js'),
-    import('three/addons/postprocessing/OutputPass.js')
+    import(SRC.addon('postprocessing/EffectComposer.js')),
+    import(SRC.addon('postprocessing/RenderPass.js')),
+    import(SRC.addon('postprocessing/UnrealBloomPass.js')),
+    import(SRC.addon('postprocessing/OutputPass.js'))
   ]);
   composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
@@ -1889,6 +1980,8 @@ requestAnimationFrame(() => {
     window.__mouseReady = true;
   }, 320);
 });
+
+})();
 </script>
 
 </body>

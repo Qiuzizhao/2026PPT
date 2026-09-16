@@ -33,6 +33,7 @@
     display:flex;align-items:baseline;gap:6px;
     padding:2px 0;color:#000080;text-decoration:underline;
   }
+  html.no-flexgap a.item > *:not(:last-child){margin-right:6px}
   a.item:hover{color:#a00;text-decoration:underline}
   a.item .t{white-space:nowrap}
   a.item .lead{flex:1;border-bottom:1px dotted #b0aa96;transform:translateY(-4px);margin:0 10px 0 4px}
@@ -44,6 +45,28 @@
   }
   .note b{font-weight:400;color:#5d5d52}
 </style>
+<script>
+/* ===== 兼容层 A：flex gap 能力探测 =====
+   老内核（Edge 84 以前、EdgeHTML）的 flex 布局不支持 gap，间距会全部塌掉。
+   这里用真实布局量一次宽度来判断，支持就用原样，不支持就给 <html> 挂上
+   no-flexgap，样式表里预置的 margin 规则接管间距。
+   不用 CSS.supports('gap') 判断：gap 在 Chrome 66 起就作为 grid-gap 的别名存在，
+   老版本会误报"支持"。 */
+(function () {
+  try {
+    var box = document.createElement('div');
+    box.style.cssText = 'position:absolute;top:-9999px;left:-9999px;display:flex;gap:10px;width:auto;height:1px';
+    var a = document.createElement('i');
+    var b = document.createElement('i');
+    a.style.cssText = b.style.cssText = 'display:block;width:10px;height:1px';
+    box.appendChild(a); box.appendChild(b);
+    document.documentElement.appendChild(box);
+    var w = box.getBoundingClientRect().width || box.scrollWidth;
+    document.documentElement.removeChild(box);
+    if (!(w >= 30)) document.documentElement.className += ' no-flexgap';
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
 <div class="page">

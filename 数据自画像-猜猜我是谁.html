@@ -19,32 +19,32 @@
     font-family:"Comic Sans MS","Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
     color:var(--ink); min-height:100vh;
     background:linear-gradient(180deg,#eef3fb 0%,#f8fafd 220px,#f4f7fb);
-    background-attachment:fixed; padding:20px clamp(10px,3vw,24px) 50px;
+    background-attachment:fixed; padding:20px 24px 50px;padding:20px clamp(10px,3vw,24px) 50px;
   }
   .wrap{max-width:720px;margin:0 auto}
 
   /* 页头 */
   header{text-align:center;margin-bottom:24px}
   header h1{
-    margin:0;font-size:clamp(24px,5vw,32px);font-weight:800;color:var(--ink);
+    margin:0;font-size:32px;font-size:clamp(24px,5vw,32px);font-weight:800;color:var(--ink);
     letter-spacing:.5px;display:inline-block;position:relative;padding-bottom:10px;
   }
   header h1::after{
     content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);
     width:44px;height:4px;border-radius:2px;background:var(--blue);
   }
-  header p{margin:10px 0 0;color:var(--muted);font-size:clamp(14px,3vw,16px)}
+  header p{margin:10px 0 0;color:var(--muted);font-size:16px;font-size:clamp(14px,3vw,16px)}
 
   /* 主卡片 */
   section.card{
     background:var(--card);border:1px solid var(--line);border-radius:22px;
-    padding:clamp(20px,5vw,32px);box-shadow:0 8px 28px rgba(31,42,61,.08);transition:box-shadow .2s;
+    padding:32px;padding:clamp(20px,5vw,32px);box-shadow:0 8px 28px rgba(31,42,61,.08);transition:box-shadow .2s;
   }
 
   /* 分组 */
   .group{margin-bottom:26px}
   .group h2{
-    margin:0 0 14px;font-size:clamp(17px,4vw,20px);font-weight:800;color:var(--ink);
+    margin:0 0 14px;font-size:20px;font-size:clamp(17px,4vw,20px);font-weight:800;color:var(--ink);
     padding-left:12px;border-left:4px solid var(--blue);line-height:1.3;
   }
   .hint{color:var(--muted);font-size:13px;margin:-6px 0 16px}
@@ -55,9 +55,10 @@
     .grid{grid-template-columns:1fr}
   }
   .field{display:flex;flex-direction:column;gap:6px}
-  .field label{font-weight:700;font-size:clamp(14px,3vw,16px);line-height:1.4}
+  html.no-flexgap .field > *:not(:last-child){margin-bottom:6px}
+  .field label{font-weight:700;font-size:16px;font-size:clamp(14px,3vw,16px);line-height:1.4}
   input[type=text], input[type=number], textarea{
-    font-family:inherit;font-size:clamp(16px,3vw,18px);
+    font-family:inherit;font-size:18px;font-size:clamp(16px,3vw,18px);
     border:1px solid var(--line);border-radius:12px;padding:0 14px;
     color:var(--ink);background:#fbfcfe;width:100%;outline:none;height:48px;
     transition:border-color .15s,box-shadow .15s,background .15s;
@@ -71,9 +72,11 @@
   input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   input[type=number]{-moz-appearance:textfield;appearance:textfield}
   .stack{display:flex;flex-direction:column;gap:14px}
+  html.no-flexgap .stack > *:not(:last-child){margin-bottom:14px}
 
   /* 按钮 */
   .actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+  html.no-flexgap .actions > *:not(:last-child){margin-right:12px}
   button.btn{
     border:none;cursor:pointer;border-radius:12px;padding:13px 26px;
     font-family:inherit;font-size:16px;font-weight:800;transition:filter .15s,transform .1s,box-shadow .15s;
@@ -89,22 +92,23 @@
     filter:blur(5px);pointer-events:none;user-select:none;opacity:.4;
   }
   .seal-watermark{
-    position:absolute;inset:0;display:none;flex-direction:column;gap:6px;
+    position:absolute;top:0;right:0;bottom:0;left:0;display:none;flex-direction:column;gap:6px;
     align-items:center;justify-content:center;z-index:10;
     background:rgba(244,247,251,.7);border-radius:20px;text-align:center;
   }
+  html.no-flexgap .seal-watermark > *:not(:last-child){margin-bottom:6px}
   #modA.sealed .seal-watermark{display:flex}
   .seal-watermark .t{font-size:24px;font-weight:800;color:var(--blue-d)}
   .seal-watermark .s{font-size:14px;color:var(--muted)}
 
   /* 弹窗 */
-  .overlay{position:fixed;inset:0;background:rgba(20,28,40,.5);display:none;align-items:center;justify-content:center;z-index:10000;padding:18px}
+  .overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(20,28,40,.5);display:none;align-items:center;justify-content:center;z-index:10000;padding:18px}
   .overlay.show{display:flex}
   .modal{
     background:#fff;border-radius:18px;box-shadow:0 16px 40px rgba(20,28,40,.25);
     max-width:520px;width:100%;padding:24px;animation:pop .25s ease;max-height:88vh;overflow:auto;
   }
-  .modal h2{margin:0 0 14px;font-size:clamp(19px,4.5vw,24px);color:var(--ink);text-align:center}
+  .modal h2{margin:0 0 14px;font-size:24px;font-size:clamp(19px,4.5vw,24px);color:var(--ink);text-align:center}
   .modal .close{float:right;border:none;background:#eef2f8;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:17px;color:var(--ink)}
   .preview-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fafcff}
   .preview-card .p-h{font-size:26px;text-align:center;margin-bottom:6px}
@@ -159,6 +163,28 @@
   try {
     guard(); guard();
     window.addEventListener('popstate', guard);
+  } catch (e) {}
+})();
+</script>
+<script>
+/* ===== 兼容层 A：flex gap 能力探测 =====
+   老内核（Edge 84 以前、EdgeHTML）的 flex 布局不支持 gap，间距会全部塌掉。
+   这里用真实布局量一次宽度来判断，支持就用原样，不支持就给 <html> 挂上
+   no-flexgap，样式表里预置的 margin 规则接管间距。
+   不用 CSS.supports('gap') 判断：gap 在 Chrome 66 起就作为 grid-gap 的别名存在，
+   老版本会误报"支持"。 */
+(function () {
+  try {
+    var box = document.createElement('div');
+    box.style.cssText = 'position:absolute;top:-9999px;left:-9999px;display:flex;gap:10px;width:auto;height:1px';
+    var a = document.createElement('i');
+    var b = document.createElement('i');
+    a.style.cssText = b.style.cssText = 'display:block;width:10px;height:1px';
+    box.appendChild(a); box.appendChild(b);
+    document.documentElement.appendChild(box);
+    var w = box.getBoundingClientRect().width || box.scrollWidth;
+    document.documentElement.removeChild(box);
+    if (!(w >= 30)) document.documentElement.className += ' no-flexgap';
   } catch (e) {}
 })();
 </script>
