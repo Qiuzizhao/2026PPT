@@ -1063,6 +1063,15 @@
   document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>showMode(b.dataset.mode)));
   $('#mOk').onclick=()=>{ hideModal(); finishLevel(currentMode); };   // OK -> finished level or grand finale
 
+  /* ===== 测试用快捷入口 =====
+     在网址后面加 ?finale=1 直接进通关页（用于预览/验收，不写进任何界面提示）。
+     正常打开（没有这个参数）时，这里一行都不会生效。 */
+  if(/[?&]finale=1\b/.test(location.search)){
+    LEVELS.forEach(l=>{ markDone(l[0]); starBest[l[0]]=TOTALS[l[0]]||0; });
+    const tot=$('#starNum'); if(tot) tot.textContent='50';
+    setTimeout(startFinale,60);
+  }
+
   /* bubbles */
   (function(){
     const cols=['#ffffff','#ffffff','#ffe3f2','#d9f0ff'];

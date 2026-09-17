@@ -194,6 +194,32 @@ add({
   ]
 });
 
+/* ============ 3b. 通关页直达（?finale=1 测试入口） ============ */
+add({
+  name: '鼠标练习营-通关页直达',
+  page: '鼠标练习营.html?finale=1',
+  steps: [
+    { label: '?finale=1 直接进通关页并能玩无尽关', js: wrap(`
+      await __wait(2500);
+      const jumped = __$('#finale').classList.contains('show');
+      const chips = __$('#finaleChips').children.length;
+      const stars = __$('#finaleStarTxt').textContent.trim();
+      const navDisabled = __$$('#nav button').every(b => b.disabled);
+      const t0 = Date.now();
+      let swings = 0;
+      while (Date.now() - t0 < 9000 && Number(__$('#epScore').textContent) < 5) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect();
+          __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); swings++; }
+        await __wait(160);
+      }
+      return JSON.stringify({ jumped, chips, stars, navDisabled, swings,
+        score: Number(__$('#epScore').textContent), level: __$('#epLevel').textContent,
+        best: __$('#epBest').textContent, finaleStillOn: __$('#finale').classList.contains('show') });
+    `), shot: true }
+  ]
+});
+
 /* ============ 4. 鼠标反应力实验室：八个关卡逐个进入并操作 ============ */
 const openMode = (label) => `
   const mode = __$$('.mode').find(m => m.textContent.includes(${JSON.stringify(label)}));
@@ -627,7 +653,8 @@ for (const sc of SCENARIOS) {
     await s('Emulation.setDeviceMetricsOverride', { width: sc.viewport[0], height: sc.viewport[1], deviceScaleFactor: 1, mobile: false });
   }
   if (sc.blockUrls) await s('Network.setBlockedURLs', { urls: sc.blockUrls });
-  const url = baseUrl + encodeURIComponent(sc.page);
+  const url = baseUrl + encodeURIComponent(sc.page)
+    .replace(/%3F/gi, '?').replace(/%3D/gi, '=').replace(/%26/gi, '&');
   await s('Page.navigate', { url });
   await sleep(sc.wait || (sc.page.includes('3D') ? 20000 : 2500) );
 
