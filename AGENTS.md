@@ -219,43 +219,104 @@ HUD 显示"已完成 1 / 4"）。
 
 ## 老浏览器兼容层（Edge 79+ / 老内核）
 
-### 要解决的问题
+### 兼容基线（先明确目标）
 
-学生机上的 Edge 有的是 2020 年前后的老版本，还有的停在 Windows 10 自带的
-EdgeHTML 内核。这些浏览器认不出下面这些写法，而且是**整条声明作废**，不是"降级显示"，
-所以同一份代码在新电脑上正常、在老电脑上会整页塌掉：
+- **下限是 Chromium 内核的 Edge 79**，也就是 Chrome 79（2020 年 1 月发布）。
+  一个写法只要 Chrome 79 认，就可以放心用；查不到版本时按下面的分级表处理，
+  不要凭"我这台电脑能显示"来判断。
+- 另外有一部分机器停在 Windows 10 自带的 **EdgeHTML 内核**。那一档连 `clamp()`、
+  flex `gap`、`backdrop-filter` 都不认，没法当作写代码的下限，只能保证**不塌**：
+  布局类的新写法一律带回退，装饰类的新写法允许降级。
+- 结论：**教室里最老的那台机器决定下限。**
 
-| 写法 | 需要 | 老内核的表现 |
+### 一、CSS：分三类处理
+
+**第一类 · 必须带静态回退**（不回退就会和设计稿对不上）
+
+`clamp()` / `min()` / `max()` 需要 Chrome 79+，EdgeHTML 会整条丢弃。写法是在前面补一条
+静态声明，回退值取上限（教室机器都是桌面宽度，取上限最接近实际效果）：
+
+```css
+font-size:26px;font-size:clamp(18px,4.2vw,26px);
+```
+
+`width` / `height` 上的 `min(A,B)` 写成 `width:A;max-width:B;`，比静态值更准。
+
+**第二类 · 必须换写法**（不回退会整块塌掉）
+
+| 禁用写法 | 需要 | 老内核的表现 | 替代写法 |
+| --- | --- | --- | --- |
+| `inset:0` | Edge 87+ | 元素没有四边定位，弹窗/舞台塌成内容大小 | 写全 `top/right/bottom/left` |
+| `aspect-ratio` | Edge 88+ | 元素高度变 0，直接看不见 | `height:0;padding-bottom:百分比`，百分比按"宽度 × 比例"算（`width:52%` + `1/1.05` → `padding-bottom:54.6%`） |
+| flex 容器的 `gap` | Edge 84+ | 间距全部消失，按钮挤成一团 | 配一条 `html.no-flexgap` 回退规则，见下 |
+| `import map` + 模块顶层 `await` | Edge 89+ | 3D 页面整段脚本不执行 | 见"四、3D 探索馆的引擎加载" |
+
+flex gap 的回退规则要跟着原规则写在后面：
+
+```css
+html.no-flexgap .toolbar > *:not(:last-child){margin-right:16px}
+```
+
+用 `margin-right` 而不是 `margin-left`，是因为页内多处用 `margin-left:auto` 做右对齐，
+加 `margin-left` 会把它盖掉、标题栏会错位。**grid 容器的 `gap` 不要动**，
+老内核本来就支持 grid gap（Chrome 66+）。
+
+**第三类 · 允许直接用**（老内核上降级，但不会塌）
+
+| 写法 | 需要 | 老内核上会怎样 |
 | --- | --- | --- |
-| `inset:0` | Edge 87+ | 元素没有四边定位，弹窗/舞台塌成内容大小 |
-| `clamp()` / `min()` / `max()` | Edge 79+ | 整条声明被丢弃，字号内边距回落到默认值 |
-| flex 容器的 `gap` | Edge 84+ | 间距全部消失，按钮挤成一团 |
-| `aspect-ratio` | Edge 88+ | 元素高度变 0，直接看不见 |
-| `import map` + 模块顶层 `await` | Edge 89+ | 3D 页面整段脚本不执行 |
+| 自定义属性 `var()`、`grid` + grid `gap` | Chrome 49 / 66+ | 在下限之内，正常 |
+| `position:sticky`、`scroll-behavior` | Chrome 56 / 61+ | 在下限之内，正常 |
+| `100vh`（**不要写 `dvh` / `svh`**） | Chrome 26+ | 在下限之内，正常 |
+| `filter`、`transform`、`will-change` | Chrome 53 / 36+ | 在下限之内，正常 |
+| `backdrop-filter` | Chrome 76+ | 毛玻璃消失，元素仍然可见 |
+| `accent-color` | Chrome 93+ | 复选框等控件回到系统默认配色 |
+| `:focus-visible` | Chrome 86+ | 键盘焦点描边消失，鼠标操作不受影响 |
 
-### 四条写法约定
+回退一律用**重复声明**（后一条盖前一条）或 `html.no-flexgap` 类名，
+**不要引入 `@supports`**：项目里目前一处都没用，混用会让回退逻辑分散在两套机制里。
 
-1. **不要用 `inset`。** 一律写 `top/right/bottom/left` 四边。
-2. **`clamp()` / `min()` / `max()` 必须在前面补一条静态回退声明**，例如
-   `font-size:26px;font-size:clamp(18px,4.2vw,26px);`。回退值取上限（教室机器
-   都是桌面宽度，取上限最接近实际效果）。`width/height` 上的 `min(A,B)` 写成
-   `width:A;max-width:B;`，比静态值更准。
-3. **flex 容器的 `gap` 要配一条 `html.no-flexgap` 回退规则**，跟着原规则写在后面：
-   `html.no-flexgap .toolbar > *:not(:last-child){margin-right:16px}`。
-   用 `margin-right`（而不是 `margin-left`）是因为页内多处用 `margin-left:auto`
-   做右对齐，加 `margin-left` 会把它盖掉、标题栏会错位。
-   **grid 容器的 `gap` 不要动**，老内核本来就支持 grid gap。
-4. **不要用 `aspect-ratio`。** 用 `height:0;padding-bottom:百分比` 代替，
-   百分比按"宽度 × 比例"算（例：`width:52%` + `1/1.05` → `padding-bottom:54.6%`）。
+### 二、JS：只写 Chrome 79 认的语法
 
-### 能力探测脚本（每个页面 `<head>` 里都要有）
+这一条比 CSS 严重得多：**语法错误会让整个 `<script>` 整段不执行**，不是某个功能失灵，
+而是页面白屏、点了没反应，而且往往只在老机器上才暴露。
+
+| 禁用语法 | 需要 | 替代写法 |
+| --- | --- | --- |
+| 可选链 `a?.b` | Chrome 80 | `a && a.b` |
+| 空值合并 `a ?? b` | Chrome 80 | `a == null ? b : a` |
+| 逻辑赋值 `??=` `\|\|=` `&&=` | Chrome 85 | 展开写成完整赋值 |
+| `String.replaceAll()` | Chrome 85 | `split().join()` 或带 `g` 的正则 `replace()` |
+| `Promise.any()` | Chrome 85 | `Promise.all`，或逐个 `catch` |
+| `Array.prototype.at()` | Chrome 92 | `arr[arr.length - 1]` |
+| `Object.hasOwn()` | Chrome 93 | `Object.prototype.hasOwnProperty.call()` |
+| `findLast()` / `findLastIndex()` | Chrome 97 | 反转后 `find()`，或手写倒序循环 |
+| `structuredClone()` | Chrome 98 | `JSON.parse(JSON.stringify(x))` |
+| `toSorted()` / `toReversed()` / `with()` | Chrome 110 | 先 `slice()` 再用老方法 |
+| 顶层 `await`、`import` map | Chrome 89 | 见"四、3D 探索馆的引擎加载" |
+
+Chrome 79 本来就支持的可以放心用：`async/await`、模板字符串、解构、展开运算符、
+`Object.entries` / `values`、`Array.flat` / `flatMap`、`String.matchAll`、
+`Promise.allSettled`、`globalThis`、可选 catch 绑定、类字段、`fetch`、`PointerEvent`、
+`setPointerCapture`、`ResizeObserver`、`IntersectionObserver`。
+
+改完顺手扫一遍：
+
+```powershell
+Select-String -Path *.html -Pattern '\?\.|\?\?|\.replaceAll\(|structuredClone|\.at\(|Object\.hasOwn|findLast'
+```
+
+注意这个简单匹配会误报页面里自定义的同名方法——`鼠标反应力实验室.html` 里就有一个
+`shape.at(t)`，那是页面自己的取点函数，不是 `Array.prototype.at`。
+
+### 三、能力探测脚本（每个页面 `<head>` 里都要有）
 
 flex gap 没法用 `CSS.supports('gap')` 判断——`gap` 从 Chrome 66 起就是 grid-gap 的
 别名，老版本会误报"支持"。所以用真实布局量一次宽度，量出来没有间距才给
 `<html>` 挂 `no-flexgap`。脚本放在 `<head>` 末尾（`</head>` 之前），只加类名，
 不碰任何页面事件，**不是**防误触那套的一部分。
 
-### 3D 探索馆的引擎加载
+### 四、3D 探索馆的引擎加载
 
 那个页面原来是 `<script type="module">` + `import map`，两个都要 Edge 89+。
 现在改成普通脚本 + 动态 `import()`，按顺序试三个来源，第一个成功就用它：
@@ -268,10 +329,16 @@ flex gap 没法用 `CSS.supports('gap')` 判断——`gap` 从 Chrome 66 起就�
 三个都连不上才显示"3D 场景没能启动"。`window.__threeSource` 会记录实际用的是哪一个，
 排查时先看这个值。**不要**把 3D 页面改回模块 + import map。
 
-### 改完必须这样验证
+### 五、改完必须这样验证
 
 仓库自带自检脚本，见 `tools/qa/README.md`。起本地服务器（`python -m http.server 8765`）
 后两种页面各跑一遍：
+
+0. **静态检查**：跑上面第二条里的 `Select-String`，确认没有引入禁用的 JS 语法。
+   CSS 那条（含 `clamp` / `min` / `max` 的声明，同属性前面必须有静态声明）目前
+   **还没有脚本**，一百多条声明靠肉眼看不现实——改动量大时让 agent 写个临时脚本
+   扫一遍（本次基线核对就是这么做出来的，0.4 秒扫完 85 条）。要长期用的话，
+   应该把它固化进 `tools/qa/`。
 
 1. **正常页面**：`node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out` —— 七个页面
    都能载入、控制台零报错、无横向溢出；3D 页面 `window.__threeSource` 应该是
@@ -285,6 +352,25 @@ flex gap 没法用 `CSS.supports('gap')` 判断——`gap` 从 Chrome 66 起就�
    数据自画像输入框右键不被拦截、其余页面 `history.back()` 后留在原地。
 
 `_oldsim/`、`.qa-out/`、`.qa-shots/` 都是临时产物，跑完删掉，不要提交。
+
+**老内核模拟的已知盲区**（不要把它当成"老浏览器真跑过"）：
+它是把老引擎不认的声明**整条删掉**来近似，不是真的跑一个老内核。
+`sim-old-edge.py` 的删除清单目前只有 `aspect-ratio` / `backdrop-filter` / `accent-color`，
+而且用的是前缀完全匹配，所以 `-webkit-backdrop-filter` 这种带前缀的写法不会被剥掉，
+将来真要写前缀，得同时改那个脚本。布局类回退（flex gap、`clamp`）才是它主要复核的对象。
+
+### 六、现状（2026-09-17 核对）
+
+同步完远端那两个提交后逐项核过一遍，作为基线留档：
+
+- 七个页面的 `<style>` 里共有 **85 条**含 `clamp(` / `min(` / `max(` 的声明，
+  **静态回退零缺失**。
+- 禁用 JS 语法**零命中**；唯一的 `.at(` 命中是上面说的 `shape.at(t)` 自定义方法。
+- `inset`、`aspect-ratio`、`dvh/svh`、`:has()` 在源码里**一处都没有**。
+- flex gap 回退规则 3~23 条/页，七个页面都有。
+- `:focus-visible` 只出现在 `鼠标反应力实验室.html`（3 条），属于第三类降级项。
+- `backdrop-filter` 用在 `鼠标练习营.html`、`鼠标反应力实验室.html` 和
+  `鼠标3D探索馆.html`（3D 页最多），同样属于第三类降级项。
 
 ## 部署
 
