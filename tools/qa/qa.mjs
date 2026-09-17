@@ -152,9 +152,33 @@ add({
       const area = __$('#epArea');
       if (!area) return JSON.stringify({ error: '没有无尽关区域' });
       const startScore = Number(__$('#epScore').textContent);
+      /* 升关机制是内部的（不显示第几关），所以用"掉落速度变快"来验证它确实在生效 */
+      const speedOf = async () => {
+        const it = __$('#epArea .ep-item');
+        if (!it) return null;
+        /* 不用正则：模板字符串里的反斜杠会被吃掉，直接按逗号拆 "translate3d(xpx, ypx, 0)" */
+        const readY = () => {
+          const parts = (it.style.transform || '').split(',');
+          if (parts.length < 2) return null;
+          const v = parseFloat(parts[1]);
+          return isNaN(v) ? null : v;
+        };
+        const y0 = readY(), ts = Date.now();
+        await __wait(320);
+        const y1 = readY();
+        if (y0 === null || y1 === null || y1 <= y0) return null;
+        return Math.round((y1 - y0) / ((Date.now() - ts) / 1000));
+      };
+      const sampleSpeed = async (n) => {
+        const out = [];
+        for (let i = 0; i < n * 5 && out.length < n; i++) { const v = await speedOf(); if (v) out.push(v); await __wait(160); }
+        return out;
+      };
+      const mean = a => a.length ? Math.round(a.reduce((x, y) => x + y, 0) / a.length) : null;
+      const earlySpeeds = await sampleSpeed(4);
       const t0 = Date.now();
       let swings = 0, ticksWithItem = 0;
-      while (Date.now() - t0 < 17000 && Number(__$('#epScore').textContent) < 14) {
+      while (Date.now() - t0 < 26000 && Number(__$('#epScore').textContent) < 26) {
         const items = __$$('#epArea .ep-item');
         if (items.length) {
           ticksWithItem++;
@@ -165,9 +189,10 @@ add({
         }
         await __wait(170);
       }
-      const mid = { score: Number(__$('#epScore').textContent), level: __$('#epLevel').textContent,
-                    combo: Number(__$('#epCombo').textContent) };
-      await __wait(3500);                                   /* 再等一会，确认还在源源不断刷新 */
+      const mid = { score: Number(__$('#epScore').textContent),
+                    level: __$('#epLevel') ? __$('#epLevel').textContent : null };
+      const lateSpeeds = await sampleSpeed(4);
+      await __wait(2500);                                   /* 再等一会，确认还在源源不断刷新 */
       const aliveLater = __$$('#epArea .ep-item').length;
       const t1 = Date.now();
       let hits2 = 0;
@@ -177,15 +202,18 @@ add({
           __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); hits2++; }
         await __wait(150);
       }
-      let stored = null;
-      try { stored = localStorage.getItem('mouse_endless_best'); } catch (e) {}
       return JSON.stringify({
         startScore, swings, ticksWithItem, mid, hits2, aliveLater,
+        earlySpeed: mean(earlySpeeds), lateSpeed: mean(lateSpeeds),
+        speedUpAfterLevels: (mean(lateSpeeds) || 0) > (mean(earlySpeeds) || 0),
         stillSpawning: aliveLater > 0,
         score: Number(__$('#epScore').textContent),
-        level: __$('#epLevel').textContent,
-        bestShown: __$('#epBest').textContent,
-        bestStored: stored,
+        chips: __$$('.ep-head .ep-k').length,
+        comboGone: !__$('#epCombo'),
+        levelShown: !!__$('#epLevel'),
+        levelNow: __$('#epLevel') ? Number(__$('#epLevel').textContent) : null,
+        levelUpWorks: mid.level !== null && Number(mid.level) >= 2,
+        bestGone: !__$('#epBest'),
         tipHidden: __$('#epTip').classList.contains('hide'),
         finaleStillOn: __$('#finale').classList.contains('show'),
         bandHeight: Math.round(area.getBoundingClientRect().height)
@@ -202,8 +230,11 @@ add({
     { label: '?finale=1 直接进通关页并能玩无尽关', js: wrap(`
       await __wait(2500);
       const jumped = __$('#finale').classList.contains('show');
-      const chips = __$('#finaleChips').children.length;
-      const stars = __$('#finaleStarTxt').textContent.trim();
+      const chipsGone = !__$('#finaleChips') && !__$('.finale-chips');
+      const bandShare = +( __$('#epArea').getBoundingClientRect().height / window.innerHeight ).toFixed(2);
+      const bandWidth = Math.round(__$('#epArea').getBoundingClientRect().width);
+      const cardTop = __$('.finale-card').getBoundingClientRect().bottom;
+      const bandTop = __$('#epArea').getBoundingClientRect().top;
       const navDisabled = __$$('#nav button').every(b => b.disabled);
       const t0 = Date.now();
       let swings = 0;
@@ -213,9 +244,33 @@ add({
           __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); swings++; }
         await __wait(160);
       }
-      return JSON.stringify({ jumped, chips, stars, navDisabled, swings,
-        score: Number(__$('#epScore').textContent), level: __$('#epLevel').textContent,
-        best: __$('#epBest').textContent, finaleStillOn: __$('#finale').classList.contains('show') });
+      return JSON.stringify({ jumped, chipsGone, bandShare, bandWidth,
+        bandWidthCapped: bandWidth <= 1002, innerW: window.innerWidth,
+        gapBetween: Math.round(bandTop - cardTop), navDisabled, swings,
+        score: Number(__$('#epScore').textContent),
+        level: __$('#epLevel') ? Number(__$('#epLevel').textContent) : null,
+        chips: __$$('.ep-head .ep-k').length,
+        bestGone: !__$('#epBest'), comboGone: !__$('#epCombo'),
+        finaleStillOn: __$('#finale').classList.contains('show') });
+    `), shot: true }
+  ]
+});
+
+/* 宽屏下游戏区必须仍然封顶，否则物件撒得太开没法点 */
+add({
+  name: '鼠标练习营-通关页直达-宽屏',
+  page: '鼠标练习营.html?finale=1',
+  viewport: [2560, 1080],
+  steps: [
+    { label: '2560 宽屏下游戏区宽度仍封顶', js: wrap(`
+      await __wait(2500);
+      const band = __$('#epArea').getBoundingClientRect();
+      const head = __$('.ep-head').getBoundingClientRect();
+      return JSON.stringify({ innerW: window.innerWidth,
+        bandWidth: Math.round(band.width), headWidth: Math.round(head.width),
+        bandHeight: Math.round(band.height),
+        capped: band.width <= 1002, centered: Math.abs((band.left + band.right) / 2 - window.innerWidth / 2) < 3,
+        jumped: __$('#finale').classList.contains('show') });
     `), shot: true }
   ]
 });
@@ -636,6 +691,10 @@ function send(method, params, sessionId) {
 const evalIn = async (s, expression) => {
   const r = await s('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
   if (r && r.__error) return JSON.stringify({ error: r.__error.message });
+  if (r && r.exceptionDetails) {
+    const d = r.exceptionDetails;
+    return JSON.stringify({ error: (d.text || 'exception') + ' ' + ((d.exception || {}).description || '') });
+  }
   const res = r.result || {};
   if (res.exceptionDetails) return JSON.stringify({ error: res.exceptionDetails.text + ' ' + (res.exceptionDetails.exception || {}).description });
   return res.value;
