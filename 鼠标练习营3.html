@@ -3,325 +3,318 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🖥️ 鼠标练习营 3 · 我的第一台电脑</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230f6cbd'/><rect x='5' y='7' width='22' height='15' rx='2' fill='%23f3f3f3'/><circle cx='16' cy='14' r='3.2' fill='%230f6cbd'/><path d='M11 19h10' stroke='%230f6cbd' stroke-width='2' stroke-linecap='round'/><path d='M16 22v3M12 27h8' stroke='%23f3f3f3' stroke-width='2' stroke-linecap='round'/></svg>">
-<meta name="theme-color" content="#0f6cbd">
+<title>🖥️ 鼠标练习营 3 · 电脑小课堂</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230f6cbd'/><rect x='5' y='7' width='22' height='15' rx='2' fill='%23f3f3f3'/><circle cx='16' cy='14' r='3.2' fill='%230f6cbd'/><path d='M11 26h10' stroke='%23f3f3f3' stroke-width='2' stroke-linecap='round'/></svg>">
+<meta name="theme-color" content="#c9ecff">
 <style>
   :root{
+    --ink:#2b2b45; --muted:#8a8aa8;
     --blue:#0f6cbd; --blue-dark:#0b5394; --blue-soft:#dceaf7;
-    --ink:#1f1f1f; --muted:#5c6470; --line:#d7dbe2;
-    --surface:#f6f7f9; --card:#ffffff;
-    --taskbar:rgba(28,32,40,.92);
+    --orange:#ff9f45; --green:#4ed47e; --cyan:#43d2e8;
+    --purple:#a577ff; --pink:#ff6fa5; --yellow:#ffd23f;
+    --good:#2ec77b; --good-soft:#e4f9ec;
     --accent:#e8890c;
-    --gold:#f2c14e; --good:#107c41;
-    --shadow:0 10px 26px rgba(15,25,45,.22);
-    --shadow-sm:0 3px 10px rgba(15,25,45,.16);
+    --shadow:0 10px 22px rgba(90,70,160,.18);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-  html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  html,body{margin:0;padding:0}
   body{
     font-family:"Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
-    color:var(--ink);background:#0b1220;
+    color:var(--ink); min-height:100vh;
+    background:linear-gradient(160deg,#c9ecff,#dcd3ff 55%,#ffe0ea);
+    background-attachment:fixed;
+    padding:16px 30px 44px;padding:16px clamp(8px,3vw,30px) 44px;
     user-select:none;
   }
-  /* ===== 桌面 ===== */
-  .desk{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden}
-  .wall{
+  .wrap{max-width:900px;margin:0 auto}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  @keyframes popin{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+  @keyframes burst{40%{transform:scale(1.3)}100%{transform:scale(0);opacity:0}}
+  @keyframes floatb{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-40px) scale(1.1)}}
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(232,137,12,.7)}
+    50%{box-shadow:0 0 0 16px rgba(232,137,12,0)}
+  }
+
+  /* ===== 背景小泡泡 ===== */
+  .bg-bubbles{position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;overflow:hidden;z-index:0}
+  .bg-bubbles span{position:absolute;border-radius:50%;opacity:.5;animation:floatb 9s ease-in-out infinite}
+
+  /* ===== 顶部：小老鼠 + 说话气泡 ===== */
+  header{display:flex;align-items:center;gap:14px;margin:0 auto 12px;position:relative;z-index:1}
+  html.no-flexgap header > *:not(:last-child){margin-right:14px}
+  .mascot{
+    width:80px;height:80px;flex-shrink:0;border-radius:50%;background:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:44px;
+    box-shadow:var(--shadow);border:4px solid #fff;animation:bob 2.6s ease-in-out infinite;
+  }
+  .bubble{
+    background:#fff;border-radius:20px 20px 20px 6px;padding:14px 18px;
+    box-shadow:var(--shadow);font-size:24px;font-size:clamp(17px,2.7vw,24px);font-weight:800;line-height:1.5;
+    flex:1;min-height:64px;display:flex;align-items:center;
+  }
+  .bubble b{color:var(--blue)}
+  .bubble.shake{animation:shake .4s ease}
+
+  /* ===== 关卡按钮 ===== */
+  nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 auto 12px;position:relative;z-index:1}
+  html.no-flexgap nav > *:not(:last-child){margin-right:8px}
+  nav button{
+    border:none;cursor:pointer;border-radius:16px;padding:9px 13px;
+    font-family:inherit;font-size:17px;font-size:clamp(14px,2vw,17px);font-weight:800;color:#fff;
+    display:flex;align-items:center;gap:6px;box-shadow:0 5px 0 rgba(0,0,0,.12), var(--shadow);
+    transition:transform .1s ease;justify-content:center;
+  }
+  html.no-flexgap nav button > *:not(:last-child){margin-right:6px}
+  nav button:hover{transform:translateY(-3px)}
+  nav button:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.12)}
+  nav button.b-home{background:var(--purple)}
+  nav button span.emo{font-size:19px}
+  nav button.n-done::after{content:" ✓";font-size:.72em;opacity:.95}
+
+  /* ===== 星星 ===== */
+  .stars{display:flex;gap:7px;justify-content:center;margin:0 auto 10px;flex-wrap:wrap;position:relative;z-index:1;min-height:32px}
+  html.no-flexgap .stars > *:not(:last-child){margin-right:7px}
+  .stars .star .s-in{display:inline-block;font-size:26px;filter:grayscale(1);opacity:.4;transition:all .2s ease}
+  .stars .star.pop .s-in{filter:none;opacity:1;transform:scale(1.25)}
+  .stars .big-count{color:#fff;font-weight:900;font-size:18px;text-shadow:0 2px 6px rgba(60,40,120,.3);margin-left:7px}
+
+  .star-total{
+    position:fixed;top:12px;right:12px;z-index:2000;
+    background:#fff;border-radius:999px;padding:8px 15px;
+    display:flex;align-items:center;gap:7px;
+    box-shadow:0 8px 18px rgba(60,40,120,.22);border:3px solid #ffe08a;
+    font-weight:900;font-size:20px;color:var(--ink);
+  }
+  html.no-flexgap .star-total > *:not(:last-child){margin-right:7px}
+  .star-total .st-ico{font-size:22px}
+  .star-total .st-lbl{font-size:14px;color:var(--muted);font-weight:800}
+
+  /* ===== 练习区 ===== */
+  .play{
+    position:relative;background:linear-gradient(180deg,#eaf3ff,#dbe9fb);
+    border-radius:24px;height:470px;height:clamp(330px,56vh,470px);overflow:hidden;
+    box-shadow:var(--shadow);border:4px solid #fff;
+  }
+  .stage{position:absolute;top:0;right:0;bottom:0;left:0}
+  .wallmini{
     position:absolute;top:0;right:0;bottom:0;left:0;
     background:
-      radial-gradient(circle at 78% 22%, #ffe6a7 0 8%, rgba(255,230,167,0) 30%),
-      linear-gradient(180deg,#1b3b6f 0%,#2b5c9b 38%,#5b9bd5 66%,#a8cdec 100%);
-    transition:filter .4s ease;
+      radial-gradient(circle at 76% 20%, #ffe9b0 0 7%, rgba(255,233,176,0) 26%),
+      linear-gradient(180deg,#2f5f9e 0%,#5b9bd5 62%,#a8cdec 100%);
+    transition:filter .35s ease;
   }
-  .wall::after{
-    content:"";position:absolute;left:-10%;right:-10%;bottom:-6%;height:46%;
+  .wallmini::after{
+    content:"";position:absolute;left:-8%;right:-8%;bottom:-4%;height:34%;
     background:
-      radial-gradient(60% 100% at 22% 100%, #2f6b4f 0 60%, rgba(47,107,79,0) 62%),
-      radial-gradient(52% 90% at 62% 104%, #245a43 0 60%, rgba(36,90,67,0) 62%),
-      radial-gradient(70% 80% at 96% 110%, #1f4f3b 0 60%, rgba(31,79,59,0) 62%);
+      radial-gradient(60% 100% at 26% 100%, #2f6b4f 0 60%, rgba(47,107,79,0) 62%),
+      radial-gradient(60% 96% at 74% 104%, #245a43 0 60%, rgba(36,90,67,0) 62%);
   }
-  .wall.light{filter:brightness(1.25) saturate(.75)}
+  .stage.lightbg .wallmini{filter:brightness(1.35) saturate(.7)}
 
-  /* ===== 顶部教学条 ===== */
-  .topbar{
-    position:absolute;top:0;right:0;left:0;height:44px;z-index:60;
-    background:linear-gradient(180deg,rgba(12,18,30,.92),rgba(12,18,30,.78));
-    color:#fff;display:flex;align-items:center;gap:14px;padding:0 14px;
-    font-size:17px;font-weight:700;
+  /* 练习区里的小图标 */
+  .micons{position:absolute;top:8px;right:0;bottom:6px;left:0}
+  .micon{
+    position:absolute;width:92px;height:100px;border-radius:10px;
+    display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 3px 3px;
+    cursor:pointer;border:2px solid transparent;transition:background .12s ease,border-color .12s ease;
   }
-  html.no-flexgap .topbar > *:not(:last-child){margin-right:14px}
-  .topbar .lv{background:var(--blue);border-radius:8px;padding:4px 12px;white-space:nowrap}
-  .topbar .task{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
-  .topbar .task b{color:#ffd76a}
-  .topbar .dots{display:flex;gap:6px}
-  html.no-flexgap .topbar .dots > *:not(:last-child){margin-right:6px}
-  .topbar .dot{width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.28);border:2px solid rgba(255,255,255,.45)}
-  .topbar .dot.done{background:var(--gold);border-color:var(--gold)}
-  .topbar .dot.now{background:#fff;border-color:#fff;transform:scale(1.15)}
-  .topbar .stars{color:#ffd76a;white-space:nowrap}
-  .topbar button{
-    font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;
-    border:none;border-radius:8px;padding:8px 14px;background:rgba(255,255,255,.16);color:#fff;
+  html.no-flexgap .micon > *:not(:last-child){margin-bottom:3px}
+  .micon .face{
+    width:56px;height:56px;border-radius:11px;background:#fff;font-size:32px;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px rgba(10,25,50,.22);
   }
-  .topbar button:hover{background:rgba(255,255,255,.28)}
-  .topbar button.primary{background:var(--accent);color:#231a03}
-  .topbar button.primary:hover{background:#f79b1e}
+  .micon .lbl{
+    font-size:13px;font-weight:700;color:#fff;text-align:center;line-height:1.2;
+    text-shadow:0 1px 3px rgba(0,0,0,.55);max-width:88px;word-break:break-all;
+  }
+  .micon:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.55)}
+  .micon.sel{background:rgba(96,166,255,.45);border-color:#cfe6ff}
+  .micon.dragging{opacity:.7}
+  .micon.folderTarget{border-color:var(--yellow);background:rgba(255,210,63,.35)}
+  .micon.hintring{animation:pulse 1.4s ease-in-out infinite;border-radius:12px}
 
-  /* ===== 桌面图标 ===== */
-  .icons{position:absolute;top:60px;right:0;bottom:56px;left:0;z-index:10}
-  .icon{
-    position:absolute;width:100px;height:108px;border-radius:10px;
-    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-    gap:4px;padding:8px 4px 4px;cursor:pointer;border:2px solid transparent;
-    transition:background .12s ease,border-color .12s ease,transform .12s ease;
+  /* 练习区里的小窗口（和练习营2的窗口同一套写法，尺寸小一点） */
+  .mwins{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}
+  .mwin{
+    position:absolute;pointer-events:auto;background:#fff;border-radius:9px;overflow:hidden;
+    border:1px solid rgba(0,0,0,.16);box-shadow:0 12px 24px rgba(15,25,45,.28);
+    display:flex;flex-direction:column;transition:opacity .16s ease,transform .16s ease;
   }
-  html.no-flexgap .icon > *:not(:last-child){margin-bottom:4px}
-  .icon .face{
-    width:62px;height:62px;border-radius:12px;background:#fff;
-    display:flex;align-items:center;justify-content:center;font-size:36px;
-    box-shadow:var(--shadow-sm);
+  .mwin.min{opacity:0;transform:scale(.7);pointer-events:none}
+  .mwin .tbar{
+    height:38px;flex-shrink:0;background:#eef1f5;border-bottom:1px solid #d7dbe2;
+    display:flex;align-items:center;gap:8px;padding:0 5px 0 10px;cursor:grab;touch-action:none;
   }
-  .icon .lbl{
-    font-size:14px;font-weight:600;color:#fff;text-align:center;line-height:1.25;
-    text-shadow:0 1px 3px rgba(0,0,0,.6);padding:0 2px;
-    max-width:96px;word-break:break-all;
-  }
-  .icon:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5)}
-  .icon.sel{background:rgba(96,166,255,.42);border-color:#bfe0ff}
-  .icon.sel .lbl{color:#fff}
-  .icon.dragging{opacity:.65;transform:scale(1.05)}
-  .icon.target{border-color:var(--gold);background:rgba(242,193,78,.35)}
-  .icon.done{opacity:.5}
-  .icon .lbl .sub{display:block;font-size:12px;opacity:.92;font-weight:600;margin-top:2px}
-  .cf{position:fixed;top:-20px;width:10px;height:14px;border-radius:3px;z-index:950;pointer-events:none;animation:cfall 2s linear forwards}
-  @keyframes cfall{to{transform:translateY(110vh) rotate(540deg);opacity:.35}}
-  .icon.pulse{animation:pulse 1.4s ease-in-out infinite}
-  @keyframes pulse{
-    0%,100%{box-shadow:0 0 0 0 rgba(242,193,78,.75)}
-    50%{box-shadow:0 0 0 14px rgba(242,193,78,0)}
-  }
-
-  /* ===== 窗口 ===== */
-  .winlayer{position:absolute;top:0;right:0;bottom:0;left:0;z-index:20;pointer-events:none}
-  .win{
-    position:absolute;pointer-events:auto;background:var(--card);
-    border-radius:10px;overflow:hidden;border:1px solid rgba(0,0,0,.14);
-    box-shadow:var(--shadow);display:flex;flex-direction:column;
-    transition:opacity .18s ease,transform .18s ease;
-  }
-  .win.min{opacity:0;transform:scale(.7);pointer-events:none}
-  .win .tbar{
-    height:44px;flex-shrink:0;background:#eef1f5;border-bottom:1px solid var(--line);
-    display:flex;align-items:center;gap:10px;padding:0 6px 0 12px;cursor:grab;
-    touch-action:none;
-  }
-  html.no-flexgap .win .tbar > *:not(:last-child){margin-right:10px}
-  .win .tbar.grabbing{cursor:grabbing}
-  .win .tbar .wico{font-size:20px}
-  .win .tbar .wtxt{flex:1;font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .win .wbtns{display:flex;gap:4px}
-  html.no-flexgap .win .wbtns > *:not(:last-child){margin-right:4px}
-  .win .wb{
-    width:44px;height:34px;border:none;border-radius:6px;background:transparent;cursor:pointer;
-    font-family:inherit;font-size:16px;font-weight:700;color:#41474f;
+  html.no-flexgap .mwin .tbar > *:not(:last-child){margin-right:8px}
+  .mwin .tbar.grabbing{cursor:grabbing}
+  .mwin .tbar .wico{font-size:17px}
+  .mwin .tbar .wtxt{flex:1;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mwin .wbtns{display:flex;gap:3px}
+  html.no-flexgap .mwin .wbtns > *:not(:last-child){margin-right:3px}
+  .mwin .wb{
+    width:36px;height:28px;border:none;border-radius:5px;background:transparent;cursor:pointer;
+    font-family:inherit;font-size:14px;font-weight:800;color:#41474f;
     display:flex;align-items:center;justify-content:center;
   }
-  .win .wb:hover{background:#dfe4ea}
-  .win .wb.cls:hover{background:#e81123;color:#fff}
-  .win .wbody{
-    flex:1;overflow:auto;padding:16px 18px;font-size:17px;line-height:1.9;color:#2b3038;
-    background:#fff;
-  }
-  .win .wbody.center{display:flex;align-items:center;justify-content:center;font-size:64px}
-  .win.active{border-color:var(--blue);box-shadow:0 14px 34px rgba(15,25,45,.34)}
-  .win.active .tbar{background:linear-gradient(180deg,#e6f0fb,#d8e7f8)}
-  .win.flash{animation:flashok .8s ease}
-  @keyframes flashok{0%{box-shadow:0 0 0 0 rgba(16,124,65,.55)}100%{box-shadow:0 0 0 26px rgba(16,124,65,0)}}
+  .mwin .wb:hover{background:#dfe4ea}
+  .mwin .wb.cls:hover{background:#e81123;color:#fff}
+  .mwin .wbody{flex:1;overflow:auto;padding:12px 14px;font-size:15px;line-height:1.85;color:#2b3038;background:#fff}
+  .mwin.active{box-shadow:0 14px 30px rgba(15,25,45,.36);border-color:#7fb6ef}
+  .mwin.hintring{animation:pulse 1.4s ease-in-out infinite}
+  .mtask.hide{display:none}
 
-  /* 贴边预览 */
-  .snapview{
-    position:absolute;z-index:18;display:none;pointer-events:none;
-    background:rgba(96,166,255,.32);border:3px solid #bfe0ff;border-radius:10px;
-    transition:all .12s ease;
-  }
-  /* 右键菜单 */
-  .ctxmenu{
-    position:absolute;z-index:200;display:none;min-width:210px;background:#fbfcfe;
-    border-radius:10px;padding:6px;box-shadow:0 16px 34px rgba(10,20,40,.34);
+  /* 练习区里的右键菜单 */
+  .mmenu{
+    position:absolute;z-index:60;display:none;min-width:184px;background:#fbfcfe;
+    border-radius:9px;padding:5px;box-shadow:0 12px 26px rgba(10,20,40,.34);
     border:1px solid rgba(0,0,0,.12);
   }
-  .ctxmenu.show{display:block;animation:popin .12s ease}
-  @keyframes popin{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
-  .ctxmenu .mi{
-    display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:8px;
-    font-size:17px;font-weight:600;cursor:pointer;
+  .mmenu.show{display:block;animation:popin .12s ease}
+  .mmenu .mi{
+    display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:7px;
+    font-size:15px;font-weight:700;cursor:pointer;
   }
-  html.no-flexgap .ctxmenu .mi > *:not(:last-child){margin-right:10px}
-  .ctxmenu .mi:hover{background:var(--blue-soft)}
-  .ctxmenu .mi .ic{font-size:19px;width:24px;text-align:center}
-  .ctxmenu .sep{height:1px;background:var(--line);margin:5px 8px}
+  html.no-flexgap .mmenu .mi > *:not(:last-child){margin-right:9px}
+  .mmenu .mi:hover{background:var(--blue-soft)}
+  .mmenu .mi .ic{font-size:17px;width:20px;text-align:center}
 
-  /* ===== 任务栏 ===== */
-  .taskbar{
-    position:absolute;left:0;right:0;bottom:0;height:56px;z-index:70;
-    background:var(--taskbar);display:flex;align-items:center;gap:10px;padding:0 12px;
-    color:#fff;
+  /* 练习区里的开始菜单 */
+  .mstart{
+    position:absolute;z-index:55;left:8px;bottom:42px;width:270px;display:none;
+    background:#f7f9fc;border-radius:10px;border:1px solid rgba(0,0,0,.14);
+    box-shadow:0 14px 30px rgba(10,20,40,.34);overflow:hidden;
   }
-  html.no-flexgap .taskbar > *:not(:last-child){margin-right:10px}
-  .tb-btn{
-    border:none;font-family:inherit;cursor:pointer;color:#fff;
-    background:rgba(255,255,255,.12);border-radius:8px;padding:10px 16px;
-    font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px;
-    min-height:40px;
+  .mstart.show{display:block;animation:popin .14s ease}
+  .mstart .sm-head{padding:9px 13px 6px;font-size:13px;font-weight:800;color:var(--muted)}
+  .mstart .sm-list{max-height:196px;overflow:auto;padding:0 5px 8px}
+  .mstart .app{
+    display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:7px;
+    font-size:15px;font-weight:700;cursor:pointer;
   }
-  html.no-flexgap .tb-btn > *:not(:last-child){margin-right:8px}
-  .tb-btn:hover{background:rgba(255,255,255,.24)}
-  .tb-btn.on{background:var(--blue-soft);color:#12314f}
-  .tb-btn.start{background:var(--blue)}
-  .tb-btn.start:hover{background:#1a7fd0}
-  .tb-tasks{display:flex;align-items:center;gap:8px;flex:1;overflow:hidden}
-  html.no-flexgap .tb-tasks > *:not(:last-child){margin-right:8px}
-  .tb-clock{font-size:16px;font-weight:700;white-space:nowrap;padding-left:10px;border-left:1px solid rgba(255,255,255,.25)}
-  .tb-clock small{display:block;font-size:12px;font-weight:600;opacity:.8}
+  html.no-flexgap .mstart .app > *:not(:last-child){margin-right:10px}
+  .mstart .app:hover{background:var(--blue-soft)}
+  .mstart .app .face{font-size:19px;width:22px;text-align:center}
 
-  /* ===== 开始菜单 ===== */
-  .startmenu{
-    position:absolute;z-index:150;left:12px;bottom:64px;width:320px;display:none;
-    background:#f7f9fc;border-radius:12px;border:1px solid rgba(0,0,0,.14);
-    box-shadow:0 18px 40px rgba(10,20,40,.36);overflow:hidden;
+  /* 练习区里的小任务栏 */
+  .mtask{
+    position:absolute;left:0;right:0;bottom:0;height:38px;z-index:50;
+    background:rgba(28,32,40,.92);display:flex;align-items:center;gap:8px;padding:0 8px;color:#fff;
   }
-  .startmenu.show{display:block;animation:popin .14s ease}
-  .startmenu .sm-head{padding:12px 16px 8px;font-size:15px;font-weight:700;color:var(--muted)}
-  .startmenu .sm-list{max-height:290px;overflow:auto;padding:0 6px 10px}
-  .startmenu .app{
-    display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;
-    font-size:17px;font-weight:600;cursor:pointer;
+  html.no-flexgap .mtask > *:not(:last-child){margin-right:8px}
+  .mtask .mtbtn{
+    border:none;font-family:inherit;cursor:pointer;color:#fff;background:rgba(255,255,255,.14);
+    border-radius:7px;padding:7px 12px;font-size:14px;font-weight:700;
+    display:flex;align-items:center;gap:6px;min-height:28px;
   }
-  html.no-flexgap .startmenu .app > *:not(:last-child){margin-right:12px}
-  .startmenu .app:hover{background:var(--blue-soft)}
-  .startmenu .app .face{font-size:22px;width:26px;text-align:center}
-  .startmenu .sm-foot{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+  html.no-flexgap .mtask .mtbtn > *:not(:last-child){margin-right:6px}
+  .mtask .mtbtn:hover{background:rgba(255,255,255,.26)}
+  .mtask .mtbtn.on{background:var(--blue-soft);color:#12314f}
+  .mtask .mtbtn.start{background:var(--blue)}
+  .mtask .mtlist{display:flex;align-items:center;gap:6px;flex:1;overflow:hidden}
+  html.no-flexgap .mtask .mtlist > *:not(:last-child){margin-right:6px}
+  .mtask .mtclock{font-size:13px;font-weight:700;white-space:nowrap;border-left:1px solid rgba(255,255,255,.28);padding-left:8px}
 
-  /* ===== 小助手 + 提示气泡 ===== */
-  .assistant{
-    position:absolute;left:16px;bottom:70px;z-index:120;display:flex;align-items:flex-end;gap:10px;
+  /* 练习区里的信息条（选中时出现的那一行） */
+  .minfo{
+    position:absolute;left:50%;bottom:46px;transform:translateX(-50%);z-index:45;
+    background:rgba(20,26,36,.9);color:#fff;border-radius:9px;padding:8px 16px;
+    font-size:14px;font-weight:700;box-shadow:var(--shadow);display:none;max-width:82%;text-align:center;
     pointer-events:none;
   }
-  html.no-flexgap .assistant > *:not(:last-child){margin-right:10px}
-  .assistant .bot{
-    width:64px;height:64px;border-radius:50%;background:#fff;box-shadow:var(--shadow);
-    display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;
-    animation:bob 2.6s ease-in-out infinite;
-  }
-  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-  .assistant .bubble{
-    max-width:520px;background:#fff;border-radius:14px 14px 14px 4px;padding:12px 16px;
-    box-shadow:var(--shadow);font-size:18px;font-weight:700;line-height:1.6;color:var(--ink);
-  }
-  .assistant .bubble b{color:var(--blue)}
-  .assistant .bubble.shake{animation:shake .4s ease}
-  @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  .minfo.show{display:block}
+  .minfo b{color:#ffd76a}
 
   /* 幽灵指针 */
-  .ghost{position:absolute;left:0;top:0;z-index:300;pointer-events:none;opacity:0;transition:opacity .2s ease}
-  .ghost .cur{display:block;filter:drop-shadow(0 5px 9px rgba(0,0,0,.42))}
+  .ghost{position:absolute;left:0;top:0;z-index:90;pointer-events:none;opacity:0;transition:opacity .2s ease}
+  .ghost .cur{display:block;filter:drop-shadow(0 5px 9px rgba(20,30,70,.4))}
   .ghost .rip{
-    position:absolute;left:0;top:0;width:56px;height:56px;margin:-28px 0 0 -28px;
-    border-radius:50%;border:5px solid rgba(96,166,255,.8);opacity:0;transform:scale(.3);
+    position:absolute;left:0;top:0;width:54px;height:54px;margin:-27px 0 0 -27px;
+    border-radius:50%;border:5px solid rgba(96,166,255,.75);opacity:0;transform:scale(.3);
   }
   .ghost .rip.go{animation:rip .6s ease-out}
   @keyframes rip{0%{opacity:.95;transform:scale(.3)}100%{opacity:0;transform:scale(1.5)}}
 
-  /* ===== 信息条 / 通知 ===== */
-  .infobar{
-    position:absolute;left:50%;bottom:70px;transform:translateX(-50%);z-index:110;
-    background:rgba(20,26,36,.9);color:#fff;border-radius:10px;padding:9px 18px;
-    font-size:16px;font-weight:600;box-shadow:var(--shadow);display:none;max-width:70%;
-    text-align:center;
+  /* "点这里"的标签 */
+  .tag-here{
+    position:absolute;z-index:70;pointer-events:none;background:var(--accent);color:#231a03;
+    border-radius:999px;padding:6px 14px;font-size:15px;font-weight:800;
+    box-shadow:var(--shadow);white-space:nowrap;animation:bob 1.5s ease-in-out infinite;
   }
-  .infobar.show{display:block}
-  .toast{
-    position:absolute;right:16px;bottom:70px;z-index:220;width:300px;display:none;
-    background:#fff;border-radius:12px;box-shadow:var(--shadow);border-left:6px solid var(--good);
-    padding:14px 16px;
-  }
-  .toast.show{display:block;animation:slidein .28s ease}
-  @keyframes slidein{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
-  .toast .tt{font-size:16px;font-weight:800;color:var(--good)}
-  .toast .td{font-size:15px;color:var(--muted);margin-top:4px;line-height:1.5}
 
-  /* ===== 任务清单 ===== */
-  .checklist{
-    position:absolute;right:16px;top:56px;z-index:160;width:360px;display:none;
-    background:#fff;border-radius:12px;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.12);
-    overflow:hidden;
+  /* ===== 练习区下面的控制条 ===== */
+  .ctrlrow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:12px;position:relative;z-index:1;min-height:44px}
+  html.no-flexgap .ctrlrow > *:not(:last-child){margin-right:10px}
+  .phase{background:#fff;border-radius:999px;padding:8px 15px;font-weight:800;font-size:15px;color:var(--muted);box-shadow:var(--shadow)}
+  .phase.practice{background:#fff6da;color:#a97c2f}
+  .phase.star{background:#eaf7ff;color:#2b6ea8}
+  .phase.watch{background:#f2eaff;color:#6a4fb8}
+  .stepbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  html.no-flexgap .stepbar > *:not(:last-child){margin-right:8px}
+  .step{background:rgba(255,255,255,.68);border-radius:999px;padding:8px 14px;font-weight:800;font-size:15px;color:#a9a9c0;transition:all .18s ease}
+  .step.on{background:#fff;color:var(--ink);transform:translateY(-3px);box-shadow:var(--shadow)}
+  .btn{
+    border:none;cursor:pointer;border-radius:16px;padding:11px 18px;
+    font-family:inherit;font-size:16px;font-weight:800;transition:transform .1s ease;box-shadow:0 5px 0 rgba(0,0,0,.12);
   }
-  .checklist.show{display:block;animation:popin .14s ease}
-  .checklist .ch-head{padding:12px 16px;background:#eef1f5;font-size:16px;font-weight:800;border-bottom:1px solid var(--line)}
-  .checklist .ch-list{padding:8px 10px 12px}
-  .checklist .ch{
-    display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:8px;
-    font-size:16px;font-weight:600;line-height:1.5;color:#3a414b;
-  }
-  html.no-flexgap .checklist .ch > *:not(:last-child){margin-right:10px}
-  .checklist .ch .box{
-    width:22px;height:22px;border-radius:6px;border:2px solid #b9c2cf;flex-shrink:0;
-    display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;margin-top:1px;
-  }
-  .checklist .ch.done{color:var(--good)}
-  .checklist .ch.done .box{background:var(--good);border-color:var(--good)}
-  .checklist .ch.now{background:#fff7e6}
-  .checklist .ch.now .box{border-color:var(--accent)}
+  .btn:hover{transform:translateY(-2px)}
+  .btn:active{transform:translateY(2px)}
+  .btn.primary{background:var(--green);color:#fff}
+  .btn.ghost{background:#fff;color:var(--ink)}
 
-  /* ===== 颁奖画面 ===== */
+  /* ===== 弹窗 ===== */
+  .overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(40,30,80,.4);display:none;align-items:center;justify-content:center;z-index:10000;padding:18px}
+  .overlay.show{display:flex}
+  .modal{background:#fff;border-radius:28px;box-shadow:var(--shadow);max-width:440px;width:100%;padding:28px 22px;text-align:center;animation:popin .3s ease}
+  .modal .moji{font-size:70px;line-height:1}
+  .modal h2{margin:10px 0 6px;font-size:30px;font-size:clamp(22px,5vw,30px);color:var(--blue)}
+  .modal p{margin:0 0 16px;color:var(--muted);font-size:16px;line-height:1.7}
+  .modal .mstars{font-size:24px;letter-spacing:4px;margin-bottom:16px}
+
+  /* ===== 通关证书 ===== */
   .finale{
     position:fixed;top:0;right:0;bottom:0;left:0;z-index:900;display:none;
-    align-items:center;justify-content:center;padding:20px;
+    align-items:center;justify-content:center;padding:18px;
     background:radial-gradient(circle at 50% 30%,#12406f 0%,#0a1b30 60%,#050c16 100%);
   }
   .finale.show{display:flex}
   .cert{
-    background:#fffdf7;border-radius:18px;padding:34px 40px;max-width:720px;width:100%;
-    text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);border:8px double var(--gold);
+    background:#fffdf7;border-radius:16px;padding:28px 32px;max-width:680px;width:100%;
+    text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);border:8px double var(--yellow);
     animation:popin .5s ease;
   }
-  .cert .big{font-size:76px;line-height:1}
-  .cert h2{margin:12px 0 6px;font-size:38px;font-size:clamp(26px,5vw,38px);color:var(--blue-dark)}
-  .cert p{margin:0 0 16px;font-size:19px;color:var(--muted);line-height:1.8}
-  .cert .skills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:18px}
-  html.no-flexgap .cert .skills > *:not(:last-child){margin-right:10px}
-  .cert .skills span{
-    background:var(--blue-soft);color:#12314f;border-radius:999px;padding:8px 16px;
-    font-size:16px;font-weight:700;
-  }
-  .cert button{
-    font-family:inherit;font-size:19px;font-weight:800;cursor:pointer;border:none;
-    border-radius:10px;padding:14px 26px;background:var(--blue);color:#fff;
-  }
+  .cert .big{font-size:68px;line-height:1}
+  .cert h2{margin:10px 0 6px;font-size:34px;font-size:clamp(24px,5vw,34px);color:var(--blue-dark)}
+  .cert p{margin:0 0 14px;font-size:17px;color:var(--muted);line-height:1.8}
+  .cert .skills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px}
+  html.no-flexgap .cert .skills > *:not(:last-child){margin-right:8px}
+  .cert .skills span{background:var(--blue-soft);color:#12314f;border-radius:999px;padding:7px 14px;font-size:15px;font-weight:700}
+  .cert button{font-family:inherit;font-size:18px;font-weight:800;cursor:pointer;border:none;border-radius:10px;padding:13px 24px;background:var(--blue);color:#fff}
   .cert button:hover{background:#1a7fd0}
+  .cf{position:fixed;top:-20px;width:10px;height:14px;border-radius:3px;z-index:950;pointer-events:none;animation:cfall 2s linear forwards}
+  @keyframes cfall{to{transform:translateY(110vh) rotate(540deg);opacity:.35}}
 
-  .screen-note{
-    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;
-    color:rgba(255,255,255,.92);font-size:22px;font-weight:700;text-align:center;
-    text-shadow:0 2px 8px rgba(0,0,0,.45);pointer-events:none;line-height:1.9;
+  @media(max-height:700px){
+    .play{height:390px}
+    .mascot{width:66px;height:66px;font-size:36px}
+    .bubble{font-size:20px;min-height:56px}
   }
   @media(max-width:900px){
-    .topbar{font-size:15px;gap:10px;padding:0 10px}
-    .topbar .task{font-size:15px}
-    .assistant .bubble{max-width:340px;font-size:16px}
-    .icon{width:88px;height:100px}
-    .icon .face{width:54px;height:54px;font-size:30px}
+    .mascot{width:66px;height:66px;font-size:36px}
+    .bubble{font-size:19px}
+    .micon{width:82px;height:92px}
+    .micon .face{width:48px;height:48px;font-size:27px}
   }
 </style>
 <script>
 /* ===== 防误触兜底 =====
-   1) 右键菜单：本页大量练习右键，系统菜单会挡住画面，所以全局取消默认菜单，
-      只调 preventDefault、绝不 stopPropagation，页内自绘的菜单照常工作。
-      输入框除外。2) 拖拽：防止图标/文字被浏览器拖走；本页图标与窗口拖动都走
-      pointer 事件，不受影响。3) 防误退：压两层 history 哨兵，右键拖动手势和
-      误按后退键都不会把学生带走。本页不使用 hash / history 导航。 */
+   1) 右键菜单：本页要练右键，系统菜单会挡住画面，所以全局取消默认菜单，
+      只调 preventDefault、绝不 stopPropagation，页内自己画的菜单照常工作。
+      输入框除外。2) 拖拽：防止图标/文字被浏览器拖走；页内拖动都走 pointer 事件，
+      不受影响。3) 防误退：压两层 history 哨兵，右键拖动手势和误按后退键都不会
+      把学生带走。本页不使用 hash / history 导航。 */
 (function () {
-  /* 输入框里保留原生右键菜单，方便右键粘贴 */
   function keepNative(el) {
     return !!(el && el.closest &&
       el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'));
@@ -335,7 +328,6 @@
     e.preventDefault();
   }, true);
 
-  /* 防误退 */
   if (location.protocol === 'file:') return;      /* file:// 下浏览器禁止 pushState */
   function guard() {
     try { history.pushState({ mtSentinel: 1 }, '', location.href); } catch (e) {}
@@ -349,10 +341,7 @@
 <script>
 /* ===== 兼容层 A：flex gap 能力探测 =====
    老内核（Edge 84 以前、EdgeHTML）的 flex 布局不支持 gap，间距会全部塌掉。
-   这里用真实布局量一次宽度来判断，支持就用原样，不支持就给 <html> 挂上
-   no-flexgap，样式表里预置的 margin 规则接管间距。
-   不用 CSS.supports('gap') 判断：gap 在 Chrome 66 起就作为 grid-gap 的别名存在，
-   老版本会误报"支持"。 */
+   这里用真实布局量一次宽度来判断，不支持就给 <html> 挂上 no-flexgap。 */
 (function () {
   try {
     var box = document.createElement('div');
@@ -370,55 +359,36 @@
 </script>
 </head>
 <body>
-<div class="desk" id="desk">
-  <div class="wall" id="wall"></div>
+<div class="bg-bubbles" id="bg"></div>
 
-  <div class="screen-note" id="screenNote"></div>
+<div class="wrap">
+  <div class="star-total" aria-live="polite"><span class="st-ico">⭐</span><span id="starNum">0</span><span class="st-lbl">颗星</span></div>
 
-  <div class="topbar" id="topbar">
-    <span class="lv" id="lvName">鼠标练习营 3</span>
-    <span class="task" id="taskText">正在准备桌面……</span>
-    <span class="dots" id="dots"></span>
-    <span class="stars" id="stars">⭐ 0</span>
-    <button class="primary" id="btnDemo" style="display:none">看演示 👀</button>
-    <button id="btnList">任务清单</button>
-    <button id="btnHome">回到桌面</button>
+  <header>
+    <div class="mascot" id="mascot">🐭</div>
+    <div class="bubble" id="bubble" aria-live="polite">点一个圆圈，我们开始学电脑！</div>
+  </header>
+
+  <nav id="nav"></nav>
+
+  <div class="stars" id="stars"></div>
+
+  <div class="play" id="play"></div>
+
+  <div class="ctrlrow" id="ctrlrow" style="display:none">
+    <span class="phase" id="phase">练习轮</span>
+    <div class="stepbar" id="stepbar"></div>
+    <button class="btn ghost" id="btnDemo">再看一遍 👀</button>
   </div>
+</div>
 
-  <div class="icons" id="icons"></div>
-  <div class="winlayer" id="winlayer"></div>
-  <div class="snapview" id="snapview"></div>
-
-  <div class="assistant" id="assistant">
-    <div class="bot" id="bot">🤖</div>
-    <div class="bubble" id="bubble">点一个图标，我们开始吧！</div>
-  </div>
-
-  <div class="infobar" id="infobar"></div>
-  <div class="toast" id="toast"><div class="tt" id="toastT"></div><div class="td" id="toastD"></div></div>
-
-  <div class="ctxmenu" id="ctxmenu"></div>
-  <div class="startmenu" id="startmenu">
-    <div class="sm-head">所有应用（滚轮往下滑）</div>
-    <div class="sm-list" id="smList"></div>
-    <div class="sm-foot" id="smFoot">把鼠标放在这里转滚轮，列表会上下滑动</div>
-  </div>
-  <div class="checklist" id="checklist">
-    <div class="ch-head">任务清单 <button class="tb-btn" id="btnListClose" style="float:right;padding:4px 10px;font-size:14px">收起</button></div>
-    <div class="ch-list" id="chList"></div>
-  </div>
-
-  <div class="taskbar" id="taskbar">
-    <button class="tb-btn start" id="btnStart"><span>⊞</span>开始</button>
-    <div class="tb-tasks" id="tbTasks"></div>
-    <div class="tb-clock" id="clock">--:--<small>--</small></div>
-  </div>
-
-  <div class="ghost" id="ghost">
-    <span class="rip" id="rip"></span>
-    <svg class="cur" width="34" height="42" viewBox="0 0 36 44">
-      <path d="M3 2 L3 32 L11 24.5 L17 39 L23.5 36 L17.5 22 L29 21 Z" fill="#fff" stroke="#1f1f1f" stroke-width="3" stroke-linejoin="round"/>
-    </svg>
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="moji" id="mMoji">🎉</div>
+    <h2 id="mTitle">真棒！</h2>
+    <p id="mText"></p>
+    <div class="mstars" id="mStars"></div>
+    <div class="actions"><button class="btn primary" id="mOk">确定</button></div>
   </div>
 </div>
 
@@ -426,9 +396,9 @@
   <div class="cert">
     <div class="big">🏆</div>
     <h2>电脑小达人</h2>
-    <p id="certSub">你已经认识桌面、会用图标、会摆窗口了！</p>
+    <p id="certSub"></p>
     <div class="skills" id="certSkills"></div>
-  <button id="certOk">再玩一遍</button>
+    <button id="certOk">再玩一遍</button>
   </div>
 </div>
 
@@ -436,130 +406,271 @@
 (function(){
   "use strict";
   const $ = s=>document.querySelector(s);
-  const desk=$('#desk'), iconsLayer=$('#icons'), winLayer=$('#winlayer'), snapView=$('#snapview');
-  const ctxmenu=$('#ctxmenu'), startmenu=$('#startmenu'), checklist=$('#checklist'), chList=$('#chList');
-  const bubble=$('#bubble'), infobar=$('#infobar'), toast=$('#toast');
-  const taskText=$('#taskText'), dotsEl=$('#dots'), starsEl=$('#stars');
-  const tbTasks=$('#tbTasks'), smList=$('#smList'), ghost=$('#ghost');
-  const lvName=$('#lvName'), btnDemo=$('#btnDemo'), wall=$('#wall');
+  const play=$('#play'), bubble=$('#bubble'), mascot=$('#mascot'), starsEl=$('#stars');
+  const phaseEl=$('#phase'), stepbar=$('#stepbar'), ctrlrow=$('#ctrlrow'), btnDemo=$('#btnDemo');
+  const overlay=$('#overlay');
 
-  /* ================= 小工具 ================= */
+  /* ================= 通用小工具 ================= */
   function el(tag,cls,html){
     const e=document.createElement(tag);
     if(cls) e.className=cls;
     if(html!=null) e.innerHTML=html;
     return e;
   }
-  function on(t,type,fn,opt){ t.addEventListener(type,fn,opt||false); return fn; }
-  function centerOf(node){
-    const r=node.getBoundingClientRect();
-    return {x:Math.round(r.left+r.width/2), y:Math.round(r.top+r.height/2)};
+  function say(html,shake){
+    bubble.innerHTML=html;
+    if(shake){ bubble.classList.remove('shake'); void bubble.offsetWidth; bubble.classList.add('shake'); }
   }
-  function flash(node,cls){ if(!node) return; node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
-  function say(msg,shake){
-    bubble.innerHTML=msg;
-    bubble.style.display='block';
-    if(shake){ flash(bubble,'shake'); }
-    clearTimeout(say._t);
-    say._t=setTimeout(function(){ bubble.style.display='none'; }, 7000);
+  let sayTimer=null;
+  function saySoon(html,ms){
+    clearTimeout(sayTimer);
+    sayTimer=setTimeout(function(){ say(html); }, ms||3600);
   }
-  function tip(msg,ms){
-    clearTimeout(tip._t);
-    tip._t=setTimeout(function(){ say(msg); }, ms||3600);
-  }
-  function showInfo(msg){
-    infobar.innerHTML=msg;
-    infobar.className='infobar show';
-    clearTimeout(showInfo._t);
-    showInfo._t=setTimeout(function(){ infobar.className='infobar'; }, 4200);
-  }
-  function notify(title,detail){
-    $('#toastT').textContent=title;
-    $('#toastD').textContent=detail;
-    toast.className='toast show';
-    clearTimeout(notify._t);
-    notify._t=setTimeout(function(){ toast.className='toast'; }, 4200);
-  }
+  function flashTxt(){}
   let timers=[];
   function T(ms,fn){ timers.push(setTimeout(fn,ms)); }
-  function clearTimers(){ while(timers.length) clearTimeout(timers.pop()); clearTimeout(tip._t); }
-  function rectOf(node){ const r=node.getBoundingClientRect(); return {x:r.left,y:r.top,w:r.width,h:r.height}; }
-
-  /* ================= 桌面几何 ================= */
-  const TOP=44, BAR=56, PAD=18, CELL_W=104, CELL_H=114, COLS=6;
-  function deskW(){ return desk.clientWidth; }
-  function deskH(){ return desk.clientHeight; }
-  function workTop(){ return TOP; }
-  function workH(){ return deskH()-TOP-BAR; }
-  function slotPos(col,row){
-    const p=slotPos;   /* 图标层的坐标（图标层在 topbar 下面） */
-    return {x:PAD+col*CELL_W, y:PAD+row*CELL_H};
+  function clearTimers(){ while(timers.length) clearTimeout(timers.pop()); clearTimeout(sayTimer); }
+  let handlers=[];
+  function on(target,type,fn,opt){
+    target.addEventListener(type,fn,opt||false);
+    handlers.push(function(){ target.removeEventListener(type,fn,opt||false); });
   }
+  function clearHandlers(){ while(handlers.length) handlers.pop()(); }
+  function centerOf(node){
+    const r=node.getBoundingClientRect();
+    return {x:r.left+r.width/2, y:r.top+r.height/2};
+  }
+  function rectOf(node){ const r=node.getBoundingClientRect(); return {x:r.left,y:r.top,w:r.width,h:r.height}; }
+  function flash(node,cls){ if(!node) return; node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
+  function setStars(done,total){
+    starsEl.innerHTML='';
+    for(let i=0;i<total;i++){
+      starsEl.appendChild(el('span','star'+(i<done?' pop':''),'<span class="s-in">⭐</span>'));
+    }
+    if(total>0){
+      starsEl.appendChild(el('span','big-count',done+' / '+total));
+    }
+  }
+  function confetti(){
+    const colors=['#ff6fa5','#ffd23f','#43a3ff','#4ed47e','#a577ff','#43d2e8'];
+    for(let i=0;i<24;i++){
+      const c=el('div','cf');
+      c.style.left=Math.random()*100+'vw';
+      c.style.background=colors[Math.floor(Math.random()*colors.length)];
+      c.style.animationDelay=(Math.random()*.25)+'s';
+      document.body.appendChild(c);
+      setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); },1600);
+    }
+  }
+  function showModal(moji,title,text,mstarStr){
+    $('#mMoji').textContent=moji;
+    $('#mTitle').textContent=title;
+    $('#mText').innerHTML=text;
+    $('#mStars').textContent=mstarStr||'';
+    overlay.classList.add('show');
+  }
+  function hideModal(){ overlay.classList.remove('show'); }
 
-  /* ================= 桌面图标 ================= */
-  const S={ sel:null, selSeen:{}, icons:[], wins:[], zTop:30, active:null,
-            inFolder:{}, seqStep:0, flags:{}, wallLight:false, props:0, taskDone:true, ctxOn:null };
+  /* ================= 练习区尺寸 ================= */
+  const PAD=12, CELL_W=100, CELL_H=106, COLS=8, BAR=38;
+  function pW(){ return play.clientWidth; }
+  function pH(){ return play.clientHeight; }
+  function barOn(){ return !!(S.scene&&S.scene.bar) || S.wins.length>0; }
+  function barH(){ return barOn()?BAR:0; }
+  function workH(){ return pH()-barH(); }
+  function slotPos(col,row){ return {x:PAD+col*CELL_W, y:PAD+row*CELL_H}; }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
 
+  /* ================= 状态 ================= */
+  const S={ icons:[], wins:[], sel:null, selSeen:{}, inFolder:{}, seqStep:0, flags:{},
+            zTop:20, active:null, scene:null, layer:null, winLayer:null, menu:null, start:null,
+            info:null, taskbar:null, hid:null, done:false, found:false };
   const APPS={
-    pc:   {label:'我的电脑', emoji:'🖥',  body:'<p>这里是你的电脑。</p><p>左边能看到硬盘和文件夹，双击才打得开。</p>'},
-    bin:  {label:'回收站',   emoji:'🗑',  body:'<p>删掉的东西先放在这里。</p><p>确认不要了，再点「清空回收站」。</p>'},
+    pc:   {label:'我的电脑', emoji:'🖥',  body:'<p>这里是你的电脑。</p><p>左边能看到硬盘和文件夹。</p>'},
+    bin:  {label:'回收站',   emoji:'🗑',  body:'<p>删掉的东西先放在这里。</p>'},
     draw: {label:'画图',     emoji:'🎨',  body:'<p>可以在这里画画。</p><p>左边是颜色，上面是画笔。</p>'},
-    photo:{label:'照片',     emoji:'🖼',  body:'<div style="font-size:72px;text-align:center;line-height:1.4">🌄</div><p style="text-align:center">这是你拍的照片</p>'},
-    essay:{label:'作文',     emoji:'📝',  scroll:'essay'},
-    calc: {label:'计算器',   emoji:'🧮',  body:'<div style="font-size:30px;font-weight:800;text-align:right;padding:8px 14px;background:#eef1f5;border-radius:8px">2026</div><p style="text-align:center;margin-top:14px">1 2 3 + 4 = 5 …</p>'},
+    photo:{label:'照片',     emoji:'🖼',  body:'<div style="font-size:56px;text-align:center;line-height:1.3">🌄</div><p style="text-align:center">这是你拍的照片</p>'},
+    essay:{label:'作文',     emoji:'📝',  scroll:true},
+    calc: {label:'计算器',   emoji:'🧮',  body:'<p style="text-align:right;font-size:22px;font-weight:800;background:#eef1f5;border-radius:6px;padding:6px 10px">2026</p><p style="text-align:center">1 2 3 + 4 = 5</p>'},
     music:{label:'音乐',     emoji:'🎵',  body:'<p>正在播放：小星星</p><p>⏵ ⏸ ⏭</p>'},
-    paint:{label:'美术作业', emoji:'🖼',  body:'<div style="font-size:72px;text-align:center;line-height:1.4">🎨</div><p style="text-align:center">这幅画要交给老师</p>'},
+    paint:{label:'美术作业', emoji:'🖼',  body:'<div style="font-size:56px;text-align:center;line-height:1.3">🎨</div><p style="text-align:center">这幅画要交给老师</p>'},
     cn:   {label:'语文作业', emoji:'📖',  body:'<p>今天的作业：</p><p>1. 读课文三遍<br>2. 抄写生字</p>'},
     folder:{label:'作业',    emoji:'📁',  folder:true}
   };
+  const START_APPS=[['calc','计算器','🧮'],['draw','画图','🎨'],['photo','照片','🖼'],['essay','作文','📝'],
+                    ['music','音乐','🎵'],['pc','我的电脑','🖥'],['bin','回收站','🗑'],['note','记事本','📒'],
+                    ['clock','时钟','⏰'],['camera','相机','📷'],['weather','天气','⛅'],['paint3d','3D 画图','🧊']];
   const SCROLL_ESSAY=
-    '<h3 style="margin:0 0 10px">我的周末</h3>'
-    +'<p>星期六早上，我七点就起床了。</p><p>我先刷牙洗脸，然后吃早饭。早饭是牛奶和面包。</p>'
-    +'<p>吃完早饭，我写了一会儿作业，就下楼玩了。</p><p>楼下有好多小朋友，我们一起跳绳。</p>'
-    +'<p id="mk-hello" style="background:#fff3cd;padding:6px 10px;border-radius:6px"><b>早上好</b>，我们一起玩到中午。</p>'
-    +'<p>中午回家吃饭，妈妈做了西红柿炒鸡蛋，我吃了两碗饭。</p>'
-    +'<p>下午我睡了一会儿午觉，起来以后看了一集动画片。</p>'
-    +'<p>动画片里的小狗特别可爱，它还会数数。</p><p>看完动画片，我帮妈妈把桌子擦干净了。</p>'
-    +'<p>晚上我和爸爸一起散步，天上的星星很亮。</p><p>爸爸说，那颗最亮的是北极星。</p>'
+    '<h3 style="margin:0 0 8px">我的周末</h3>'
+    +'<p>星期六早上，我七点就起床了。</p>'
+    +'<p>我先刷牙洗脸，然后吃早饭。早饭是牛奶和面包。</p>'
+    +'<p>吃完早饭，我写了一会儿作业，就下楼玩了。</p>'
+    +'<p id="mk-hello" style="background:#fff3cd;padding:5px 9px;border-radius:6px"><b>早上好</b>，我们一起玩到中午。</p>'
+    +'<p>中午回家吃饭，妈妈做了西红柿炒鸡蛋。</p>'
+    +'<p>下午我睡了一会儿午觉，起来看了一集动画片。</p>'
+    +'<p>动画片里的小狗特别可爱，它还会数数。</p>'
+    +'<p>晚上我和爸爸一起散步，天上的星星很亮。</p>'
     +'<p>回家以后，我洗了澡，刷了牙，九点就睡觉了。</p>'
-    +'<p>这个周末过得很开心，我最喜欢和小朋友一起跳绳。</p>'
-    +'<p id="mk-end" style="background:#e3f2fd;padding:6px 10px;border-radius:6px"><b>最后一行：我的作业编号是 2026</b></p>'
-    +'<p style="height:60px"></p>';
+    +'<p id="mk-end" style="background:#e3f2fd;padding:5px 9px;border-radius:6px"><b>最后一行：我的作业编号是 2026</b></p>'
+    +'<p style="height:40px"></p>';
 
-  function iconNode(ic){
-    const n=el('div','icon');
-    n.dataset.id=ic.id;
-    n.innerHTML='<span class="face">'+ic.emoji+'</span><span class="lbl">'+ic.label+'</span>';
-    return n;
+  /* ================= 搭场景（每次只放这一关要用的东西） ================= */
+  function buildScene(cfg){
+    clearHandlers();
+    play.innerHTML='';
+    S.icons=[]; S.wins=[]; S.sel=null; S.selSeen={}; S.inFolder={}; S.seqStep=0; S.flags={};
+    S.zTop=20; S.active=null; S.done=false; S.found=false; S.hid=null; S.menu=null; S.start=null;
+    S.ready=false;
+    folderSeq=0;                       /* 每一关新建的文件夹都从 1 号开始 */
+    const scene=cfg.scene||{};
+    S.scene=scene;
+    const st=el('div','stage'+(scene.light?' lightbg':''));
+    play.appendChild(st); S.stage=st;
+    st.appendChild(el('div','wallmini'));
+    const layer=el('div','micons'); st.appendChild(layer); S.layer=layer;
+    const wl=el('div','mwins'); st.appendChild(wl); S.winLayer=wl;
+    if(scene.hid){
+      const h=el('div','mhid','<span class="face">'+scene.hid.emoji+'</span>');
+      h.style.cssText='position:absolute;z-index:2;width:'+(scene.hid.size||86)+'px;height:'+(scene.hid.size||86)+'px;'
+        +'border-radius:14px;background:#fff;border:4px dashed #cfd8ef;display:flex;align-items:center;justify-content:center;'
+        +'font-size:'+Math.round((scene.hid.size||86)*0.5)+'px;box-shadow:0 6px 14px rgba(15,25,45,.2)';
+      st.appendChild(h); S.hid=h;
+      S.hidAt=scene.hid.at||[0.72,0.5];
+      on(h,'click',function(){ if(S.found){ S.flags.hidclick=true; checkGoal(); } });
+    }
+    const m=el('div','mmenu'); st.appendChild(m); S.menu=m;
+    const sm=el('div','mstart');
+    sm.innerHTML='<div class="sm-head">所有应用（滚轮往下滑）</div><div class="sm-list"></div>';
+    st.appendChild(sm); S.start=sm;
+    const info=el('div','minfo'); st.appendChild(info); S.info=info;
+    /* 任务栏一直建好，按需要显示/隐藏（这样后开的窗口也能触发判定） */
+    const tb=el('div','mtask hide');
+    tb.innerHTML='<button class="mtbtn start"><span>⊞</span>开始</button><div class="mtlist"></div>'
+      +'<div class="mtclock">'+clockText()+'</div>';
+    st.appendChild(tb); S.taskbar=tb;
+    (scene.i||[]).forEach(function(it){
+      const id=it[0], src=APPS[id];
+      S.icons.push({id:id,label:src.label,emoji:src.emoji,folder:!!src.folder,app:id,col:it[1],row:it[2]});
+    });
+    (scene.w||[]).forEach(function(spec){ makeWindow(spec,true); });
+    const actWin=(scene.w||[]).filter(function(s){ return s.active; })[0];
+    if(actWin){ const aw=winById(actWin.id); if(aw) activate(aw,true); }
+    layout();
+    renderIcons(); renderTaskbar();
+    if(S.taskbar){
+      on(S.taskbar.querySelector('.mtbtn.start'),'click',function(){
+        if(S.start.classList.contains('show')) closeStart(); else openStart();
+      });
+    }
+    addGhost();
+    on(play,'click',function(e){
+      if(e.target.closest('.micon')||e.target.closest('.mwin')||e.target.closest('.mmenu')
+         ||e.target.closest('.mstart')||e.target.closest('.mtask')) return;
+      closeMenu(); closeStart();
+      if(S.sel) selectIcon(null);
+    });
+    on(play,'contextmenu',function(e){
+      if(e.target.closest('input,textarea')) return;
+      if(e.target.closest('.mwin')||e.target.closest('.mtask')) return;
+      const ic=e.target.closest('.micon');
+      const pr=play.getBoundingClientRect();
+      const x=e.clientX-pr.left, y=e.clientY-pr.top;
+      if(ic){ selectIcon(ic.dataset.id); openMenu(x,y,'icon',ic.dataset.id); }
+      else if(!e.target.closest('.mmenu')&&!e.target.closest('.mstart')){ openMenu(x,y,'desk'); }
+    });
+    /* 学生自己动手了，就停下演示（演示只在没人动的时候自己放） */
+    on(play,'pointerdown',function(){ if(demoOn){ stopDemo(); S.ready=true; } },true);
+    if(scene.start) openStart();
   }
-  function renderIcons(){
-    iconsLayer.innerHTML='';
+  function clockText(){
+    const d=new Date();
+    return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+  }
+  function layout(){
+    if(!S.layer) return;
     S.icons.forEach(function(ic){
-      if(ic.hidden||S.inFolder[ic.id]) return;
-      const n=iconNode(ic);
+      const n=iconEl(ic.id); if(!n) return;
       const p=slotPos(ic.col,ic.row);
       n.style.left=p.x+'px'; n.style.top=p.y+'px';
-      if(S.sel===ic.id) n.classList.add('sel');
-      iconsLayer.appendChild(n);
-      bindIconNode(n);
     });
+    S.wins.forEach(function(w){
+      if(w.snap) { setRect(w,snapRect(w.snap)); return; }
+      placeWindow(w);
+    });
+    if(S.hid){
+      const p=slotPos(0,0);
+      const hx=clamp(S.hidAt[0]*(pW()-S.hid.offsetWidth),10,pW()-S.hid.offsetWidth-10);
+      const hy=clamp(S.hidAt[1]*(workH()-S.hid.offsetHeight),8,Math.max(8,workH()-S.hid.offsetHeight-8));
+      S.hid.style.left=Math.round(hx)+'px'; S.hid.style.top=Math.round(hy)+'px';
+    }
   }
+  /* 给窗口定一个能看见的初始位置（后开的窗口也要有） */
+  function placeWindow(w){
+    const size=w.spec.size||[520,320];
+    const wide=clamp(size[0],280,pW()-24), high=clamp(size[1],180,workH()-30);
+    const at=w.spec.at||[0.5,0.4];
+    const x=clamp(at[0]*(pW()-wide),10,Math.max(10,pW()-wide-10));
+    const y=clamp(at[1]*(workH()-high),8,Math.max(8,workH()-high-8));
+    setRect(w,{x:x,y:y,w:wide,h:high});
+  }
+
+  /* ================= 桌面图标 ================= */
   function iconEl(id){
-    const list=iconsLayer.querySelectorAll('.icon');
+    if(!S.layer) return null;
+    const list=S.layer.querySelectorAll('.micon');
     for(let i=0;i<list.length;i++){ if(list[i].dataset.id===id) return list[i]; }
     return null;
   }
   function iconById(id){ for(let i=0;i<S.icons.length;i++){ if(S.icons[i].id===id) return S.icons[i]; } return null; }
+  function renderIcons(){
+    if(!S.layer) return;
+    S.layer.innerHTML='';
+    S.icons.forEach(function(ic){
+      if(ic.hidden||S.inFolder[ic.id]) return;
+      const n=el('div','micon','<span class="face">'+ic.emoji+'</span><span class="lbl">'+ic.label+'</span>');
+      n.dataset.id=ic.id;
+      const p=slotPos(ic.col,ic.row);
+      n.style.left=p.x+'px'; n.style.top=p.y+'px';
+      if(S.sel===ic.id) n.classList.add('sel');
+      S.layer.appendChild(n);
+      bindIcon(n,ic.id);
+    });
+  }
+  function bindIcon(node,id){
+    on(node,'click',function(){ selectIcon(id); });
+    on(node,'dblclick',function(){ openIcon(id); });
+    on(node,'contextmenu',function(e){
+      if(e.target.closest('input,textarea')) return;
+      e.preventDefault();
+      selectIcon(id);
+      const pr=play.getBoundingClientRect();
+      openMenu(e.clientX-pr.left, e.clientY-pr.top, 'icon', id);
+    });
+    on(node,'pointerdown',function(e){ iconDragStart(e,id); });
+  }
+  function showInfo(html){
+    if(!S.info) return;
+    S.info.innerHTML=html;
+    S.info.classList.add('show');
+    clearTimeout(showInfo._t);
+    showInfo._t=setTimeout(function(){ S.info.classList.remove('show'); },3600);
+  }
+  function selectIcon(id){
+    S.sel=id;
+    renderIcons();
+    if(id){
+      const ic=iconById(id);
+      S.selSeen[id]=true;
+      showInfo('已选中：<b>'+ic.label+'</b>　双击可以打开');
+    } else showInfo('已取消选中');
+    checkGoal();
+  }
   function freeSlot(col,row){
-    for(let i=0;i<S.icons.length;i++){
-      const ic=S.icons[i];
-      if(ic.hidden||S.inFolder[ic.id]) continue;
-      if(ic.col===col&&ic.row===row) return false;
-    }
-    return true;
+    return !S.icons.some(function(ic){
+      return !ic.hidden && !S.inFolder[ic.id] && ic.col===col && ic.row===row;
+    });
   }
   function nearestSlot(x,y){
-    /* 找离落点最近、又没被占的格子 */
     let best=null, bestD=1e9;
     for(let row=0;row<4;row++){
       for(let col=0;col<COLS;col++){
@@ -571,373 +682,11 @@
     }
     return best||{col:0,row:0};
   }
-  function selectIcon(id){
-    S.sel=id;
-    renderIcons();
-    if(id){
-      const ic=iconById(id);
-      S.selSeen[id]=true;
-      showInfo('已选中：<b>'+ic.label+'</b>　（双击可以打开）');
-    } else {
-      showInfo('已取消选中');
-    }
-    checkGoal();
-  }
-
-  /* ================= 窗口 ================= */
-  let winSeq=1;
-  function winById(id){ for(let i=0;i<S.wins.length;i++){ if(S.wins[i].id===id) return S.wins[i]; } return null; }
-  function makeWindow(opt){
-    const w={ id:opt.id||('w'+(winSeq++)), title:opt.title, icon:opt.icon||'🪟',
-              state:'normal', snap:null, rect:null, restore:null, z:++S.zTop, el:null };
-    const node=el('div','win');
-    node.dataset.win=w.id;
-    node.innerHTML='<div class="tbar"><span class="wico">'+w.icon+'</span><span class="wtxt">'+w.title+'</span>'
-      +'<span class="wbtns"><button class="wb min" title="最小化">—</button>'
-      +'<button class="wb max" title="最大化">□</button>'
-      +'<button class="wb cls" title="关闭">✕</button></span></div>'
-      +'<div class="wbody'+(opt.center?' center':'')+'">'+(opt.html||'')+'</div>';
-    w.el=node;
-    winLayer.appendChild(node);
-    S.wins.push(w);
-    const body=node.querySelector('.wbody');
-    if(body) on(body,'scroll',function(){ checkGoal(); });
-    /* 初始大小和位置 */
-    const size=opt.size||[520,360];
-    const wide=Math.max(320,Math.min(size[0], deskW()-40));
-    const high=Math.max(220,Math.min(size[1], workH()-40));
-    const n=S.wins.length;
-    const x=opt.x!=null?opt.x:Math.max(20,Math.round(deskW()/2-wide/2)+((n%3)-1)*36);
-    const y=opt.y!=null?opt.y:Math.max(TOP+16,Math.round(workTop()+workH()/2-high/2)+((n%3)-1)*28);
-    setWinRect(w,{x:x,y:y,w:wide,h:high});
-    bindWindow(w);
-    activate(w);
-    renderTaskbar();
-    return w;
-  }
-  function setWinRect(w,r){
-    w.rect={x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.w),h:Math.round(r.h)};
-    const e=w.el;
-    e.style.left=w.rect.x+'px'; e.style.top=w.rect.y+'px';
-    e.style.width=w.rect.w+'px'; e.style.height=w.rect.h+'px';
-  }
-  function activate(w){
-    if(!w) return;
-    if(w.state==='min'){ w.state='normal'; w.el.classList.remove('min'); }
-    S.active=w.id;
-    S.wins.forEach(function(x){
-      x.el.classList.toggle('active', x.id===w.id);
-      if(x.id===w.id) x.el.style.zIndex=++S.zTop;
-    });
-    renderTaskbar();
-    checkGoal();
-  }
-  function closeWindow(w){
-    if(!w) return;
-    const i=S.wins.indexOf(w);
-    if(i>=0) S.wins.splice(i,1);
-    if(w.el&&w.el.parentNode) w.el.parentNode.removeChild(w.el);
-    if(S.active===w.id) S.active=S.wins.length?S.wins[S.wins.length-1].id:null;
-    renderTaskbar();
-    checkGoal();
-  }
-  function closeAllWindows(){
-    while(S.wins.length) closeWindow(S.wins[0]);
-  }
-  function toggleMax(w){
-    if(w.snap==='max'||w.snap){
-      if(w.restore) setWinRect(w,w.restore);
-      w.snap=null;
-      w.el.querySelector('.wb.max').textContent='□';
-    } else {
-      w.restore=w.rect;
-      setWinRect(w,snapRect('max'));
-      w.snap='max';
-      w.el.querySelector('.wb.max').textContent='❐';
-    }
-    w.state='normal'; w.el.classList.remove('min');
-    activate(w);
-  }
-  function minimize(w){
-    w.state='min'; w.el.classList.add('min');
-    if(S.active===w.id) S.active=null;
-    renderTaskbar(); checkGoal();
-  }
-  function bindWindow(w){
-    const e=w.el;
-    on(e,'pointerdown',function(){ if(S.active!==w.id) activate(w); });
-    on(e.querySelector('.wb.min'),'click',function(){ minimize(w); });
-    on(e.querySelector('.wb.max'),'click',function(){ toggleMax(w); });
-    on(e.querySelector('.wb.cls'),'click',function(){ closeWindow(w); });
-    const tb=e.querySelector('.tbar');
-    on(tb,'dblclick',function(){ toggleMax(w); });
-    on(tb,'pointerdown',function(ev){ winDragStart(ev,w); });
-  }
-  function renderTaskbar(){
-    tbTasks.innerHTML='';
-    S.wins.forEach(function(w){
-      const b=el('button','tb-btn'+(S.active===w.id&&w.state!=='min'?' on':''),
-        '<span>'+w.icon+'</span>'+w.title);
-      b.dataset.win=w.id;
-      on(b,'click',function(){
-        if(w.state==='min') activate(w);
-        else if(S.active===w.id) minimize(w);
-        else activate(w);
-      });
-      tbTasks.appendChild(b);
-    });
-    checkGoal();
-  }
-
-  /* ================= 窗口拖动 + 贴边 ================= */
-  function snapZoneAt(x,y){
-    const W=deskW(), top=workTop(), H=workH();
-    const ex=44, ey=44;
-    const nearLeft=x<ex, nearRight=x>W-ex;
-    const nearTop=y<top+ey, nearBottom=y>top+H-ey;
-    if(nearTop&&!nearLeft&&!nearRight) return 'max';
-    if(nearLeft&&nearTop) return 'tl';
-    if(nearLeft&&nearBottom) return 'bl';
-    if(nearRight&&nearTop) return 'tr';
-    if(nearRight&&nearBottom) return 'br';
-    if(nearLeft) return 'left';
-    if(nearRight) return 'right';
-    return null;
-  }
-  function snapRect(zone){
-    const W=deskW(), top=workTop(), H=workH();
-    const w2=Math.round(W/2), h2=Math.round(H/2);
-    if(zone==='max')  return {x:0,y:top,w:W,h:H};
-    if(zone==='left') return {x:0,y:top,w:w2,h:H};
-    if(zone==='right')return {x:W-w2,y:top,w:w2,h:H};
-    if(zone==='tl')   return {x:0,y:top,w:w2,h:h2};
-    if(zone==='tr')   return {x:W-w2,y:top,w:w2,h:h2};
-    if(zone==='bl')   return {x:0,y:top+H-h2,w:w2,h:h2};
-    if(zone==='br')   return {x:W-w2,y:top+H-h2,w:w2,h:h2};
-  }
-  function showSnapView(zone){
-    if(!zone){ snapView.style.display='none'; return; }
-    const r=snapRect(zone);
-    snapView.style.display='block';
-    snapView.style.left=r.x+'px'; snapView.style.top=r.y+'px';
-    snapView.style.width=r.w+'px'; snapView.style.height=r.h+'px';
-  }
-  function applySnap(w,zone){
-    if(!zone) return;
-    w.restore=w.restore||w.rect;
-    setWinRect(w,snapRect(zone));
-    w.snap=zone;
-    w.el.querySelector('.wb.max').textContent=(zone==='max')?'❐':'□';
-  }
-  let winDrag=null;
-  function winDragStart(ev,w){
-    if(ev.button!==0) return;
-    if(ev.target.closest&&ev.target.closest('.wb')) return;
-    stopDemo();
-    const r=rectOf(w.el);
-    winDrag={w:w,id:ev.pointerId,dx:ev.clientX-r.x,dy:ev.clientY-r.y,zone:null};
-    w.el.classList.add('active');
-    w.el.querySelector('.tbar').classList.add('grabbing');
-    S.active=w.id;
-    document.addEventListener('pointermove',winDragMove);
-    document.addEventListener('pointerup',winDragEnd);
-    document.addEventListener('pointercancel',winDragEnd);
-  }
-  function winDragMove(ev){
-    if(!winDrag||ev.pointerId!==winDrag.id) return;
-    ev.preventDefault();
-    const w=winDrag.w;
-    if(w.snap){                       /* 从贴边/最大化状态拖出来 → 还原成原来的大小 */
-      const before=w.restore||{w:520,h:360};
-      const rx=(ev.clientX-desk.getBoundingClientRect().left)/(w.rect.w||1);
-      const back={w:before.w,h:before.h,x:ev.clientX-before.w*rx,y:ev.clientY-22};
-      w.snap=null;
-      w.el.querySelector('.wb.max').textContent='□';
-      setWinRect(w,back);
-      winDrag.dx=ev.clientX-back.x; winDrag.dy=22;
-    }
-    const dr=desk.getBoundingClientRect();
-    let x=ev.clientX-dr.left-winDrag.dx;
-    let y=ev.clientY-dr.top-winDrag.dy;
-    x=Math.max(-w.rect.w+90, Math.min(deskW()-90, x));
-    y=Math.max(TOP, Math.min(deskH()-40, y));
-    w.el.style.left=Math.round(x)+'px'; w.el.style.top=Math.round(y)+'px';
-    w.rect.x=Math.round(x); w.rect.y=Math.round(y);
-    const zone=snapZoneAt(ev.clientX-dr.left, ev.clientY-dr.top);
-    if(zone!==winDrag.zone){ winDrag.zone=zone; showSnapView(zone); }
-  }
-  function winDragEnd(ev){
-    if(!winDrag||ev.pointerId!==winDrag.id) return;
-    document.removeEventListener('pointermove',winDragMove);
-    document.removeEventListener('pointerup',winDragEnd);
-    document.removeEventListener('pointercancel',winDragEnd);
-    const w=winDrag.w, zone=winDrag.zone;
-    w.el.querySelector('.tbar').classList.remove('grabbing');
-    winDrag=null;
-    showSnapView(null);
-    if(zone) applySnap(w,zone);
-    else setFlag('move:'+w.id);          /* 拖动结束但没贴边 = 单纯移动了窗口 */
-    checkGoal();
-  }
-
-  /* ================= 右键菜单 ================= */
-  function openCtx(x,y,items){
-    ctxmenu.innerHTML='';
-    items.forEach(function(it){
-      if(it.sep){ ctxmenu.appendChild(el('div','sep')); return; }
-      const mi=el('div','mi','<span class="ic">'+(it.ic||'')+'</span>'+it.label);
-      mi.dataset.label=it.label;
-      on(mi,'click',function(ev){
-        ev.preventDefault();
-        closeCtx();
-        if(it.act) it.act();
-        checkGoal();
-      });
-      ctxmenu.appendChild(mi);
-    });
-    ctxmenu.className='ctxmenu show';
-    const w=ctxmenu.offsetWidth, h=ctxmenu.offsetHeight;
-    ctxmenu.style.left=Math.max(6,Math.min(deskW()-w-6,x))+'px';
-    ctxmenu.style.top=Math.max(TOP+4,Math.min(deskH()-BAR-h-6,y))+'px';
-    S.ctxOn=openCtx._target||'desk';
-    checkGoal();
-  }
-  function closeCtx(){ ctxmenu.className='ctxmenu'; S.ctxOn=null; }
-  function ctxAt(node,pt){
-    const c=pt||centerOf(node);
-    if(node&&node.dataset&&node.dataset.id){
-      openCtx._target='icon:'+node.dataset.id;
-      openCtx(c.x,c.y,iconMenuItems(node.dataset.id));
-    } else {
-      openCtx._target='desk';
-      openCtx(c.x,c.y,deskMenuItems());
-    }
-  }
-  function deskMenuItems(){
-    return [
-      {ic:'🔄', label:'刷新', act:function(){ setFlag('refresh'); notify('已刷新','桌面看起来更新了'); }},
-      {ic:'📁', label:'新建文件夹', act:function(){ createFolder(); }},
-      {sep:true},
-      {ic:'⚙️', label:'显示设置', act:function(){
-        S.wallLight=!S.wallLight;
-        wall.className='wall'+(S.wallLight?' light':'');
-        notify('显示设置','桌面亮了一点'+(S.wallLight?'':'（已复原）'));
-      }},
-      {ic:'🧭', label:'排列图标', act:function(){ setFlag('arrange'); arrangeIcons(); }}
-    ];
-  }
-  function iconMenuItems(id){
-    const ic=iconById(id);
-    return [
-      {ic:'📂', label:'打开', act:function(){ openIcon(id); }},
-      {ic:'✏️', label:'重命名', act:function(){ askRename(id); }},
-      {sep:true},
-      {ic:'ℹ️', label:'查看属性', act:function(){ openProps(id); }},
-      {ic:'🗑', label:'删除', act:function(){ deleteIcon(id); }}
-    ];
-  }
-  let folderSeq=0;
-  function createFolder(name){
-    folderSeq++;
-    const n=(S.icons.filter(function(i){ return i.folder; }).length)+1;
-    const id='newfolder'+folderSeq;
-    S.icons.push({id:id,label:name||('新建文件夹'+(n>1?n:'')),emoji:'📁',folder:true,
-                  col:0,row:0,isNew:true});
-    arrangeIcons();
-    renderIcons();
-    notify('已新建','桌面上多了一个「'+iconById(id).label+'」');
-    checkGoal();
-  }
-  function arrangeIcons(){
-    let col=0,row=0;
-    S.icons.forEach(function(ic){
-      if(ic.hidden||S.inFolder[ic.id]) return;
-      ic.col=col; ic.row=row;
-      row++;
-      if(row>3){ row=0; col++; if(col>=COLS) col=0; }
-    });
-    renderIcons();
-  }
-  function askRename(id){
-    const ic=iconById(id);
-    const w=makeWindow({id:'rename',title:'重命名',icon:'✏️',size:[420,240],
-      html:'<p style="margin:0 0 8px">给它起一个新名字：</p>'
-        +'<input id="renameInput" value="'+ic.label+'" style="width:100%;font-size:19px;padding:10px;border:2px solid #b9c2cf;border-radius:8px;font-family:inherit">'
-        +'<p style="margin:12px 0 0"><button id="renameOk" style="font-family:inherit;font-size:17px;font-weight:700;padding:10px 20px;border:none;border-radius:8px;background:#0f6cbd;color:#fff;cursor:pointer">确定</button></p>'});
-    const inp=w.el.querySelector('#renameInput');
-    on(w.el.querySelector('#renameOk'),'click',function(){
-      const v=(inp.value||'').trim();
-      if(v){ ic.label=v; renderIcons(); notify('已重命名','现在它叫「'+v+'」'); }
-      closeWindow(w);
-      checkGoal();
-    });
-    if(inp.focus) T(120,function(){ inp.focus(); inp.select&&inp.select(); });
-  }
-  function openProps(id){
-    const ic=iconById(id);
-    const type=ic.folder?'文件夹':'文件';
-    S.props++;
-    makeWindow({id:'props',title:ic.label+' 属性',icon:'ℹ️',size:[460,300],
-      html:'<p><b>名称：</b>'+ic.label+'</p><p><b>类型：</b>'+type+'</p>'
-        +'<p><b>位置：</b>桌面</p><p><b>大小：</b>1.2 MB</p>'});
-  }
-  function deleteIcon(id){
-    const ic=iconById(id);
-    ic.hidden=true;
-    if(S.sel===id) S.sel=null;
-    renderIcons();
-    notify('已删除','「'+ic.label+'」被放进回收站了');
-    checkGoal();
-  }
-  function openIcon(id){
-    const ic=iconById(id);
-    if(!ic) return;
-    if(ic.folder){
-      openFolderWindow(ic);
-    } else {
-      const app=APPS[ic.app||ic.id]||{};
-      makeWindow({id:'win-'+ic.id, title:ic.label, icon:ic.emoji,
-        html:(app.scroll==='essay')?('<div id="essayScroll" style="max-height:100%">'+SCROLL_ESSAY+'</div>'):(app.body||'<p>这里还没有内容。</p>'),
-        size:[600,400]});
-    }
-  }
-  function openFolderWindow(ic){
-    const inside=S.icons.filter(function(x){ return S.inFolder[x.id]===ic.id; });
-    const html=inside.length
-      ? ('<div style="display:flex;flex-wrap:wrap;gap:16px">'+inside.map(function(x){
-          return '<div style="width:96px;text-align:center"><div style="font-size:40px">'+x.emoji+'</div><div style="font-size:14px;font-weight:600">'+x.label+'</div></div>';
-        }).join('')+'</div><p style="margin-top:16px;color:#5c6470">这里面有 '+inside.length+' 个东西</p>')
-      : '<p>这个文件夹是空的。</p><p>把桌面上的图标拖进来试试。</p>';
-    makeWindow({id:'win-folder-'+ic.id, title:ic.label, icon:'📁', html:html, size:[560,380]});
-  }
-
-  /* ================= 图标：选中 / 打开 / 拖动 ================= */
-  function bindIconNode(node){
-    const id=node.dataset.id;
-    on(node,'click',function(){
-      if(id.indexOf('lv')===0){                 /* 桌面上是八节课的图标：点两下进去 */
-        const n=parseInt(id.slice(2),10);
-        if(S.sel===id){ startLevel(n); }
-        else { selectIcon(id); showInfo('已选中：<b>'+iconById(id).label.replace(/<[^>]+>/g,' ')+'</b>　（再点一下就能进去）'); }
-        return;
-      }
-      selectIcon(id);
-    });
-    on(node,'dblclick',function(e){ openIcon(id); });
-    on(node,'contextmenu',function(e){
-      if(e.target.closest&&e.target.closest('input,textarea')) return;
-      const dr=desk.getBoundingClientRect();
-      selectIcon(id);
-      ctxAt(node,{x:e.clientX-dr.left, y:e.clientY-dr.top});
-    });
-    on(node,'pointerdown',function(e){ iconDragStart(e,id); });
-  }
   let iconDrag=null;
   function iconDragStart(e,id){
     if(e.button!==0) return;
-    stopDemo(); closeCtx(); closeStart();
-    const node=iconEl(id);
-    if(!node) return;
+    stopDemo(); closeMenu(); closeStart();
+    const node=iconEl(id); if(!node) return;
     const r=rectOf(node);
     iconDrag={id:id,node:node,id0:e.pointerId,dx:e.clientX-r.x,dy:e.clientY-r.y,moved:false};
     document.addEventListener('pointermove',iconDragMove);
@@ -946,33 +695,30 @@
   }
   function iconDragMove(e){
     if(!iconDrag||e.pointerId!==iconDrag.id0) return;
-    e.preventDefault();
-    const layer=iconsLayer.getBoundingClientRect();
-    const x=e.clientX-iconDrag.dx-layer.left;
-    const y=e.clientY-iconDrag.dy-layer.top;
+    const lr=S.layer.getBoundingClientRect();
+    const x=e.clientX-iconDrag.dx-lr.left, y=e.clientY-iconDrag.dy-lr.top;
     if(Math.abs(x-parseFloat(iconDrag.node.style.left||0))>3||Math.abs(y-parseFloat(iconDrag.node.style.top||0))>3){
       iconDrag.moved=true;
       iconDrag.node.classList.add('dragging');
       iconDrag.node.classList.remove('sel');
     }
-    if(iconDrag.moved) e.preventDefault();      /* 真开始拖了才拦，不然 click 事件会被浏览器吞掉 */
+    if(iconDrag.moved) e.preventDefault();
     iconDrag.node.style.left=Math.round(x)+'px';
     iconDrag.node.style.top=Math.round(y)+'px';
-    /* 拖到文件夹上就高亮 */
-    const folder=folderUnder(e.clientX,e.clientY,iconDrag.node);
-    iconsLayer.querySelectorAll('.icon').forEach(function(n){
-      n.classList.toggle('target', !!folder && n.dataset.id===folder && n!==iconDrag.node);
+    const f=folderUnder(e.clientX,e.clientY,iconDrag.node);
+    S.layer.querySelectorAll('.micon').forEach(function(n){
+      n.classList.toggle('folderTarget', !!f && f===n);
     });
   }
-  function folderUnder(cx,cy,skipNode){
-    const list=iconsLayer.querySelectorAll('.icon');
+  function folderUnder(cx,cy,skip){
+    const list=S.layer.querySelectorAll('.micon');
     for(let i=0;i<list.length;i++){
       const n=list[i];
-      if(skipNode&&n===skipNode) continue;
+      if(skip&&n===skip) continue;
       const ic=iconById(n.dataset.id);
       if(!ic||!ic.folder) continue;
       const r=n.getBoundingClientRect();
-      if(cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom) return n.dataset.id;
+      if(cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom) return n;
     }
     return null;
   }
@@ -983,85 +729,379 @@
     document.removeEventListener('pointercancel',iconDragEnd);
     const d=iconDrag; iconDrag=null;
     d.node.classList.remove('dragging');
-    iconsLayer.querySelectorAll('.target').forEach(function(n){ n.classList.remove('target'); });
+    S.layer.querySelectorAll('.folderTarget').forEach(function(n){ n.classList.remove('folderTarget'); });
+    if(!d.moved) return;                 /* 没拖动，选中交给 click 事件 */
     const ic=iconById(d.id);
-    if(!d.moved) return;      /* 没拖动的话，选中交给 click 事件处理（指针抬起时重建 DOM 会吞掉 click） */
-    const folder=folderUnder(e.clientX,e.clientY,null);
-    if(folder){
-      S.inFolder[d.id]=folder;
+    const f=folderUnder(e.clientX,e.clientY,null);
+    if(f){
+      S.inFolder[d.id]=f.dataset.id;
       if(S.sel===d.id) S.sel=null;
       renderIcons();
-      notify('放进去了','「'+ic.label+'」被拖进了「'+iconById(folder).label+'」');
+      showInfo('「'+ic.label+'」放进「'+iconById(f.dataset.id).label+'」里了');
       checkGoal();
       return;
     }
     if(S.inFolder[d.id]) delete S.inFolder[d.id];
-    const layer=iconsLayer.getBoundingClientRect();
-    const p=nearestSlot(parseFloat(d.node.style.left||0), parseFloat(d.node.style.top||0));
+    const p=nearestSlot(parseFloat(d.node.style.left||0),parseFloat(d.node.style.top||0));
     ic.col=p.col; ic.row=p.row;
     renderIcons();
     checkGoal();
   }
+  function openIcon(id){
+    const ic=iconById(id);
+    if(!ic) return;
+    if(ic.folder){
+      const inside=S.icons.filter(function(x){ return S.inFolder[x.id]===ic.id; });
+      makeWindow({id:'win-folder-'+ic.id,title:ic.label,icon:'📁',
+        html:inside.length?('<p>里面有 '+inside.length+' 个东西：</p><p>'+inside.map(function(x){return x.emoji+' '+x.label;}).join('<br>')+'</p>')
+                         :'<p>这个文件夹是空的。</p><p>把图标拖进来试试。</p>',
+        size:[420,280]});
+      return;
+    }
+    const ex=winById('win-'+ic.id);
+    if(ex){ activate(ex); return; }
+    const app=APPS[ic.app||ic.id]||{};
+    makeWindow({id:'win-'+ic.id,title:ic.label,icon:ic.emoji,essay:!!app.scroll,
+      html:app.body||'<p>这里还没有内容。</p>',size:[520,330]});
+  }
 
-  /* ================= 桌面空白处：点一下取消选中，右键出菜单 ================= */
-  on(desk,'click',function(e){
-    if(e.target.closest('.icon')||e.target.closest('.win')||e.target.closest('.ctxmenu')
-       ||e.target.closest('.startmenu')||e.target.closest('.taskbar')||e.target.closest('.topbar')
-       ||e.target.closest('.checklist')||e.target.closest('.assistant')){ return; }
-    closeCtx(); closeStart();
-    if(S.sel) selectIcon(null);
-  });
-  on(desk,'contextmenu',function(e){
-    if(e.target.closest&&e.target.closest('input,textarea')) return;
-    if(e.target.closest('.icon')||e.target.closest('.win')||e.target.closest('.topbar')
-       ||e.target.closest('.taskbar')||e.target.closest('.checklist')) return;
-    const dr=desk.getBoundingClientRect();
-    closeStart();
-    ctxAt(null,{x:e.clientX-dr.left, y:e.clientY-dr.top});
-  });
+  /* ================= 窗口 ================= */
+  let winSeq=1;
+  function winById(id){ for(let i=0;i<S.wins.length;i++){ if(S.wins[i].id===id) return S.wins[i]; } return null; }
+  function setRect(w,r){
+    w.rect={x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.w),h:Math.round(r.h)};
+    w.el.style.left=w.rect.x+'px'; w.el.style.top=w.rect.y+'px';
+    w.el.style.width=w.rect.w+'px'; w.el.style.height=w.rect.h+'px';
+  }
+  function makeWindow(spec,initial){
+    const w={spec:spec, id:spec.id||('w'+(winSeq++)), snap:spec.snap||null,
+             state:spec.min?'min':'normal', rect:null, el:null};
+    const node=el('div','mwin');
+    node.dataset.win=w.id;
+    node.innerHTML='<div class="tbar"><span class="wico">'+(spec.icon||'🪟')+'</span>'
+      +'<span class="wtxt">'+spec.title+'</span>'
+      +'<span class="wbtns"><button class="wb min" title="最小化">—</button>'
+      +'<button class="wb max" title="最大化">□</button>'
+      +'<button class="wb cls" title="关闭">✕</button></span></div>'
+      +'<div class="wbody">'+(spec.essay?SCROLL_ESSAY:(spec.html||''))+'</div>';
+    S.winLayer.appendChild(node);
+    w.el=node;
+    S.wins.push(w);
+    on(node,'pointerdown',function(){ if(S.active!==w.id) activate(w); });
+    on(node.querySelector('.wb.min'),'click',function(){ minimize(w); });
+    on(node.querySelector('.wb.max'),'click',function(){ toggleMax(w); });
+    on(node.querySelector('.wb.cls'),'click',function(){ closeWindow(w); });
+    on(node.querySelector('.tbar'),'dblclick',function(){ toggleMax(w); });
+    on(node.querySelector('.tbar'),'pointerdown',function(ev){ winDragStart(ev,w); });
+    on(node.querySelector('.wbody'),'scroll',function(){ checkGoal(); });
+    if(w.state==='min') node.classList.add('min');
+    if(w.snap){ renderTaskbar(); }
+    renderTaskbar();
+    placeWindow(w);                     /* 后开的窗口也要有位置，不然拖不动 */
+    activate(w,true);                   /* 新开的窗口一定在最前面（否则会被旧窗口压住） */
+    return w;
+  }
+  function activate(w,silent){
+    if(!w) return;
+    if(w.state==='min'){ w.state='normal'; w.el.classList.remove('min'); }
+    S.active=w.id;
+    S.wins.forEach(function(x){
+      x.el.classList.toggle('active',x.id===w.id);
+      if(x.id===w.id) x.el.style.zIndex=++S.zTop;
+    });
+    renderTaskbar();
+    if(!silent) checkGoal();
+  }
+  function renderTaskbar(){
+    if(!S.taskbar) return;
+    const list=S.taskbar.querySelector('.mtlist');
+    list.innerHTML='';
+    S.wins.forEach(function(w){
+      const b=el('button','mtbtn'+(S.active===w.id&&w.state!=='min'?' on':''),
+        '<span>'+w.spec.icon+'</span>'+w.spec.title);
+      b.dataset.win=w.id;
+      on(b,'click',function(){
+        if(w.state==='min') activate(w);
+        else if(S.active===w.id) minimize(w);
+        else activate(w);
+      });
+      list.appendChild(b);
+    });
+    const need=!!(S.scene&&S.scene.bar) || S.wins.length>0;
+    S.taskbar.classList.toggle('hide',!need);
+    if(S.info) S.info.style.bottom=(need?BAR+8:8)+'px';
+    if(S.hid) layout();
+    checkGoal();
+  }
+  function closeWindow(w){
+    if(!w) return;
+    const i=S.wins.indexOf(w);
+    if(i>=0) S.wins.splice(i,1);
+    if(w.el.parentNode) w.el.parentNode.removeChild(w.el);
+    if(S.active===w.id) S.active=S.wins.length?S.wins[S.wins.length-1].id:null;
+    renderTaskbar();
+    checkGoal();
+  }
+  function closeAllWins(){ while(S.wins.length) closeWindow(S.wins[0]); }
+  function minimize(w){
+    w.state='min'; w.el.classList.add('min');
+    if(S.active===w.id) S.active=null;
+    renderTaskbar();
+    checkGoal();
+  }
+  function toggleMax(w){
+    if(w.snap){ if(w.restore) setRect(w,w.restore); w.snap=null; w.el.querySelector('.wb.max').textContent='□'; }
+    else { w.restore=w.rect; setRect(w,snapRect('max')); w.snap='max'; w.el.querySelector('.wb.max').textContent='❐'; }
+    w.state='normal'; w.el.classList.remove('min');
+    activate(w);
+  }
+  function snapRect(zone){
+    const W=pW(), H=workH(), w2=Math.round(W/2), h2=Math.round(H/2);
+    if(zone==='max')  return {x:0,y:0,w:W,h:H};
+    if(zone==='left') return {x:0,y:0,w:w2,h:H};
+    if(zone==='right')return {x:W-w2,y:0,w:w2,h:H};
+    if(zone==='tl')   return {x:0,y:0,w:w2,h:h2};
+    if(zone==='tr')   return {x:W-w2,y:0,w:w2,h:h2};
+    if(zone==='bl')   return {x:0,y:H-h2,w:w2,h:h2};
+    if(zone==='br')   return {x:W-w2,y:H-h2,w:w2,h:h2};
+  }
+  function snapZoneAt(x,y){
+    const W=pW(), H=workH(), ex=40, ey=40;
+    const nl=x<ex, nr=x>W-ex, nt=y<ey, nb=y>H-ey;
+    if(nt&&!nl&&!nr) return 'max';
+    if(nl&&nt) return 'tl';
+    if(nl&&nb) return 'bl';
+    if(nr&&nt) return 'tr';
+    if(nr&&nb) return 'br';
+    if(nl) return 'left';
+    if(nr) return 'right';
+    return null;
+  }
+  let snapView=null;
+  function showSnapView(zone){
+    if(!snapView){ snapView=el('div'); snapView.style.cssText='position:absolute;z-index:15;pointer-events:none;'
+      +'background:rgba(96,166,255,.32);border:3px solid #bfe0ff;border-radius:9px;display:none'; play.appendChild(snapView); }
+    if(!zone){ snapView.style.display='none'; return; }
+    const r=snapRect(zone);
+    snapView.style.display='block';
+    snapView.style.left=r.x+'px'; snapView.style.top=r.y+'px';
+    snapView.style.width=r.w+'px'; snapView.style.height=r.h+'px';
+  }
+  let winDrag=null;
+  function winDragStart(ev,w){
+    if(ev.button!==0) return;
+    if(ev.target.closest&&ev.target.closest('.wb')) return;
+    stopDemo(); closeMenu(); closeStart();
+    const r=rectOf(w.el);
+    winDrag={w:w,id:ev.pointerId,dx:ev.clientX-r.x,dy:ev.clientY-r.y,zone:null,moved:false};
+    activate(w,true);
+    w.el.querySelector('.tbar').classList.add('grabbing');
+    document.addEventListener('pointermove',winDragMove);
+    document.addEventListener('pointerup',winDragEnd);
+    document.addEventListener('pointercancel',winDragEnd);
+  }
+  function winDragMove(ev){
+    if(!winDrag||ev.pointerId!==winDrag.id) return;
+    ev.preventDefault();
+    const w=winDrag.w;
+    if(w.snap){
+      const before=w.restore||{w:420,h:280};
+      const pr=play.getBoundingClientRect();
+      const rx=(ev.clientX-pr.left)/(w.rect.w||1);
+      setRect(w,{w:before.w,h:before.h,x:ev.clientX-pr.left-before.w*rx,y:ev.clientY-pr.top-19});
+      w.snap=null;
+      w.el.querySelector('.wb.max').textContent='□';
+      winDrag.dx=ev.clientX-(pr.left+w.rect.x); winDrag.dy=19;
+    }
+    const pr=play.getBoundingClientRect();
+    let x=ev.clientX-pr.left-winDrag.dx;
+    let y=ev.clientY-pr.top-winDrag.dy;
+    x=clamp(x,-w.rect.w+80,pW()-80);
+    y=clamp(y,-6,workH()-20);
+    w.el.style.left=Math.round(x)+'px'; w.el.style.top=Math.round(y)+'px';
+    w.rect.x=Math.round(x); w.rect.y=Math.round(y);
+    winDrag.moved=true;
+    const zone=snapZoneAt(ev.clientX-pr.left,ev.clientY-pr.top);
+    if(zone!==winDrag.zone){ winDrag.zone=zone; showSnapView(zone); }
+  }
+  function winDragEnd(ev){
+    if(!winDrag||ev.pointerId!==winDrag.id) return;
+    document.removeEventListener('pointermove',winDragMove);
+    document.removeEventListener('pointerup',winDragEnd);
+    document.removeEventListener('pointercancel',winDragEnd);
+    const w=winDrag.w, zone=winDrag.zone, moved=winDrag.moved;
+    w.el.querySelector('.tbar').classList.remove('grabbing');
+    winDrag=null;
+    showSnapView(null);
+    if(zone){ w.restore=w.restore||w.rect; setRect(w,snapRect(zone)); w.snap=zone;
+              w.el.querySelector('.wb.max').textContent=(zone==='max')?'❐':'□'; }
+    else if(moved) S.flags['move:'+w.id]=true;
+    checkGoal();
+  }
 
-  /* ================= 开始菜单 ================= */
-  const START_APPS=[
-    ['calc','计算器','🧮'],['draw','画图','🎨'],['photo','照片','🖼'],['essay','作文','📝'],
-    ['music','音乐','🎵'],['pc','我的电脑','🖥'],['bin','回收站','🗑'],['paint','美术作业','🖼'],
-    ['cn','语文作业','📖'],['note','记事本','📒'],['clock','时钟','⏰'],['camera','照相机','📷'],
-    ['paint3d','3D 画图','🧊'],['weather','天气','⛅']
-  ];
-  function renderStart(){
-    smList.innerHTML='';
+  /* ================= 右键菜单 / 开始菜单 ================= */
+  let folderSeq=0;
+  function deskMenu(){
+    return [
+      {ic:'🔄',label:'刷新',act:function(){ S.flags.refresh=true; showInfo('桌面刷新好了'); }},
+      {ic:'📁',label:'新建文件夹',act:function(){ createFolder(); }},
+      {ic:'⚙️',label:'显示设置',act:function(){ S.scene.light=!S.scene.light;
+        S.stage.classList.toggle('lightbg',!!S.scene.light); showInfo('桌面'+(S.scene.light?'变亮了':'恢复原样了')); }},
+      {ic:'🧭',label:'排列图标',act:function(){ arrangeIcons(); showInfo('图标排整齐了'); }}
+    ];
+  }
+  function iconMenu(id){
+    return [
+      {ic:'📂',label:'打开',act:function(){ openIcon(id); }},
+      {ic:'✏️',label:'重命名',act:function(){ askRename(id); }},
+      {ic:'ℹ️',label:'查看属性',act:function(){ openProps(id); }},
+      {ic:'🗑',label:'删除',act:function(){ deleteIcon(id); }}
+    ];
+  }
+  function openMenu(x,y,kind,id){
+    if(!S.menu) return;
+    const items=kind==='icon'?iconMenu(id):deskMenu();
+    S.menu.innerHTML='';
+    items.forEach(function(it){
+      const mi=el('div','mi','<span class="ic">'+it.ic+'</span>'+it.label);
+      mi.dataset.label=it.label;
+      on(mi,'click',function(ev){
+        ev.preventDefault();
+        closeMenu();
+        it.act();
+        checkGoal();
+      });
+      S.menu.appendChild(mi);
+    });
+    S.menu.dataset.kind=kind;
+    S.menu.dataset.id=id||'';
+    S.menu.classList.add('show');
+    const w=S.menu.offsetWidth, h=S.menu.offsetHeight;
+    S.menu.style.left=clamp(x,6,pW()-w-6)+'px';
+    S.menu.style.top=clamp(y,6,Math.max(6,workH()-h-6))+'px';
+    S.ctxOn=kind==='icon'?('icon:'+id):'desk';
+    checkGoal();
+  }
+  function closeMenu(){ if(S.menu){ S.menu.classList.remove('show'); } S.ctxOn=null; }
+  function createFolder(){
+    folderSeq++;
+    const id='newfolder'+(folderSeq);
+    S.icons.push({id:id,label:folderSeq>1?('新建文件夹'+folderSeq):'新建文件夹',emoji:'📁',folder:true,isNew:true,col:0,row:0});
+    arrangeIcons();
+    renderIcons();
+    showInfo('桌面上多了一个「新建文件夹」');
+    checkGoal();
+  }
+  function arrangeIcons(){
+    let col=0,row=0;
+    S.icons.forEach(function(ic){
+      if(ic.hidden||S.inFolder[ic.id]) return;
+      ic.col=col; ic.row=row;
+      row++;
+      if(row>3){ row=0; col++; if(col>=COLS) col=COLS-1; }
+    });
+    renderIcons();
+  }
+  function askRename(id){
+    const ic=iconById(id);
+    const w=makeWindow({id:'win-rename',title:'重命名',icon:'✏️',size:[380,200],
+      html:'<p style="margin:0 0 6px">给它起个新名字：</p>'
+        +'<input id="renameInput" value="'+ic.label+'" style="width:100%;font-size:16px;padding:8px;border:2px solid #b9c2cf;border-radius:7px;font-family:inherit">'
+        +'<p style="margin:10px 0 0"><button id="renameOk" class="btn primary" style="font-size:15px;padding:9px 18px">确定</button></p>'});
+    const inp=w.el.querySelector('#renameInput');
+    on(w.el.querySelector('#renameOk'),'click',function(){
+      const v=(inp.value||'').trim();
+      if(v){ ic.label=v; renderIcons(); showInfo('名字改成「'+v+'」了'); }
+      closeWindow(w);
+      checkGoal();
+    });
+    T(120,function(){ if(inp.focus){ inp.focus(); if(inp.select) inp.select(); } });
+  }
+  function openProps(id){
+    const ic=iconById(id);
+    S.flags.props=true;
+    makeWindow({id:'win-props',title:ic.label+' 属性',icon:'ℹ️',size:[380,240],
+      html:'<p><b>名称：</b>'+ic.label+'</p><p><b>类型：</b>'+(ic.folder?'文件夹':'文件')+'</p>'
+        +'<p><b>位置：</b>桌面</p><p><b>大小：</b>1.2 MB</p>'});
+  }
+  function deleteIcon(id){
+    const ic=iconById(id);
+    if(mode==='play'&&iconNeeded(id)){ flash(iconEl(id),'hintring'); showInfo('这一关要用到「'+ic.label+'」，先别删它'); return; }
+    ic.hidden=true;
+    if(S.sel===id) S.sel=null;
+    renderIcons();
+    showInfo('「'+ic.label+'」被放进回收站了');
+    checkGoal();
+  }
+  function iconNeeded(id){
+    const r=curRound();
+    if(!r) return false;
+    let need=false;
+    (function walk(g){
+      if(!g||need) return;
+      if(g.k==='sel'&&g.id===id) need=true;
+      if(g.k==='folder'&&(g.icon===id||g.folder===id)) need=true;
+      if(g.k==='slots') g.list.forEach(function(x){ if(x.id===id) need=true; });
+      if(g.k==='seq') g.steps.forEach(walk);
+    })(r.goal);
+    return need;
+  }
+  function openStart(){
+    if(!S.start) return;
+    const list=S.start.querySelector('.sm-list');
+    list.innerHTML='';
     START_APPS.forEach(function(a){
       const b=el('div','app','<span class="face">'+a[2]+'</span>'+a[1]);
       b.dataset.app=a[0];
       on(b,'click',function(){
         closeStart();
-        const app=APPS[a[0]]||{label:a[1],emoji:a[2],body:'<p>'+a[1]+' 打开啦。</p>'};
-        makeWindow({id:'win-app-'+a[0], title:a[1], icon:a[2],
-          html:(app.scroll==='essay')?('<div id="essayScroll">'+SCROLL_ESSAY+'</div>'):(app.body||'<p>'+a[1]+'</p>'),
-          size:[600,400]});
-        notify('已打开','「'+a[1]+'」窗口打开了');
+        const app=APPS[a[0]]||{};
+        makeWindow({id:'win-app-'+a[0],title:a[1],icon:a[2],essay:!!app.scroll,
+          html:app.body||'<p>'+a[1]+' 打开啦。</p>',size:[500,320]});
+        showInfo('「'+a[1]+'」打开了');
       });
-      smList.appendChild(b);
+      list.appendChild(b);
     });
+    on(list,'scroll',function(){ checkGoal(); });
+    closeMenu();
+    S.start.classList.add('show');
+    checkGoal();
   }
-  function openStart(){ closeCtx(); startmenu.className='startmenu show'; checkGoal(); }
-  function closeStart(){ startmenu.className='startmenu'; }
-  on($('#btnStart'),'click',function(){ if(startmenu.classList.contains('show')) closeStart(); else openStart(); });
-  on(smList,'scroll',function(){ checkGoal(); });
-
-  /* ================= 任务清单 ================= */
-  function renderChecklist(){
-    const lv=LEVELS[L];
-    chList.innerHTML='';
-    lv.tasks.forEach(function(t,i){
-      const c=el('div','ch'+(i<TI?' done':'')+(i===TI?' now':''),
-        '<span class="box">'+(i<TI?'✓':'')+'</span><span>'+t.t+'</span>');
-      chList.appendChild(c);
-    });
-  }
-  on($('#btnList'),'click',function(){ checklist.className='checklist show'; renderChecklist(); });
-  on($('#btnListClose'),'click',function(){ checklist.className='checklist'; });
+  function closeStart(){ if(S.start) S.start.classList.remove('show'); }
+  document.addEventListener('click',function(e){
+    if(!e.target||!e.target.closest) return;
+    if(!e.target.closest('.mmenu')) closeMenu();
+  },false);
 
   /* ================= 目标判定 ================= */
+  function visFrac(){
+    if(!S.hid) return 0;
+    const h=S.hid.getBoundingClientRect();
+    const area=Math.max(1,h.width*h.height);
+    let cover=0;
+    S.wins.forEach(function(w){
+      if(w.state==='min') return;
+      const r=w.el.getBoundingClientRect();
+      const ix=Math.max(0,Math.min(h.right,r.right)-Math.max(h.left,r.left));
+      const iy=Math.max(0,Math.min(h.bottom,r.bottom)-Math.max(h.top,r.top));
+      cover=Math.max(cover,ix*iy);
+    });
+    return 1-cover/area;
+  }
+  function tickHid(){
+    if(!S.hid||S.found) return;
+    const r=S.hid.getBoundingClientRect();
+    const top=document.elementFromPoint(r.left+r.width/2, r.top+r.height/2);
+    const clickable=!!(top&&(top===S.hid||S.hid.contains(top)));
+    if(visFrac()>=0.9&&clickable){          /* 露出来、而且点得到，才算找到 */
+      S.found=true;
+      S.hid.classList.add('found');
+      S.hid.style.borderStyle='solid';
+      S.hid.style.borderColor='#2ec77b';
+      S.hid.style.cursor='pointer';
+      showInfo('找到啦！点一下它');
+    }
+  }
   function markerVisible(winId,markerId){
     const w=winById(winId); if(!w) return false;
     const body=w.el.querySelector('.wbody'); if(!body) return false;
@@ -1071,78 +1111,85 @@
   }
   function scrolledBottom(winId){
     const w=winById(winId); if(!w) return false;
-    const body=w.el.querySelector('.wbody'); if(!body) return false;
-    return body.scrollTop+body.clientHeight >= body.scrollHeight-8;
+    const b=w.el.querySelector('.wbody');
+    return !!b && (b.scrollTop+b.clientHeight >= b.scrollHeight-8);
   }
   function goalMet(g){
     if(!g) return false;
     switch(g.k){
-      case 'sel':    return S.sel===g.id;
-      case 'none':   return !S.sel;
-      case 'selAll': return g.ids.every(function(id){ return !!S.selSeen[id]; });
+      case 'sel':     return S.sel===g.id;
+      case 'none':    return !S.sel;
+      case 'selAll':  return g.ids.every(function(id){ return !!S.selSeen[id]; });
       case 'seq': {
-        const st=S.seqStep||0;
-        if(st>=g.steps.length) return true;
-        if(goalMet(g.steps[st])){
-          S.seqStep=st+1;
-          return S.seqStep>=g.steps.length;
-        }
-        return false;
+        let st=S.seqStep||0;
+        while(st<g.steps.length && goalMet(g.steps[st])) st++;   /* 一次判定把能过的都过掉 */
+        S.seqStep=st;
+        return st>=g.steps.length;
       }
+      case 'flag':    return !!S.flags[g.name];
       case 'ctx': {
         if(!S.ctxOn) return false;
         if(!g.on) return true;
         if(g.on==='desk') return S.ctxOn==='desk';
-        if(g.on==='icon') return S.ctxOn==='icon:'+g.id;
-        return true;
+        return S.ctxOn==='icon:'+g.id;
       }
-      case 'flag':   return !!S.flags[g.name];
-      case 'winOpen':return !!winById(g.id);
-      case 'winClosed':return !winById(g.id);
-      case 'allClosed':return S.wins.length===0;
-      case 'allMin': return S.wins.length>0 && S.wins.every(function(w){ return w.state==='min'; });
-      case 'snap':   return !!winById(g.id) && winById(g.id).snap===g.zone;
-      case 'active': return S.active===g.id && winById(g.id) && winById(g.id).state!=='min';
-      case 'state':  return !!winById(g.id) && winById(g.id).state===g.value;
-      case 'folder': return S.inFolder[g.icon]===g.folder;
-      case 'folders':return S.icons.filter(function(i){ return i.folder && i.isNew && !i.hidden; }).length>=g.n;
-      case 'slots':  return g.list.every(function(x){
+      case 'winOpen': return !!winById(g.id);
+      case 'winClosed': return !winById(g.id);
+      case 'allClosed': return S.wins.length===0;
+      case 'allMin':  return S.wins.length>0 && S.wins.every(function(w){ return w.state==='min'; });
+      case 'state':   return !!winById(g.id) && winById(g.id).state===g.value;
+      case 'snap':    return !!winById(g.id) && winById(g.id).snap===g.zone;
+      case 'active':  return S.active===g.id && !!winById(g.id) && winById(g.id).state!=='min';
+      case 'folder':  return S.inFolder[g.icon]===g.folder;
+      case 'folders': return S.icons.filter(function(i){ return i.folder&&i.isNew&&!i.hidden; }).length>=g.n;
+      case 'slots':   return g.list.every(function(x){
                         const ic=iconById(x.id);
                         return ic && ic.col===x.col && ic.row===x.row; });
-      case 'marker': return markerVisible(g.win,g.marker);
-      case 'bottom': return scrolledBottom(g.win);
-      case 'wall':   return S.wallLight===g.on;
-      case 'props':  return !!winById('props');
-      case 'startOpen': return startmenu.classList.contains('show');
+      case 'uncover': return visFrac()>=0.9;
+      case 'marker':  return markerVisible(g.win,g.marker);
+      case 'bottom':  return scrolledBottom(g.win);
+      case 'light':   return !!S.scene.light;
       default: return false;
     }
   }
   function checkGoal(){
-    if(demoOn) return;
-    const t=curTask();
-    if(!t||!t.goal||S.taskDone) return;
-    if(goalMet(t.goal)) taskFinished();
+    if(!S.stage) return;
+    tickHid();
+    if(demoOn||S.done) return;
+    const r=curRound();
+    if(!r||!r.goal) return;
+    if(goalMet(r.goal)) roundDone();
   }
 
-  /* ================= 演示引擎 ================= */
+  /* ================= 演示：幽灵指针走一遍 ================= */
   let demoOn=false, demoTimers=[];
   function DT(ms,fn){ demoTimers.push(setTimeout(fn,ms)); }
-  function stopDemo(){
-    demoOn=false;
-    while(demoTimers.length) clearTimeout(demoTimers.pop());
-    ghost.style.opacity='0';
-    if(curTask()&&curTask().revert) curTask().revert();
-  }
   function ghostTo(x,y,ms){
-    ghost.style.transition='transform '+ms+'ms cubic-bezier(.35,.05,.3,1)';
-    ghost.style.transform='translate('+(x-3)+'px,'+(y-2)+'px)';
+    const g=$('#ghost'); if(!g) return;
+    g.style.transition='transform '+ms+'ms cubic-bezier(.35,.05,.3,1)';
+    g.style.transform='translate('+(x-3)+'px,'+(y-2)+'px)';
   }
   function ripAt(x,y){
-    const r=$('#rip');
+    const r=$('#rip'); if(!r) return;
     r.style.left=x+'px'; r.style.top=y+'px';
     r.className='rip'; void r.offsetWidth; r.className='rip go';
   }
   function rip(node){ const c=centerOf(node); ripAt(c.x,c.y); }
+  function stopDemo(){
+    const was=demoOn;
+    demoOn=false;
+    while(demoTimers.length) clearTimeout(demoTimers.pop());
+    const g=$('#ghost'); if(g){ g.style.opacity='0'; }
+    if(was&&curRound()&&curRound().revert) curRound().revert();
+  }
+  function addGhost(){
+    const g=el('div','ghost');
+    g.innerHTML='<span class="rip" id="rip"></span>'
+      +'<svg class="cur" width="34" height="42" viewBox="0 0 36 44">'
+      +'<path d="M3 2 L3 32 L11 24.5 L17 39 L23.5 36 L17.5 22 L29 21 Z" fill="#fff" stroke="#2b2b45" stroke-width="3" stroke-linejoin="round"/>'
+      +'</svg>';
+    play.appendChild(g);
+  }
   function runSteps(steps,done){
     let i=0;
     function next(){
@@ -1151,467 +1198,546 @@
       if(s.msg) say(s.msg);
       const node=s.at?$(s.at):null;
       const go=function(cb){
-        if(node){ const c=centerOf(node); ghostTo(c.x,c.y,420); DT(480,cb); }
-        else DT(80,cb);
+        if(node){ const c=centerOf(node); ghostTo(c.x,c.y,420); DT(470,cb); }
+        else DT(60,cb);
       };
       go(function(){
-        if(s.rip!==false && node && s.click) rip(node);
-        if(s.click && node && node.click) node.click();
-        if(s.clickSel && node){ selectIcon(node.dataset.id); }
-        if(s.ctxMenu && node){ const c=centerOf(node), dr=desk.getBoundingClientRect(); ctxAt(node,{x:c.x-dr.left,y:c.y-dr.top}); }
-        if(s.ctxDesk){ ctxAt(null,{x:centerOf($('#icons')).x-desk.getBoundingClientRect().left, y:centerOf($('#icons')).y-desk.getBoundingClientRect().top}); }
+        if(s.act){
+          if(node) rip(node);
+          if(s.act==='click'&&node) node.click();
+          if(s.act==='dblclick'&&node&&node.dataset.id) openIcon(node.dataset.id);
+          if(s.act==='rightclick'&&node){
+            const c=centerOf(node), pr=play.getBoundingClientRect();
+            if(node.dataset.id) openMenu(c.x-pr.left,c.y-pr.top,'icon',node.dataset.id);
+            else openMenu(c.x-pr.left,c.y-pr.top,'desk');
+          }
+          if(s.act==='start') openStart();
+        }
         if(s.menuItem){
-          const items=ctxmenu.querySelectorAll('.mi');
+          const items=S.menu.querySelectorAll('.mi');
           for(let k=0;k<items.length;k++){
             if(items[k].dataset.label===s.menuItem){ rip(items[k]); items[k].click(); break; }
           }
         }
-        if(s.openApp){
-          const ic=iconById(s.openApp);
-          if(ic) openIcon(s.openApp);
-        }
         if(s.run){ s.run(next); return; }
-        DT(s.wait||560,next);
+        DT(s.wait||520,next);
       });
     }
     next();
   }
-  function playDemo(){
-    const t=curTask();
-    if(!t||!t.demo||demoOn) return;
-    stopDemo();
-    demoOn=true;
-    btnDemo.style.display='none';
-    ghost.style.opacity='1';
-    const home=centerOf($('#btnStart'));
-    ghost.style.transition='none';
-    ghost.style.transform='translate('+(home.x-3)+'px,'+(home.y-2)+'px)';
-    runSteps(t.demo,function(){
-      DT(500,function(){
-        stopDemo();
-        btnDemo.style.display='';
-        say('看懂了吗？轮到你啦 👉');
-        resetTask();          /* 演示把桌面弄乱了，重置成任务开始的样子 */
-      });
-    });
-  }
-
-  /* ================= 关卡数据 ================= */
-  const APP_ICONS=[
-    {id:'pc',    label:'我的电脑', emoji:'🖥', app:'pc'},
-    {id:'bin',   label:'回收站',   emoji:'🗑', app:'bin'},
-    {id:'draw',  label:'画图',     emoji:'🎨', app:'draw'},
-    {id:'photo', label:'照片',     emoji:'🖼', app:'photo'},
-    {id:'essay', label:'作文',     emoji:'📝', app:'essay'},
-    {id:'calc',  label:'计算器',   emoji:'🧮', app:'calc'},
-    {id:'music', label:'音乐',     emoji:'🎵', app:'music'},
-    {id:'paint', label:'美术作业', emoji:'🖼', app:'paint'},
-    {id:'cn',    label:'语文作业', emoji:'📖', app:'cn'},
-    {id:'folder',label:'作业',     emoji:'📁', folder:true}
-  ];
-  function iconList(ids){
-    return ids.map(function(id){
-      const src=APP_ICONS.filter(function(a){ return a.id===id; })[0];
-      return {id:src.id,label:src.label,emoji:src.emoji,app:src.app,folder:src.folder};
-    });
-  }
-  function lay(cols){
-    const list=iconList(cols.map(function(c){ return c[0]; }));
-    list.forEach(function(ic,i){ ic.col=cols[i][1][0]; ic.row=cols[i][1][1]; });
-    return list;
-  }
-  function setFlag(n){ S.flags[n]=true; }
-
-  const LEVELS=[
-   { id:'l1', name:'认识桌面', emoji:'🖥', color:'#0f6cbd',
-     tasks:[
-      { t:'单击「我的电脑」，把它选中', h:'点一下左键，图标会变蓝，下面还会出现一行字。',
-        goal:{k:'sel',id:'pc'}, star:false,
-        demo:[{at:'#icons .icon[data-id="pc"]', msg:'① 把鼠标移到「我的电脑」上面'},
-              {at:'#icons .icon[data-id="pc"]', clickSel:true, msg:'② 点一下左键 —— 图标变蓝，就是选中啦'}] },
-      { t:'点一下桌面的空白处，取消选中', h:'点哪里都行，只要不是图标上。',
-        goal:{k:'none'}, star:false,
-        demo:[{at:'#icons .icon[data-id="pc"]', clickSel:true, msg:'先选中一个图标'},
-              {run:function(next){
-                 const dr=desk.getBoundingClientRect();
-                 const x=dr.left+430, y=dr.top+270;
-                 ghostTo(x,y,520);
-                 DT(560,function(){ ripAt(x,y); selectIcon(null); say('点空白处，选中就取消了'); DT(600,next); });
-               }}] },
-      { t:'选中「美术作业」', h:'看到图标变蓝才算成功哦。', goal:{k:'sel',id:'paint'}, star:true },
-      { t:'选中「回收站」', h:'回收站是放删掉的东西的地方。', goal:{k:'sel',id:'bin'}, star:true },
-      { t:'先选中「语文作业」，再选中「音乐」', h:'一个一个来，不用着急。',
-        goal:{k:'seq',steps:[{k:'sel',id:'cn'},{k:'sel',id:'music'}]}, star:true },
-      { t:'把桌面上 5 个图标各点一次', h:'每个图标都要被选中过一次。',
-        goal:{k:'selAll',ids:['pc','bin','paint','cn','music']}, star:true }
-     ],
-     setup:function(){ S.icons=lay([['pc',[0,0]],['bin',[1,0]],['paint',[2,0]],['cn',[3,0]],['music',[4,0]]]); }
-   },
-
-   { id:'l2', name:'单击还是双击', emoji:'🖼', color:'#1a7fd0',
-     tasks:[
-      { t:'双击「画图」，把它的窗口打开', h:'快速点两下左键，就是双击。',
-        goal:{k:'winOpen',id:'win-draw'}, star:false,
-        demo:[{at:'#icons .icon[data-id="draw"]', msg:'① 把鼠标移到「画图」上面'},
-              {run:function(next){
-                 const node=iconEl('draw'); const c=centerOf(node);
-                 ghostTo(c.x,c.y,420);
-                 DT(500,function(){ rip(node); openIcon('draw'); say('② 快速点两下左键 —— 窗口打开了'); DT(700,next); });
-               }}] },
-      { t:'先单击「照片」（只选中），再点空白取消选中', h:'记住：单击只是选中，不会打开。',
-        goal:{k:'seq',steps:[{k:'sel',id:'photo'},{k:'none'}]}, star:false },
-      { t:'双击打开「作文」窗口', h:'', goal:{k:'winOpen',id:'win-essay'}, star:true },
-      { t:'双击打开「画图」，再把它关掉', h:'关窗口按右上角的 ✕。',
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-draw'},{k:'winClosed',id:'win-draw'}]}, star:true },
-      { t:'打开「计算器」和「照片」两个窗口', h:'两个窗口会叠在一起。',
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-calc'},{k:'winOpen',id:'win-photo'}]}, star:true },
-      { t:'打开「计算器」，再关上所有窗口', h:'一个不剩，桌面就干净了。',
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-calc'},{k:'allClosed'}]}, star:true }
-     ],
-     setup:function(){ S.icons=lay([['draw',[0,0]],['photo',[1,0]],['essay',[2,0]],['calc',[3,0]]]); }
-   },
-
-   { id:'l3', name:'右键菜单', emoji:'📋', color:'#6b4fbb',
-     tasks:[
-      { t:'在桌面空白处点右键，再点「刷新」', h:'弹出来的菜单，是我们自己画的菜单。',
-        goal:{k:'flag',name:'refresh'}, star:false,
-        demo:[{run:function(next){
-                 const dr=desk.getBoundingClientRect();
-                 const x=dr.left+430, y=dr.top+265;
-                 ghostTo(x,y,520);
-                 DT(560,function(){ ripAt(x,y); ctxAt(null,{x:430,y:265});
-                   say('① 在空白处点右键，菜单就出来了'); DT(900,next); });
-               }},
-              {menuItem:'刷新', msg:'② 点「刷新」'}] },
-      { t:'用右键菜单新建一个文件夹', h:'右键 → 新建文件夹。',
-        goal:{k:'folders',n:1}, star:false },
-      { t:'在「美术作业」上点右键，选「查看属性」', h:'先把鼠标放在图标上，再点右键。',
-        goal:{k:'seq',steps:[{k:'ctx',on:'icon',id:'paint'},{k:'props'}]}, star:true },
-      { t:'用右键菜单把桌面变亮（显示设置）', h:'右键 → 显示设置。',
-        goal:{k:'wall',on:true}, star:true },
-      { t:'在「回收站」上右键，选「打开」', h:'右键菜单的第一项就是打开。',
-        goal:{k:'winOpen',id:'win-bin'}, star:true },
-      { t:'用右键菜单新建两个文件夹', h:'建完一个，再来一次。',
-        goal:{k:'folders',n:2}, star:true }
-     ],
-     setup:function(){ S.icons=lay([['pc',[0,0]],['bin',[1,0]],['paint',[2,0]]]); }
-   },
-
-   { id:'l4', name:'拖动图标', emoji:'✋', color:'#107c41',
-     tasks:[
-      { t:'把「音乐」拖到右边空着的地方', h:'按住不放，拖过去，再松手。',
-        goal:{k:'slots',list:[{id:'music',col:2,row:1}]}, star:false,
-        demo:[{at:'#icons .icon[data-id="music"]', msg:'① 按住「音乐」不放'},
-              {run:function(next){ tapIcon(iconEl('music'),2,1,next); }}] },
-      { t:'把「照片」拖到第一列第二行', h:'松手以后会自动对齐格子。',
-        goal:{k:'slots',list:[{id:'photo',col:0,row:1}]}, star:false },
-      { t:'把「美术作业」拖到第一列第三行', h:'', goal:{k:'slots',list:[{id:'paint',col:0,row:2}]}, star:true },
-      { t:'把「语文作业」拖进「作业」文件夹', h:'拖到文件夹上面，它会变亮，再松手。',
-        goal:{k:'folder',icon:'cn',folder:'folder'}, star:true },
-      { t:'把「音乐」拖到第二列第二行，「照片」拖到第二列第三行', h:'一次拖一个。',
-        goal:{k:'slots',list:[{id:'music',col:1,row:1},{id:'photo',col:1,row:2}]}, star:true },
-      { t:'把「我的电脑」「回收站」「美术作业」都摆到第一列',
-        h:'从上到下依次占第一、二、三行。',
-        goal:{k:'slots',list:[{id:'pc',col:0,row:0},{id:'bin',col:0,row:1},{id:'paint',col:0,row:2}]}, star:true }
-     ],
-     setup:function(ti){
-       if(ti===5){ S.icons=lay([['pc',[3,0]],['bin',[4,0]],['paint',[5,0]]]); }
-       else { S.icons=lay([['pc',[0,0]],['bin',[1,0]],['paint',[2,0]],['cn',[3,0]],
-                           ['music',[4,0]],['photo',[5,0]],['folder',[5,1]]]); }
-     }
-   },
-
-   { id:'l5', name:'开始菜单与滚轮', emoji:'🌀', color:'#0b7285',
-     tasks:[
-      { t:'点「开始」，在列表里滚一滚，点开「计算器」', h:'滚轮往下转，列表就往下走。',
-        goal:{k:'winOpen',id:'win-app-calc'}, star:false,
-        demo:[{at:'#btnStart', click:true, rip:false, msg:'① 点左下角的「开始」'},
-              {at:'#smList .app[data-app="calc"]', msg:'② 滚轮往下滚，找到「计算器」'},
-              {at:'#smList .app[data-app="calc"]', click:true, msg:'③ 点它，窗口就打开了'}] },
-      { t:'从开始菜单里打开「相机」', h:'它在列表靠下的位置，要滚一滚。',
-        goal:{k:'winOpen',id:'win-app-camera'}, star:false },
-      { t:'滚到开始菜单最下面，打开「天气」', h:'列表最底下那个。',
-        goal:{k:'winOpen',id:'win-app-weather'}, star:true },
-      { t:'打开「作文」，用滚轮找到写着「早上好」的那一行', h:'往下滚一点点就能看到。',
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-hello'}]}, star:true },
-      { t:'打开「作文」，一直滚到最后一行（2026）', h:'滚轮往下转到底。',
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-end'}]}, star:true },
-      { t:'点任务栏上的「照片」，把它叫到最前面', h:'窗口叠在一起时，点任务栏就能换到它。',
-        goal:{k:'active',id:'win-photo'}, star:true }
-     ],
-     setup:function(ti){
-       S.icons=lay([['photo',[0,0]],['essay',[1,0]],['folder',[2,0]]]);
-       if(ti===5){
-         T(80,function(){
-           makeWindow({id:'win-essay',title:'作文',icon:'📝',html:'<div id="essayScroll">'+SCROLL_ESSAY+'</div>',size:[620,400],x:230,y:110});
-           makeWindow({id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[520,330],x:600,y:250});
-           if(winById('win-essay')) activate(winById('win-essay'));
-         });
-       }
-     }
-   },
-
-   { id:'l6', name:'窗口三件套', emoji:'🪟', color:'#c2410c',
-     tasks:[
-      { t:'按住「作文」窗口的标题栏，把它拖到右边', h:'标题栏就是窗口最上面那一条。',
-        goal:{k:'flag',name:'move:win-essay'}, star:false,
-        demo:[{at:'[data-win="win-essay"] .tbar', msg:'① 按住标题栏不放'},
-              {run:function(next){ demoDrag('win-essay',null,next); }}] },
-      { t:'点「照片」窗口的「—」最小化，再从任务栏点回来', h:'最小化以后，任务栏上还有它。',
-        goal:{k:'seq',steps:[{k:'state',id:'win-photo',value:'min'},{k:'active',id:'win-photo'}]}, star:false },
-      { t:'把「画图」窗口放到最大，再点「还原」', h:'最大化是 □，还原是它变成的 ❐。',
-        goal:{k:'seq',steps:[{k:'snap',id:'win-draw',zone:'max'},{k:'snap',id:'win-draw',zone:null}]}, star:true },
-      { t:'关掉挡住「照片」的「作文」窗口', h:'点它的 ✕。',
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-photo'},{k:'winClosed',id:'win-essay'}]}, star:true },
-      { t:'把叠在下面的「照片」窗口点一下，叫到最前面',
-        h:'点窗口里面的任何地方都行。', goal:{k:'active',id:'win-photo'}, star:true },
-      { t:'把所有窗口都最小化，露出干净的桌面', h:'一个一个点「—」。',
-        goal:{k:'allMin'}, star:true }
-     ],
-     setup:function(ti){
-       S.icons=lay([['draw',[0,0]],['essay',[1,0]],['photo',[2,0]]]);
-       T(80,function(){
-         if(ti===0||ti===1||ti===3||ti===4||ti===5){
-           makeWindow({id:'win-essay',title:'作文',icon:'📝',
-             html:'<p>窗口挡住东西的时候，把它拖到一边就好了。</p><p>按住最上面的标题栏拖动试试。</p>',
-             size:[560,330],x:300,y:150});
-         }
-         if(ti===1||ti===3||ti===4||ti===5){
-           makeWindow({id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[520,330],x:420,y:230});
-         }
-         if(ti===2){ makeWindow({id:'win-draw',title:'画图',icon:'🎨',html:APPS.draw.body,size:[520,330],x:330,y:170}); }
-         if(ti===4){ activate(winById('win-essay')); }
-       });
-     }
-   },
-
-   { id:'l7', name:'窗口贴边', emoji:'🧲', color:'#7c3aed',
-     tasks:[
-      { t:'把「作文」窗口拖到屏幕左边缘，松手占半个屏幕', h:'拖到最左边，会先出现一个方框。',
-        goal:{k:'snap',id:'win-essay',zone:'left'}, star:false,
-        demo:[{at:'[data-win="win-essay"] .tbar', msg:'① 按住标题栏，一直拖到屏幕最左边'},
-              {run:function(next){ demoDrag('win-essay','left',next); }}] },
-      { t:'再把它拖到右边缘，占右半边', h:'先拖回来，再往右拖。',
-        goal:{k:'snap',id:'win-essay',zone:'right'}, star:false },
-      { t:'拖到左上角，占四分之一', h:'贴着左上角松手。', goal:{k:'snap',id:'win-essay',zone:'tl'}, star:true },
-      { t:'拖到右上角', h:'', goal:{k:'snap',id:'win-essay',zone:'tr'}, star:true },
-      { t:'拖到屏幕最上面，让它最大化', h:'贴着顶部松手。', goal:{k:'snap',id:'win-essay',zone:'max'}, star:true },
-      { t:'先最大化，再拖到左下角', h:'最大化以后，从标题栏往下拖一点就能拖动了。',
-        goal:{k:'seq',steps:[{k:'snap',id:'win-essay',zone:'max'},{k:'snap',id:'win-essay',zone:'bl'}]}, star:true }
-     ],
-     setup:function(){
-       S.icons=lay([['pc',[0,0]],['bin',[1,0]]]);
-       T(80,function(){
-         const w=makeWindow({id:'win-essay',title:'作文',icon:'📝',html:'<div id="essayScroll">'+SCROLL_ESSAY+'</div>',size:[560,360],x:330,y:150});
-         if(w) flash(w.el,'flash');
-       });
-     }
-   },
-
-   { id:'l8', name:'综合任务', emoji:'🏁', color:'#b45309',
-     tasks:[
-      { t:'在桌面右键，新建一个文件夹', h:'', goal:{k:'folders',n:1}, star:true },
-      { t:'双击打开「美术作业」', h:'', goal:{k:'winOpen',id:'win-paint'}, star:true },
-      { t:'把「语文作业」拖进「作业」文件夹', h:'',
-        goal:{k:'folder',icon:'cn',folder:'folder'}, star:true },
-      { t:'把「美术作业」窗口贴到屏幕左半边', h:'拖到最左边松手。',
-        goal:{k:'snap',id:'win-paint',zone:'left'}, star:true },
-      { t:'打开「作文」，滚轮滚到最后一行（2026）', h:'右边还有地方放它。',
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-end'}]}, star:true },
-      { t:'关掉所有窗口，回到干净的桌面', h:'一个一个关。', goal:{k:'allClosed'}, star:true }
-     ],
-     setup:function(){ S.icons=lay([['paint',[0,0]],['cn',[1,0]],['folder',[2,0]],['pc',[3,0]],['essay',[4,0]]]); }
-   }
-  ];
-
-  /* 演示里"拖图标"的动作 */
-  function tapIcon(node,col,row,next){
+  function demoIconDrag(id,col,row,next){
+    const node=iconEl(id);
     if(!node){ if(next) next(); return; }
-    const r=rectOf(node);
-    const layer=iconsLayer.getBoundingClientRect();
-    const p=slotPos(col,row);
-    ghostTo(r.x+r.w/2, r.y+r.h/2, 420);
-    DT(500,function(){
+    const r=rectOf(node), lr=S.layer.getBoundingClientRect(), p=slotPos(col,row);
+    ghostTo(r.x+r.w/2,r.y+r.h/2,420);
+    DT(470,function(){
       rip(node);
       node.style.transition='left .6s ease, top .6s ease';
       node.style.left=p.x+'px'; node.style.top=p.y+'px';
-      ghostTo(layer.left+p.x+50, layer.top+p.y+54, 620);
-      DT(680,function(){
+      ghostTo(lr.left+p.x+50, lr.top+p.y+50, 620);
+      DT(660,function(){
         node.style.transition='';
-        const ic=iconById(node.dataset.id);
+        const ic=iconById(id);
         if(ic){ ic.col=col; ic.row=row; }
         renderIcons();
         say('松手就对齐到格子里了');
-        DT(500,next);
+        DT(480,next);
       });
     });
   }
-  /* 演示里"拖窗口"的动作 */
-  function demoDrag(winId,zone,next){
-    const w=winById(winId);
+  function demoWinSnap(id,zone,next){
+    const w=winById(id);
     if(!w){ if(next) next(); return; }
-    const tb=w.el.querySelector('.tbar');
-    const c=centerOf(tb);
-    ghostTo(c.x,c.y,500);
-    DT(560,function(){
+    const tb=w.el.querySelector('.tbar'), c=centerOf(tb);
+    ghostTo(c.x,c.y,460);
+    DT(520,function(){
       rip(tb);
       tb.classList.add('grabbing');
-      const target=zone?snapRect(zone):{x:w.rect.x+250,y:w.rect.y+40,w:w.rect.w,h:w.rect.h};
-      if(zone) showSnapView(zone);
+      const target=snapRect(zone);
+      showSnapView(zone);
       w.el.style.transition='left .6s ease, top .6s ease, width .6s ease, height .6s ease';
       w.el.style.left=target.x+'px'; w.el.style.top=target.y+'px';
       w.el.style.width=target.w+'px'; w.el.style.height=target.h+'px';
-      const dr=desk.getBoundingClientRect();
-      ghostTo(dr.left+target.x+(zone?60:160), dr.top+target.y+22, 620);
-      DT(680,function(){
+      const pr=play.getBoundingClientRect();
+      ghostTo(pr.left+target.x+(zone==='right'||zone==='tr'||zone==='br'?60:target.w-60),
+              pr.top+target.y+18, 620);
+      DT(660,function(){
         w.el.style.transition='';
         tb.classList.remove('grabbing');
         showSnapView(null);
-        if(zone){ applySnap(w,zone); }
-        else {
-          w.rect={x:Math.round(target.x),y:Math.round(target.y),w:Math.round(target.w),h:Math.round(target.h)};
-          setFlag('move:'+winId);
-        }
+        setRect(w,target); w.snap=zone;
+        say('贴到边上了！');
+        DT(420,next);
+      });
+    });
+  }
+  function demoWinMove(id,dx,dy,next){
+    const w=winById(id);
+    if(!w){ if(next) next(); return; }
+    const tb=w.el.querySelector('.tbar'), c=centerOf(tb);
+    ghostTo(c.x,c.y,460);
+    DT(520,function(){
+      rip(tb);
+      tb.classList.add('grabbing');
+      const target={x:clamp(w.rect.x+dx,0,pW()-w.rect.w),y:clamp(w.rect.y+dy,0,workH()-w.rect.h)};
+      w.el.style.transition='left .6s ease, top .6s ease';
+      w.el.style.left=target.x+'px'; w.el.style.top=target.y+'px';
+      ghostTo(c.x+(target.x-w.rect.x), c.y+(target.y-w.rect.y), 620);
+      DT(660,function(){
+        w.el.style.transition='';
+        tb.classList.remove('grabbing');
+        setRect(w,{x:target.x,y:target.y,w:w.rect.w,h:w.rect.h});
+        S.flags['move:'+id]=true;
+        say('窗口挪开了');
         DT(420,next);
       });
     });
   }
 
-  /* ================= 任务流程 ================= */
-  let L=0, TI=0, stars=0, TOTAL=0, mode='home';
-  const cleared={};
-  function curTask(){ const lv=LEVELS[L]; return lv&&lv.tasks[TI]; }
-  function updateTop(){
-    const lv=LEVELS[L], t=curTask();
-    lvName.textContent=(mode==='home')?'鼠标练习营 3':('第 '+(L+1)+' 课 · '+lv.name);
-    if(mode==='home'){
-      taskText.innerHTML='<b>点两下图标</b>，就能进去上课';
-      dotsEl.innerHTML='';
-      starsEl.textContent='⭐ '+TOTAL;
-      return;
-    }
-    taskText.innerHTML='<b>任务 '+(TI+1)+'/'+lv.tasks.length+'</b>　'+t.t;
-    dotsEl.innerHTML='';
-    lv.tasks.forEach(function(x,i){
-      dotsEl.appendChild(el('span','dot'+(i<TI?' done':(i===TI?' now':''))));
+  /* ================= 关卡数据（每关 6 次，前 2 次练习不计星） ================= */
+  const LEVELS=[
+   { id:'l1', name:'认识图标', emoji:'🖥', color:'#0f6cbd',
+     line:'单击图标就是选中它，点空白的地方就取消。',
+     rounds:[
+      { tip:'单击「我的电脑」，把它选中', hint:'点一下左键，图标会变蓝。',
+        scene:{i:[['pc',0,0]]}, goal:{k:'sel',id:'pc'}, star:false, guided:2,
+        steps:['① 找到图标','② 点一下左键'],
+        demo:[{at:'#play .micon',msg:'① 把鼠标移到「我的电脑」上面'},
+              {at:'#play .micon',act:'click',msg:'② 点一下左键，图标就变蓝了'}] },
+      { tip:'再点旁边的空白处，取消选中', hint:'点蓝色图标以外的地方。',
+        scene:{i:[['pc',0,0]]}, goal:{k:'seq',steps:[{k:'sel',id:'pc'},{k:'none'}]}, star:false, guided:1,
+        steps:['① 先点图标','② 再点空白处'],
+        demo:[{at:'#play .micon',act:'click',msg:'先点一下图标'},
+              {run:function(next){ const pr=play.getBoundingClientRect();
+                 const x=pr.left+pW()*0.62, y=pr.top+workH()*0.55;
+                 ghostTo(x,y,460); DT(520,function(){ ripAt(x,y); selectIcon(null); say('点空白处，蓝色就没有了'); DT(520,next); }); }}] },
+      { tip:'选中「回收站」', hint:'看名字，别点错。',
+        scene:{i:[['pc',0,0],['bin',1,0]]}, goal:{k:'sel',id:'bin'}, star:true },
+      { tip:'选中「美术作业」', hint:'',
+        scene:{i:[['pc',0,0],['bin',1,0],['paint',2,0]]}, goal:{k:'sel',id:'paint'}, star:true },
+      { tip:'先选中「语文作业」，再选中「音乐」', hint:'一个一个来。',
+        scene:{i:[['pc',0,0],['cn',1,0],['music',2,0]]},
+        goal:{k:'seq',steps:[{k:'sel',id:'cn'},{k:'sel',id:'music'}]}, star:true },
+      { tip:'把这三个图标各点一次', hint:'每个都要点到。',
+        scene:{i:[['pc',0,0],['bin',1,0],['paint',2,0]]},
+        goal:{k:'selAll',ids:['pc','bin','paint']}, star:true }
+     ] },
+
+   { id:'l2', name:'单击还是双击', emoji:'🖼', color:'#1a7fd0',
+     line:'单击只是选中，双击才能打开。',
+     rounds:[
+      { tip:'双击「画图」，把它的窗口打开', hint:'快速点两下左键。',
+        scene:{i:[['draw',0,0]]}, goal:{k:'winOpen',id:'win-draw'}, star:false, guided:2,
+        steps:['① 找到图标','② 快速点两下'],
+        demo:[{at:'#play .micon',msg:'① 鼠标移到「画图」上'},
+              {at:'#play .micon',act:'dblclick',msg:'② 快速点两下，窗口就开了'}] },
+      { tip:'单击「画图」只选中，不要打开', hint:'这次只点一下。',
+        scene:{i:[['draw',0,0]]}, goal:{k:'seq',steps:[{k:'sel',id:'draw'},{k:'none'}]}, star:false, guided:1,
+        steps:['① 点一下左键','② 看它没打开'] },
+      { tip:'双击打开「照片」', hint:'', scene:{i:[['photo',0,0]]}, goal:{k:'winOpen',id:'win-photo'}, star:true },
+      { tip:'双击打开「作文」', hint:'', scene:{i:[['essay',0,0]]}, goal:{k:'winOpen',id:'win-essay'}, star:true },
+      { tip:'双击打开「画图」，再点 ✕ 把它关掉', hint:'✕ 在窗口右上角。',
+        scene:{i:[['draw',0,0]]},
+        goal:{k:'seq',steps:[{k:'winOpen',id:'win-draw'},{k:'winClosed',id:'win-draw'}]}, star:true },
+      { tip:'打开「计算器」，再关上所有窗口', hint:'桌面就干净了。',
+        scene:{i:[['calc',0,0]]},
+        goal:{k:'seq',steps:[{k:'winOpen',id:'win-calc'},{k:'allClosed'}]}, star:true }
+     ] },
+
+   { id:'l3', name:'右键菜单', emoji:'📋', color:'#6b4fbb',
+     line:'右键会弹出菜单，很多事情都在里面。',
+     rounds:[
+      { tip:'在空白处点右键，再点「刷新」', hint:'右键就是这个菜单。',
+        scene:{i:[]}, goal:{k:'flag',name:'refresh'}, star:false, guided:2,
+        steps:['① 点右键','② 选「刷新」'],
+        demo:[{run:function(next){ const pr=play.getBoundingClientRect();
+                 const x=pr.left+pW()*0.55, y=pr.top+workH()*0.5;
+                 ghostTo(x,y,460); DT(520,function(){ ripAt(x,y);
+                   openMenu(pW()*0.55,workH()*0.5,'desk'); say('① 在空白处点右键，菜单就出来了'); DT(760,next); }); }},
+              {menuItem:'刷新',msg:'② 点「刷新」'}] },
+      { tip:'用右键菜单新建一个文件夹', hint:'右键 → 新建文件夹。',
+        scene:{i:[]}, goal:{k:'folders',n:1}, star:false, guided:1,
+        steps:['① 点右键','② 选「新建文件夹」'] },
+      { tip:'在「美术作业」上点右键，选「查看属性」', hint:'先点在图标上。',
+        scene:{i:[['paint',0,0]]}, goal:{k:'seq',steps:[{k:'ctx',on:'icon',id:'paint'},{k:'flag',name:'props'}]}, star:true },
+      { tip:'用右键菜单把桌面变亮（显示设置）', hint:'右键 → 显示设置。',
+        scene:{i:[]}, goal:{k:'light'}, star:true },
+      { tip:'在「回收站」上右键，选「打开」', hint:'',
+        scene:{i:[['bin',0,0]]}, goal:{k:'winOpen',id:'win-bin'}, star:true },
+      { tip:'用右键菜单新建两个文件夹', hint:'建完一个再来一次。',
+        scene:{i:[]}, goal:{k:'folders',n:2}, star:true }
+     ] },
+
+   { id:'l4', name:'拖动图标', emoji:'✋', color:'#107c41',
+     line:'按住不放，拖过去，再松手。',
+     rounds:[
+      { tip:'把「音乐」拖到右边空着的地方', hint:'按住不放，拖过去。',
+        scene:{i:[['music',0,0]]}, goal:{k:'slots',list:[{id:'music',col:4,row:1}]}, star:false, guided:2,
+        steps:['① 按住图标','② 拖过去松手'],
+        demo:[{at:'#play .micon',msg:'① 按住「音乐」不放'},
+              {run:function(next){ demoIconDrag('music',4,1,next); }}] },
+      { tip:'把「照片」拖到第一列第二行', hint:'松手会自动对齐格子。',
+        scene:{i:[['music',4,0],['photo',5,0]]}, goal:{k:'slots',list:[{id:'photo',col:0,row:1}]}, star:false, guided:1,
+        steps:['① 按住照片','② 拖到左边第二行'] },
+      { tip:'把「美术作业」拖到第一列第三行', hint:'',
+        scene:{i:[['paint',2,0]]}, goal:{k:'slots',list:[{id:'paint',col:0,row:2}]}, star:true },
+      { tip:'把「语文作业」拖进「作业」文件夹', hint:'拖到文件夹上会变亮。',
+        scene:{i:[['cn',0,0],['folder',2,0]]}, goal:{k:'folder',icon:'cn',folder:'folder'}, star:true },
+      { tip:'把「音乐」拖到第二列第二行，「照片」拖到第二列第三行', hint:'一次拖一个。',
+        scene:{i:[['music',4,0],['photo',5,0]]},
+        goal:{k:'slots',list:[{id:'music',col:1,row:1},{id:'photo',col:1,row:2}]}, star:true },
+      { tip:'把三个图标都摆到第一列', hint:'从上往下占第一、二、三行。',
+        scene:{i:[['pc',3,0],['bin',4,0],['paint',5,0]]},
+        goal:{k:'slots',list:[{id:'pc',col:0,row:0},{id:'bin',col:0,row:1},{id:'paint',col:0,row:2}]}, star:true }
+     ] },
+
+   { id:'l5', name:'开始菜单与滚轮', emoji:'🌀', color:'#0b7285',
+     line:'滚轮能翻页，开始菜单里能找到所有软件。',
+     rounds:[
+      { tip:'点「开始」，滚一滚，打开「计算器」', hint:'滚轮往下转，列表往下走。',
+        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-calc'}, star:false, guided:2,
+        steps:['① 点开始','② 滚轮找软件'],
+        demo:[{at:'#play .mtbtn.start',act:'click',msg:'① 点左下角的「开始」'},
+              {at:'#play .mstart .app[data-app="calc"]',msg:'② 滚轮往下滚，找到「计算器」'},
+              {at:'#play .mstart .app[data-app="calc"]',act:'click',msg:'③ 点它就打开了'}] },
+      { tip:'从开始菜单里打开「相机」', hint:'它在下面，要滚一滚。',
+        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-camera'}, star:false, guided:1,
+        steps:['① 点开始','② 滚到「相机」'] },
+      { tip:'滚到最下面，打开「天气」', hint:'列表最底下那个。',
+        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-weather'}, star:true },
+      { tip:'打开「作文」，用滚轮找到「早上好」那一行', hint:'往下滚一点点。',
+        scene:{i:[['essay',0,0]],bar:true},
+        goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-hello'}]}, star:true },
+      { tip:'一直滚到最后一行（2026）', hint:'滚到底。',
+        scene:{i:[['essay',0,0]],bar:true},
+        goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-end'}]}, star:true },
+      { tip:'点任务栏上的「照片」，把它叫到最前面', hint:'窗口叠在一起时，点任务栏就能换。',
+        scene:{i:[['photo',0,0]],bar:true,
+          w:[{id:'win-essay',title:'作文',icon:'📝',essay:true,size:[420,280],at:[0.42,0.34],active:true},
+             {id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[360,240],at:[0.14,0.5]}]},
+        goal:{k:'active',id:'win-photo'}, star:true }
+     ] },
+
+   { id:'l6', name:'摆窗口', emoji:'🪟', color:'#c2410c',
+     line:'窗口能拖、能最小化、能最大化、能关掉。',
+     rounds:[
+      { tip:'把窗口拖开，露出下面的 🐟，再点它', hint:'按住窗口最上面的标题栏。',
+        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>这个窗口挡住东西了。</p><p>把它拖到一边看看。</p><p>按住最上面的标题栏拖。</p>',size:[420,280],at:[0.34,0.3]}],
+               hid:{emoji:'🐟',at:[0.74,0.62],size:86}},
+        goal:{k:'seq',steps:[{k:'uncover'},{k:'flag',name:'hidclick'}]}, star:false, guided:2,
+        steps:['① 按住标题栏','② 拖到一边','③ 点露出来的东西'],
+        demo:[{at:'#play .mwin .tbar',msg:'① 按住窗口最上面的标题栏'},
+              {run:function(next){ demoWinMove('win-essay',190,40,next); }},
+              {run:function(next){ const c=centerOf(S.hid); const pr=play.getBoundingClientRect();
+                 ghostTo(pr.left+c.x-pr.left,pr.top+c.y-pr.top,420);
+                 DT(470,function(){ rip(S.hid); S.flags.hidclick=true; say('③ 点它，就完成啦'); DT(520,next); }); }}] },
+      { tip:'点「—」把照片窗口最小化，再从任务栏点回来', hint:'最小化以后，任务栏上还有它。',
+        scene:{w:[{id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[400,260],at:[0.3,0.4],active:true}],bar:true},
+        goal:{k:'seq',steps:[{k:'state',id:'win-photo',value:'min'},{k:'active',id:'win-photo'}]}, star:false, guided:1,
+        steps:['① 点「—」','② 从任务栏点回来'] },
+      { tip:'把画图窗口放到最大，再点「❐」还原', hint:'□ 是最大化。',
+        scene:{w:[{id:'win-draw',title:'画图',icon:'🎨',html:APPS.draw.body,size:[400,260],at:[0.32,0.32],active:true}],bar:true},
+        goal:{k:'seq',steps:[{k:'snap',id:'win-draw',zone:'max'},{k:'snap',id:'win-draw',zone:null}]}, star:true },
+      { tip:'点 ✕ 关掉挡住 🎈 的窗口', hint:'先看看哪个窗口压着它。',
+        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>把挡住东西的窗口关掉吧。</p>',size:[420,270],at:[0.3,0.26],active:true}],
+               hid:{emoji:'🎈',at:[0.58,0.5],size:80}},
+        goal:{k:'winClosed',id:'win-essay'}, star:true },
+      { tip:'点一下下面那个「照片」窗口，把它叫到前面', hint:'点窗口里面的任何地方。',
+        scene:{bar:true,
+          w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>我在上面。</p>',size:[420,270],at:[0.3,0.28],active:true},
+             {id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[380,250],at:[0.14,0.46]}]},
+        goal:{k:'active',id:'win-photo'}, star:true },
+      { tip:'把两个窗口都最小化，露出干净的桌面', hint:'一个一个点「—」。',
+        scene:{bar:true,
+          w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>把我收起来。</p>',size:[400,250],at:[0.2,0.26],active:true},
+             {id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[360,230],at:[0.5,0.44]}]},
+        goal:{k:'allMin'}, star:true }
+     ] },
+
+   { id:'l7', name:'窗口贴边', emoji:'🧲', color:'#7c3aed',
+     line:'拖到屏幕边上，窗口会自己占半个屏。',
+     rounds:[
+      { tip:'把窗口拖到左边缘，松手占左半边', hint:'拖到最左边，会先出现一个方框。',
+        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>把我拖到屏幕最左边试试。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
+        goal:{k:'snap',id:'win-essay',zone:'left'}, star:false, guided:2,
+        steps:['① 按住标题栏','② 拖到最左边','③ 松手'],
+        demo:[{at:'#play .mwin .tbar',msg:'① 按住标题栏，一直拖到最左边'},
+              {run:function(next){ demoWinSnap('win-essay','left',next); }}] },
+      { tip:'再拖到右边缘，占右半边', hint:'先拖回来一点，再往右拖。',
+        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>这次拖到最右边。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
+        goal:{k:'snap',id:'win-essay',zone:'right'}, star:false, guided:1,
+        steps:['① 按住标题栏','② 拖到最右边'] },
+      { tip:'拖到左上角，占四分之一', hint:'贴着左上角松手。',
+        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>试试左上角。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
+        goal:{k:'snap',id:'win-essay',zone:'tl'}, star:true },
+      { tip:'拖到右上角', hint:'',
+        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>这次右上角。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
+        goal:{k:'snap',id:'win-essay',zone:'tr'}, star:true },
+      { tip:'拖到最上面，让它变大', hint:'贴着顶部松手。',
+        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>拖到顶部会变大。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
+        goal:{k:'snap',id:'win-essay',zone:'max'}, star:true },
+      { tip:'先拖到顶部变大，再拖到左下角', hint:'变大以后，从标题栏往下拖一点就能拖动了。',
+        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>先变大，再拖到左下角。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
+        goal:{k:'seq',steps:[{k:'snap',id:'win-essay',zone:'max'},{k:'snap',id:'win-essay',zone:'bl'}]}, star:true }
+     ] },
+
+   { id:'l8', name:'综合小任务', emoji:'🏁', color:'#b45309',
+     line:'把学过的连起来，就是平时用电脑做的事。',
+     rounds:[
+      { tip:'右键新建一个文件夹，再把「语文作业」拖进去', hint:'两步一起做。',
+        scene:{i:[['cn',0,0]]},
+        goal:{k:'seq',steps:[{k:'folders',n:1},{k:'folder',icon:'cn',folder:'newfolder1'}]}, star:true },
+      { tip:'双击打开「美术作业」，再把它贴到左半边', hint:'',
+        scene:{i:[['paint',0,0]]},
+        goal:{k:'seq',steps:[{k:'winOpen',id:'win-paint'},{k:'snap',id:'win-paint',zone:'left'}]}, star:true },
+      { tip:'打开「作文」，滚到最后一行，再关掉它', hint:'滚到底再点 ✕。',
+        scene:{i:[['essay',0,0]]},
+        goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-end'},{k:'winClosed',id:'win-essay'}]}, star:true },
+      { tip:'打开「作文」贴左边，再打开「照片」贴右边', hint:'两个窗口左右各一半。',
+        scene:{i:[['essay',6,0],['photo',7,0]]},   /* 图标放右边，左边贴上窗口后还看得见 */
+        goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'snap',id:'win-essay',zone:'left'},
+                             {k:'winOpen',id:'win-photo'},{k:'snap',id:'win-photo',zone:'right'}]}, star:true },
+      { tip:'右键打开「音乐」，最小化，再从任务栏点回来', hint:'',
+        scene:{i:[['music',0,0]]},
+        goal:{k:'seq',steps:[{k:'winOpen',id:'win-music'},{k:'state',id:'win-music',value:'min'},{k:'active',id:'win-music'}]}, star:true },
+      { tip:'新建文件夹，把两个图标拖进去，再关掉所有窗口', hint:'最后一关啦。',
+        scene:{i:[['cn',0,0],['paint',1,0]]},
+        goal:{k:'seq',steps:[{k:'folders',n:1},{k:'folder',icon:'cn',folder:'newfolder1'},
+                             {k:'folder',icon:'paint',folder:'newfolder1'},{k:'allClosed'}]}, star:true }
+     ] }
+  ];
+
+  /* ================= 每一关的流程 ================= */
+  let L=0, RI=0, stars=0, TOTAL=0, mode='home';
+  const cleared={}, best={};
+  let navs=[];
+  function curRound(){ const lv=LEVELS[L]; return lv&&lv.rounds[RI]; }
+  function levelStars(lv){ return lv.rounds.filter(function(r){ return r.star; }).length; }
+  function markNav(id){
+    navs.forEach(function(b){
+      b.style.outline=(b.dataset.mode===id)?'3px solid #fff':'none';
+      if(b.dataset.mode!=='home'&&cleared[b.dataset.mode]) b.classList.add('n-done');
+      else b.classList.remove('n-done');
     });
-    starsEl.textContent='⭐ '+stars;
   }
-  function prepare(){
-    clearTimers(); stopDemo(); closeCtx(); closeStart();
-    checklist.className='checklist';
-    closeAllWindows();
-    S.sel=null; S.seqStep=0; S.selSeen={}; S.flags={}; S.ctxOn=null; S.inFolder={};
-    S.wallLight=false; wall.className='wall'; S.zTop=30; S.active=null;
-    S.taskDone=false;
-    const t=curTask();
-    LEVELS[L].setup(TI,t);
-    renderIcons(); renderTaskbar(); updateTop(); renderChecklist();
-    desk.dataset.level=LEVELS[L].id;
-    desk.dataset.task=String(TI+1);
+  function updatePhase(){
+    const r=curRound();
+    if(!r){ phaseEl.className='phase'; phaseEl.textContent=''; return; }
+    phaseEl.className='phase '+(r.star?'star':'practice');
+    phaseEl.textContent=r.star?('第 '+(RI+1)+' 次 · 计星'):'练习轮 · 不计星';
   }
-  function showTask(){
-    prepare();
-    const t=curTask();
-    btnDemo.style.display=t.demo?'':'none';
-    say('<b>'+t.t+'</b>'+(t.h?('<br><span style="font-size:16px;font-weight:600;color:#5c6470">'+t.h+'</span>'):''));
-    if(t.demo) T(1500,playDemo);
-    else if(t.h) tip('提示：'+t.h,6000);
+  function updateStepbar(){
+    const r=curRound();
+    stepbar.innerHTML='';
+    if(!r||!r.steps) return;
+    r.steps.forEach(function(s,i){ stepbar.appendChild(el('span','step'+(i===0?' on':''),s)); });
   }
-  function resetTask(){ prepare(); const t=curTask(); btnDemo.style.display=t.demo?'':'none'; }
-  function taskFinished(){
-    if(S.taskDone) return;
-    S.taskDone=true;
-    const t=curTask();
-    if(t.star){ stars++; notify('任务完成 ⭐','又得到一颗星，真棒！'); }
-    else notify('做到啦 ✅','这是练习任务，不计星。');
-    updateTop();
-    T(1600,nextTask);
+  function goalSelector(g){
+    if(!g) return null;
+    switch(g.k){
+      case 'sel': return '#play .micon[data-id="'+g.id+'"]';
+      case 'folder': return '#play .micon[data-id="'+g.icon+'"]';
+      case 'slots': return '#play .micon[data-id="'+g.list[0].id+'"]';
+      case 'uncover': return '#play .mwin .tbar';
+      case 'winOpen': case 'winClosed': case 'active': case 'state': case 'snap':
+        if(g.id.indexOf('win-app-')===0) return '#play .mtbtn.start';
+        return '#play .micon[data-id="'+g.id.slice(4)+'"]';
+      case 'flag':
+        if(g.name==='refresh') return null;
+        if(g.name.indexOf('move:')===0) return '#play .mwin .tbar';
+        return null;
+      case 'seq': return goalSelector(g.steps[0]);
+      default: return null;
+    }
   }
-  function nextTask(){
-    TI++;
-    if(TI>=LEVELS[L].tasks.length) levelDone();
-    else showTask();
+  function showTag(r){
+    if(!r||!r.guided) return;
+    const sel=goalSelector(r.goal);
+    const node=sel?$(sel):null;
+    if(!node) return;
+    node.classList.add('hintring');
+    const c=centerOf(node), pr=play.getBoundingClientRect();
+    const tag=el('div','tag-here','点这里');
+    play.appendChild(tag);
+    const nodeTop=c.y-pr.top-node.getBoundingClientRect().height/2;
+    const below=nodeTop<64;                 /* 目标太靠上就把标签放到下面，别压住它 */
+    tag.style.left=clamp(Math.round(c.x-pr.left-tag.offsetWidth/2),6,pW()-tag.offsetWidth-6)+'px';
+    tag.style.top=clamp(below
+      ? Math.round(nodeTop+node.getBoundingClientRect().height+10)
+      : Math.round(nodeTop-tag.offsetHeight-10),6,workH()-30)+'px';
+    r._tag={node:node,tag:tag};
+  }
+  function clearTag(){
+    const r=curRound();
+    if(!r||!r._tag) return;
+    if(r._tag.node) r._tag.node.classList.remove('hintring');
+    if(r._tag.tag&&r._tag.tag.parentNode) r._tag.tag.parentNode.removeChild(r._tag.tag);
+    r._tag=null;
+  }
+  function showRound(){
+    mode='play';
+    clearTimers(); stopDemo(); hideModal();
+    S.done=false;
+    const lv=LEVELS[L], r=curRound();
+    buildScene(r);
+    ctrlrow.style.display='';
+    updatePhase(); updateStepbar();
+    say('<b>'+r.tip+'</b>'+(r.hint?('<br><span style="font-size:16px;font-weight:600;color:#8a8aa8">'+r.hint+'</span>'):''));
+    btnDemo.style.display=r.demo?'':'none';
+    play.dataset.level=lv.id;
+    play.dataset.round=String(RI+1);
+    if(r.demo) T(950,function(){ if(!S.done) playDemo(); });
+    else { S.ready=true; T(300,function(){ showTag(r); }); }
+  }
+  function playDemo(){
+    const r=curRound();
+    if(!r||!r.demo||demoOn) return;
+    stopDemo();
+    demoOn=true;
+    btnDemo.style.display='none';
+    const g=$('#ghost');
+    if(g){ g.style.opacity='1'; g.style.transition='none'; g.style.transform='translate('+(pW()*0.5-3)+'px,'+(workH()-24)+'px)'; }
+    runSteps(r.demo,function(){
+      DT(420,function(){
+        stopDemo();
+        btnDemo.style.display=r.demo?'':'none';
+        buildScene(r);                     /* 演示把画面动过，重新摆一遍 */
+        say('看懂了吗？轮到你啦 👉<br><span style="font-size:16px;font-weight:600;color:#8a8aa8">'+r.tip+'</span>');
+        S.ready=true;
+        T(300,function(){ showTag(r); });
+      });
+    });
+  }
+  function roundDone(){
+    if(S.done) return;
+    S.done=true;
+    clearTag();
+    const r=curRound();
+    if(r.star){
+      stars++;
+      setStars(stars,levelStars(LEVELS[L]));
+      confetti();
+      say('太棒了！<b>得到一颗星</b> ⭐');
+    } else {
+      say('做到啦！✅ 这次是<b>练习</b>，不计星～');
+    }
+    T(1200,nextRound);
+  }
+  function nextRound(){
+    RI++;
+    if(RI>=LEVELS[L].rounds.length) levelDone();
+    else showRound();
   }
   function levelDone(){
     const lv=LEVELS[L];
     cleared[lv.id]=true;
-    TOTAL+=stars;
-    desk.dataset.task='done';        /* 给自检脚本的信号：这一关做完了 */
+    if((best[lv.id]||0)<stars) best[lv.id]=stars;
+    TOTAL=0;
+    for(const k in best) TOTAL+=(best[k]||0);
+    const n=document.getElementById('starNum');
+    if(n) n.textContent=TOTAL;
+    markNav(L);
+    play.dataset.round='done';
     const all=LEVELS.every(function(l){ return cleared[l.id]; });
-    if(all){ showFinale(); return; }
+    if(all){
+      $('#certSkills').innerHTML=LEVELS.map(function(l){ return '<span>'+l.emoji+' '+l.name+'</span>'; }).join('');
+      $('#certSub').innerHTML='图标、双击、右键、拖动、滚轮、窗口，你都会啦！<br>一共拿到 <b>⭐ '+TOTAL+'</b> 颗星。';
+      $('#finale').classList.add('show');
+      for(let i=0;i<60;i++){
+        const c=el('div','cf');
+        const colors=['#ffd23f','#43a3ff','#4ed47e','#ff8a65','#b39ddb','#43d2e8'];
+        c.style.left=(Math.random()*100)+'vw';
+        c.style.background=colors[Math.floor(Math.random()*colors.length)];
+        c.style.animationDelay=(Math.random()*.6)+'s';
+        document.body.appendChild(c);
+        setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); },3600);
+      }
+      return;
+    }
     let nextIdx=-1;
     for(let i=0;i<LEVELS.length;i++){ if(!cleared[LEVELS[i].id]){ nextIdx=i; break; } }
-    showHome('第 '+(L+1)+' 课「'+lv.name+'」完成啦！⭐ '+stars+' 颗星。<br>点下一个图标，继续第 '+(nextIdx+1)+' 课。');
-  }
-  function showFinale(){
-    $('#certSkills').innerHTML=LEVELS.map(function(l){
-      return '<span>'+l.emoji+' '+l.name+'</span>';
-    }).join('');
-    $('#certSub').innerHTML='你认识了桌面、会用图标、会开窗口、会贴边、会用滚轮了！<br>一共拿到 <b>⭐ '+TOTAL+'</b> 颗星。';
-    $('#finale').className='finale show';
-    confettiBurst();
-  }
-  function confettiBurst(){
-    const colors=['#f2c14e','#60a6ff','#7bd389','#ff8a65','#b39ddb','#4dd0e1'];
-    for(let i=0;i<60;i++){
-      const c=el('div','cf');
-      c.style.left=(Math.random()*100)+'vw';
-      c.style.background=colors[Math.floor(Math.random()*colors.length)];
-      c.style.animationDelay=(Math.random()*.6)+'s';
-      c.style.animationDuration=(1.6+Math.random()*1.4)+'s';
-      document.body.appendChild(c);
-      setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); },3600);
-    }
-  }
-  function showHome(msg){
-    mode='home';
-    clearTimers(); stopDemo(); closeCtx(); closeStart(); closeAllWindows();
-    checklist.className='checklist';
-    S.icons=LEVELS.map(function(l,i){
-      return {id:'lv'+i,label:'第'+(i+1)+'课<span class="sub">'+l.name+'</span>',
-              emoji:l.emoji,col:0,row:0,lv:i};
-    });
-    arrangeIcons();
-    S.sel=null; S.inFolder={}; S.flags={}; S.seqStep=0; S.taskDone=true;
-    wall.className='wall'; S.wallLight=false;
-    renderIcons(); renderTaskbar(); updateTop();
-    btnDemo.style.display='none';
-    desk.dataset.level='home';
-    desk.dataset.task='0';
-    say(msg||'欢迎来到你的第一台电脑！<br>这些图标就是八节课，<b>点两下</b>就能进去。');
+    showModal('🏆','第 '+(L+1)+' 课 · 学会啦',
+      lv.line+'<br>这一课拿到 ⭐ '+stars+' 颗星。',
+      '⭐'.repeat(stars));
+    const ok=$('#mOk');
+    ok.onclick=function(){
+      hideModal();
+      if(nextIdx>=0) startLevel(nextIdx); else enterHome();
+    };
   }
   function startLevel(i){
     mode='play';
-    L=i; TI=0; stars=0;
-    showTask();
+    L=i; RI=0; stars=0;
+    markNav(LEVELS[i].id);
+    setStars(0,levelStars(LEVELS[i]));
+    ctrlrow.style.display='';
+    showRound();
   }
-  on($('#btnHome'),'click',function(){ showHome('回到桌面啦。点两下图标，可以再进去练一次。'); });
-  on(btnDemo,'click',function(){ if(curTask()&&curTask().demo) playDemo(); });
-  on($('#certOk'),'click',function(){
-    $('#finale').className='finale';
-    for(const k in cleared) delete cleared[k];
-    TOTAL=0;
-    showHome('欢迎再玩一遍！点两下第一个图标开始。');
-  });
-  function tickClock(){
-    const d=new Date();
-    const hh=('0'+d.getHours()).slice(-2), mm=('0'+d.getMinutes()).slice(-2);
-    $('#clock').innerHTML=hh+':'+mm+'<small>'+(d.getMonth()+1)+'月'+d.getDate()+'日</small>';
+  function enterHome(){
+    mode='home';
+    clearTimers(); stopDemo(); hideModal();
+    ctrlrow.style.display='none';
+    buildScene({i:[['pc',0,0],['photo',1,0],['folder',2,0]],
+      w:[{id:'win-home',title:'电脑小课堂',icon:'💡',
+          html:'<p>点上面的圆圈，选一课开始。</p><p>每一课都先「看一遍」，再跟着做。</p>',
+          size:[420,240],at:[0.3,0.3]}]});
+    S.done=true;                       /* 首页不判任务 */
+    setStars(0,0);
+    say('欢迎来到电脑小课堂！<br>点上面的圆圈，<b>选一课</b>开始学。');
+    play.dataset.level='home';
+    play.dataset.round='0';
+    markNav('home');
   }
-  window.addEventListener('resize',function(){
-    if(mode==='home'||mode==='play') renderIcons();
-  });
 
   /* ================= 启动 ================= */
-  /* 给自检脚本读的数据（页面上看不到，也不影响玩法） */
+  (function buildNav(){
+    const nav=$('#nav');
+    const bh=el('button','b-home','<span class="emo">🏠</span>开始');
+    bh.dataset.mode='home';
+    bh.addEventListener('click',function(){ enterHome(); });
+    nav.appendChild(bh);
+    LEVELS.forEach(function(lv,i){
+      const b=el('button',null,'<span class="emo">'+lv.emoji+'</span>'+lv.name);
+      b.dataset.mode=lv.id;
+      b.style.background=lv.color;
+      b.addEventListener('click',function(){ startLevel(i); });
+      nav.appendChild(b);
+    });
+    navs=[].slice.call(nav.querySelectorAll('button'));
+  })();
+  on(btnDemo,'click',function(){ playDemo(); });
+  on($('#certOk'),'click',function(){
+    $('#finale').classList.remove('show');
+    for(const k in cleared) delete cleared[k];
+    for(const k in best) delete best[k];
+    TOTAL=0;
+    const n=document.getElementById('starNum'); if(n) n.textContent='0';
+    enterHome();
+  });
+  window.addEventListener('resize',function(){ if(S.stage) layout(); });
   window.__mt={ levels:LEVELS, state:S, mode:function(){ return mode; },
-                level:function(){ return L; }, task:function(){ return TI; },
-                stars:function(){ return stars; }, total:function(){ return TOTAL; } };
-  renderStart();
-  tickClock();
-  setInterval(tickClock,20000);
-  showHome();
+                level:function(){ return L; }, round:function(){ return RI; },
+                stars:function(){ return stars; }, total:function(){ return TOTAL; },
+                ready:function(){ return !!S.ready && !demoOn; },
+                goalMet:function(g){ return goalMet(g); },
+                goto:function(li,ri){ mode='play'; L=li; RI=ri||0; stars=0;
+                  markNav(LEVELS[li].id); setStars(0,levelStars(LEVELS[li]));
+                  ctrlrow.style.display=''; showRound(); } };
+  (function bubbles(){
+    const cols=['#ffffff','#ffffff','#ffe3f2','#d9f0ff'];
+    for(let i=0;i<14;i++){
+      const s=el('span');
+      const sz=(Math.random()*40+20);
+      s.style.width=sz+'px'; s.style.height=sz+'px';
+      s.style.left=(Math.random()*100)+'vw';
+      s.style.bottom='-40px';
+      s.style.background=cols[i%cols.length];
+      s.style.animationDuration=(Math.random()*6+6)+'s';
+      s.style.animationDelay=(Math.random()*4)+'s';
+      $('#bg').appendChild(s);
+    }
+  })();
+  enterHome();
 })();
 </script>
 </body>
