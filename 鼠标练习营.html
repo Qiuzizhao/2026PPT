@@ -193,7 +193,7 @@
   body.locked{overflow:hidden}
   .finale{
     position:fixed;top:0;right:0;bottom:0;left:0;z-index:30000;display:none;overflow:hidden;
-    align-items:center;justify-content:center;padding:16px;
+    align-items:center;justify-content:center;padding:16px 16px 268px;
     background:radial-gradient(circle at 50% 36%,#4b3a8c 0%,#2c2356 48%,#16122f 100%);
   }
   .finale.show{display:flex}
@@ -256,10 +256,82 @@
     font-size:20px;font-size:clamp(15px,3vw,20px);color:#fff6cf;
   }
   html.no-flexgap .finale-stars > *:not(:last-child){margin-right:8px}
+
+  /* ===== 通关页的「无尽点点乐」：先做完的学生一直有得玩 =====
+     规则只有一条——点掉飘下来的小东西就加分。无限关、没有失败、也不会离开本页。
+     普通物件 +1 分，金色 🌟 +5 分；漏掉不扣分，只把连击清零。
+     每 10 分升一关，落得更快、来得更密，所以永远玩不完。最高分存在本机浏览器。 */
+  .ep{
+    position:absolute;right:0;bottom:0;left:0;z-index:4;
+    height:236px;padding:0 16px 14px;box-sizing:border-box;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  html.no-flexgap .ep > *:not(:last-child){margin-bottom:8px}
+  .ep-head{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;color:#fff}
+  html.no-flexgap .ep-head > *:not(:last-child){margin-right:10px}
+  .ep-k{
+    display:flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.28);
+    border-radius:999px;padding:4px 13px;font-weight:800;
+    font-size:16px;font-size:clamp(13px,2.2vw,16px);backdrop-filter:blur(2px);
+  }
+  html.no-flexgap .ep-k > *:not(:last-child){margin-right:6px}
+  .ep-k b{color:#ffd23f;font-size:1.15em;font-variant-numeric:tabular-nums}
+  .ep-lv b{color:#8ff0bc}
+  .ep-lv.flash{animation:ep-flash .55s ease}
+  @keyframes ep-flash{
+    0%{transform:scale(1)}
+    45%{transform:scale(1.16);background:rgba(143,240,188,.36)}
+    100%{transform:scale(1)}
+  }
+  .ep-area{
+    position:relative;flex:1;min-height:0;overflow:hidden;
+    border-radius:20px;border:2px solid rgba(255,255,255,.16);
+    background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
+  }
+  .ep-area::after{
+    content:"";position:absolute;right:0;bottom:0;left:0;height:3px;pointer-events:none;
+    background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.4),rgba(255,255,255,0));
+  }
+  .ep-tip{
+    position:absolute;top:50%;right:20px;left:20px;transform:translateY(-50%);
+    text-align:center;color:#ffe9a8;font-weight:800;pointer-events:none;
+    font-size:18px;font-size:clamp(14px,2.6vw,18px);transition:opacity .5s ease;
+  }
+  .ep-tip.hide{opacity:.34}
+  .ep-item{
+    position:absolute;top:0;left:0;display:flex;align-items:center;justify-content:center;
+    border-radius:50%;background:rgba(255,255,255,.94);
+    box-shadow:0 6px 14px rgba(20,10,50,.35);cursor:pointer;user-select:none;
+    -webkit-user-select:none;touch-action:none;transition:opacity .2s linear;will-change:transform;
+  }
+  .ep-item.gold{
+    background:linear-gradient(180deg,#fff6c9,#ffd23f);
+    box-shadow:0 0 0 3px rgba(255,210,63,.55),0 6px 16px rgba(255,178,40,.5);
+  }
+  .ep-plus{
+    position:absolute;top:0;left:0;transform:translate(-50%,0);pointer-events:none;
+    color:#ffe9a8;font-weight:900;font-size:18px;text-shadow:0 2px 6px rgba(0,0,0,.35);
+    animation:ep-rise .85s ease forwards;
+  }
+  .ep-plus.big{color:#ffd23f;font-size:24px}
+  @keyframes ep-rise{
+    from{opacity:1;transform:translate(-50%,0) scale(.9)}
+    to{opacity:0;transform:translate(-50%,-52px) scale(1.2)}
+  }
   @media(max-height:620px){
     .trophy-wrap{width:180px;max-width:42vw;width:min(180px,42vw);height:180px;max-height:42vw;height:min(180px,42vw)}
     .big-trophy{font-size:126px;font-size:min(126px,30vw)}
     .finale-sub{margin-bottom:10px}
+  }
+  @media(max-height:700px){
+    .finale{padding-bottom:212px}
+    .ep{height:186px}
+  }
+  @media(max-height:560px){
+    .finale{padding-bottom:164px}
+    .ep{height:148px}
+    .ep-tip{font-size:14px}
   }
 
 
@@ -374,6 +446,19 @@
     <p class="finale-sub">鼠标的五个本领你全学会啦，真是电脑小达人！</p>
     <div class="finale-chips" id="finaleChips"></div>
     <div class="finale-stars"><span>⭐</span><span id="finaleStarTxt">满星通关</span></div>
+  </div>
+
+  <!-- 通关之后的无限小游戏：等同学的时候一直有得玩 -->
+  <div class="ep" id="endless">
+    <div class="ep-head">
+      <span class="ep-k">得分<b id="epScore">0</b></span>
+      <span class="ep-k">连击<b id="epCombo">0</b></span>
+      <span class="ep-k">最高分<b id="epBest">0</b></span>
+      <span class="ep-k ep-lv" id="epLvChip">第<b id="epLevel">1</b>关</span>
+    </div>
+    <div class="ep-area" id="epArea">
+      <div class="ep-tip" id="epTip">🎯 无限关：点掉飘下来的小东西，想玩多久就玩多久～</div>
+    </div>
   </div>
 </div>
 
@@ -813,6 +898,132 @@
     }
     requestAnimationFrame(frame);
   }
+  /* ===== 通关页的「无尽点点乐」=====
+     给先做完的学生一个不会结束的小练习：飘下来的小东西点掉就加分。
+     普通物件 +1 分，金色 🌟 +5 分；漏掉不扣分，只把连击清零。
+     每 10 分升一关（落得更快、来得更密），所以是无限关；最高分存在本机浏览器。
+     只在通关页启动，不碰任何一个正课关卡。 */
+  let epAudio=null;
+  function epBeep(freq,dur){
+    try{
+      if(!epAudio) epAudio=new (window.AudioContext||window.webkitAudioContext)();
+      if(epAudio.state==='suspended'&&epAudio.resume) epAudio.resume();
+      const o=epAudio.createOscillator(), g=epAudio.createGain();
+      o.type='sine'; o.frequency.value=freq; g.gain.value=.05;
+      o.connect(g); g.connect(epAudio.destination); o.start();
+      g.gain.exponentialRampToValueAtTime(.0001,epAudio.currentTime+(dur||.09));
+      o.stop(epAudio.currentTime+(dur||.09)+.02);
+    }catch(e){}
+  }
+  function startEndless(){
+    const area=$('#epArea');
+    if(!area) return;
+    const scoreEl=$('#epScore'), comboEl=$('#epCombo'), bestEl=$('#epBest'),
+          lvEl=$('#epLevel'), lvChip=$('#epLvChip'), tip=$('#epTip');
+    const BEST_KEY='mouse_endless_best';
+    const ITEMS=['⭐','🎈','🍎','🍓','⚽','🍬','🐤','🌸','🍀'];
+    const GOLD='🌟';
+    let best=0;
+    try{ best=parseInt(localStorage.getItem(BEST_KEY)||'0',10)||0; }catch(e){}
+    bestEl.textContent=best;
+    let score=0, combo=0, level=1, items=[], last=0, nextSpawn=350;
+    if(tip) setTimeout(()=>tip.classList.add('hide'),5200);
+
+    function spawn(){
+      const w=area.clientWidth, h=area.clientHeight;
+      if(w<40||h<40) return;
+      const gold=Math.random()<0.12;
+      const size=Math.max(34,Math.min(62,Math.round(h*0.22)));
+      const x=6+Math.random()*Math.max(6,w-size-12);
+      const el=document.createElement('div');
+      el.className='ep-item'+(gold?' gold':'');
+      el.style.width=size+'px'; el.style.height=size+'px';
+      el.style.lineHeight=size+'px';
+      el.style.fontSize=Math.round(size*0.56)+'px';
+      el.textContent=gold?GOLD:ITEMS[Math.floor(Math.random()*ITEMS.length)];
+      const it={el:el,x:x,y:-size,size:size,gold:gold,dead:false,
+                vy:h*(0.26+level*0.035)*(0.85+Math.random()*0.35)};
+      el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0)';
+      area.appendChild(el);
+      el.addEventListener('pointerdown',ev=>{ ev.preventDefault(); hit(it); });
+      items.push(it);
+      if(items.length>16){                       /* 保险：同时存在太多就淘汰最老的 */
+        const old=items.shift();
+        if(old&&old.el&&old.el.parentNode) old.el.parentNode.removeChild(old.el);
+      }
+    }
+
+    function rise(it,gain){
+      const p=document.createElement('div');
+      p.className='ep-plus'+(gain>1?' big':'');
+      p.textContent='+'+gain;
+      p.style.left=(it.x+it.size/2)+'px';
+      p.style.top=(it.y+it.size*0.15)+'px';
+      area.appendChild(p);
+      setTimeout(()=>{ if(p.parentNode) p.parentNode.removeChild(p); },900);
+    }
+
+    function hit(it){
+      if(it.dead) return;
+      it.dead=true;
+      const idx=items.indexOf(it); if(idx>=0) items.splice(idx,1);
+      const gain=it.gold?5:1;
+      score+=gain; combo++;
+      scoreEl.textContent=score; comboEl.textContent=combo;
+      if(score>best){
+        best=score; bestEl.textContent=best;
+        try{ localStorage.setItem(BEST_KEY,String(best)); }catch(e){}
+      }
+      it.el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0) scale(1.45)';
+      it.el.style.opacity='0';
+      setTimeout(()=>{ if(it.el.parentNode) it.el.parentNode.removeChild(it.el); },260);
+      rise(it,gain);
+      epBeep(it.gold?1180:880,.09);
+      const nl=Math.floor(score/10)+1;
+      if(nl>level){
+        level=nl; lvEl.textContent=level;
+        if(lvChip){ lvChip.classList.remove('flash'); void lvChip.offsetWidth; lvChip.classList.add('flash'); }
+      }
+    }
+
+    window.addEventListener('resize',()=>{
+      const w=area.clientWidth;
+      items.forEach(it=>{
+        if(it.x>w-it.size-4){
+          it.x=Math.max(4,w-it.size-4);
+          it.el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0)';
+        }
+      });
+    });
+
+    function frame(now){
+      requestAnimationFrame(frame);
+      if(document.hidden) return;
+      if(!last){ last=now; return; }
+      const dt=Math.min(.05,(now-last)/1000); last=now;
+      const h=area.clientHeight;
+      if(h<40) return;
+      nextSpawn-=dt*1000;
+      if(nextSpawn<=0){
+        spawn();
+        nextSpawn=Math.max(300,700-level*45)*(0.8+Math.random()*0.5);
+      }
+      for(let i=items.length-1;i>=0;i--){
+        const it=items[i];
+        it.y+=it.vy*dt;
+        if(it.y>h){                                /* 漏掉了：不扣分，只断连击 */
+          it.dead=true;
+          if(it.el.parentNode) it.el.parentNode.removeChild(it.el);
+          items.splice(i,1);
+          combo=0; comboEl.textContent=0;
+          continue;
+        }
+        it.el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0)';
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
   function startFinale(){
     if(finaleOn) return;
     finaleOn=true;
@@ -829,6 +1040,7 @@
     startFireworks();                           /* 烟花 */
     setTimeout(()=>box.classList.add('card-in'),1500);   /* 大奖杯 */
     setTimeout(()=>bigConfetti(),2700);
+    setTimeout(startEndless,1700);              /* 通关后一直有得玩：无尽点点乐 */
     /* 锁定：画面停在这里，不接受任何滚动/操作 */
     const block=e=>{e.preventDefault();e.stopPropagation();};
     const stopKeys=[' ','Spacebar','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown','Home','End'];

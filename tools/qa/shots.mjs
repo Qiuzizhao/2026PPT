@@ -8,6 +8,7 @@ import { join } from 'node:path';
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const baseUrl = process.argv[2];
 const outDir = process.argv[3];
+const filter = process.argv[4] || '';
 mkdirSync(outDir, { recursive: true });
 
 const P = `
@@ -50,6 +51,74 @@ const SHOTS = [
         if (__$('#overlay').classList.contains('show')) { __$('#mOk').click(); await __wait(300); } }
       await __wait(400);
       __$('#nav [data-mode="left"]').click(); await __wait(500); return 'ok';`) },
+  { name: '鼠标-通关页无尽关', page: '鼠标练习营.html', js: j(`
+      const start = async m => { __$('#nav [data-mode="' + m + '"]').click(); await __wait(450); };
+      const closeModal = async () => { if (__$('#overlay').classList.contains('show')) { __$('#mOk').click(); await __wait(320); } };
+      await start('left');
+      for (let i = 0; i < 10; i++) { const t = __$('#play .target'); if (!t) break; __mouse(t, 'click'); await __wait(420); await closeModal(); }
+      await start('right');
+      for (let i = 0; i < 10; i++) { const t = __$('#play .target'); if (!t) break; __mouse(t, 'contextmenu'); await __wait(420); await closeModal(); }
+      await start('double');
+      for (let i = 0; i < 10; i++) { const t = __$('#play .target'); if (!t) break; __mouse(t, 'dblclick'); await __wait(420); await closeModal(); }
+      await start('wheel');
+      for (let round = 0; round < 10; round++) {
+        let guard = 0;
+        while (guard++ < 60) { const t = __$('#wnum'); if (!t) break;
+          const parts = t.textContent.split('/'); const cur = parseInt(parts[0], 10), goal = parseInt(parts[1], 10);
+          if (!(goal > 0) || cur === goal) break;
+          __$('#play .wheel-zone').dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: cur < goal ? -120 : 120 }));
+          await __wait(45); }
+        await __wait(650); await closeModal();
+      }
+      await start('menu');
+      for (let i = 0; i < 10; i++) {
+        const z = __$('#play .menu-zone'); if (!z) break;
+        __mouse(z, 'contextmenu'); await __wait(260);
+        const reqEl = __$('.menu-zone .req'); const req = reqEl ? reqEl.textContent.trim() : '';
+        const hit = __$$('#ctmenu .mi').find(x => x.textContent.includes(req)); if (!hit) break;
+        hit.click(); await __wait(460); await closeModal();
+      }
+      await __wait(3000);                       /* 等无尽关启动，点两个让画面有分数 */
+      for (let i = 0; i < 60 && Number(__$('#epScore').textContent) < 2; i++) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect(); __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); }
+        await __wait(160);
+      }
+      await __wait(1200); return 'ok';`) },
+  { name: '鼠标-通关页无尽关-1080p', viewport: [1920, 1080], page: '鼠标练习营.html', js: j(`
+      const start = async m => { __$('#nav [data-mode="' + m + '"]').click(); await __wait(450); };
+      const closeModal = async () => { if (__$('#overlay').classList.contains('show')) { __$('#mOk').click(); await __wait(320); } };
+      await start('left');
+      for (let i = 0; i < 10; i++) { const t = __$('#play .target'); if (!t) break; __mouse(t, 'click'); await __wait(420); await closeModal(); }
+      await start('right');
+      for (let i = 0; i < 10; i++) { const t = __$('#play .target'); if (!t) break; __mouse(t, 'contextmenu'); await __wait(420); await closeModal(); }
+      await start('double');
+      for (let i = 0; i < 10; i++) { const t = __$('#play .target'); if (!t) break; __mouse(t, 'dblclick'); await __wait(420); await closeModal(); }
+      await start('wheel');
+      for (let round = 0; round < 10; round++) {
+        let guard = 0;
+        while (guard++ < 60) { const t = __$('#wnum'); if (!t) break;
+          const parts = t.textContent.split('/'); const cur = parseInt(parts[0], 10), goal = parseInt(parts[1], 10);
+          if (!(goal > 0) || cur === goal) break;
+          __$('#play .wheel-zone').dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: cur < goal ? -120 : 120 }));
+          await __wait(45); }
+        await __wait(650); await closeModal();
+      }
+      await start('menu');
+      for (let i = 0; i < 10; i++) {
+        const z = __$('#play .menu-zone'); if (!z) break;
+        __mouse(z, 'contextmenu'); await __wait(260);
+        const reqEl = __$('.menu-zone .req'); const req = reqEl ? reqEl.textContent.trim() : '';
+        const hit = __$$('#ctmenu .mi').find(x => x.textContent.includes(req)); if (!hit) break;
+        hit.click(); await __wait(460); await closeModal();
+      }
+      await __wait(4200);
+      for (let i = 0; i < 40 && Number(__$('#epScore').textContent) < 3; i++) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect(); __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); }
+        await __wait(170);
+      }
+      await __wait(1400); return 'ok';`) },
 
   { name: '反应力-闪电反应(准备)', page: '鼠标反应力实验室.html', js: j(`
       __openMode('闪电反应'); await __wait(500);
@@ -168,11 +237,15 @@ const send = (method, params, sessionId) => {
   return new Promise((resolve) => { pending.set(id, { resolve }); ws.send(JSON.stringify(payload)); });
 };
 for (const sh of SHOTS) {
+  if (filter && !sh.name.includes(filter)) continue;
   events = [];
   const { targetId } = await send('Target.createTarget', { url: 'about:blank' });
   const { sessionId } = await send('Target.attachToTarget', { targetId, flatten: true });
   const s = (m, p) => send(m, p, sessionId);
   await s('Runtime.enable'); await s('Page.enable'); await s('Network.enable');
+  if (sh.viewport) {
+    await s('Emulation.setDeviceMetricsOverride', { width: sh.viewport[0], height: sh.viewport[1], deviceScaleFactor: 1, mobile: false });
+  }
   if (sh.block) await s('Network.setBlockedURLs', { urls: sh.block });
   await s('Page.navigate', { url: baseUrl + encodeURIComponent(sh.page) });
   await sleep(sh.wait || 2500);

@@ -146,6 +146,50 @@ add({
       await __wait(1800);
       return JSON.stringify({ out, totalStars: __$('#starNum').textContent.trim(),
         finaleShown: __$('#finale').classList.contains('show') });
+    `), shot: true },
+    { label: '通关页无尽点点乐：能加分、能升关、一直有得玩', js: wrap(`
+      await __wait(2600);                                   /* 等无尽关启动 */
+      const area = __$('#epArea');
+      if (!area) return JSON.stringify({ error: '没有无尽关区域' });
+      const startScore = Number(__$('#epScore').textContent);
+      const t0 = Date.now();
+      let swings = 0, ticksWithItem = 0;
+      while (Date.now() - t0 < 17000 && Number(__$('#epScore').textContent) < 14) {
+        const items = __$$('#epArea .ep-item');
+        if (items.length) {
+          ticksWithItem++;
+          const it = items[0];
+          const r = it.getBoundingClientRect();
+          __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2);
+          swings++;
+        }
+        await __wait(170);
+      }
+      const mid = { score: Number(__$('#epScore').textContent), level: __$('#epLevel').textContent,
+                    combo: Number(__$('#epCombo').textContent) };
+      await __wait(3500);                                   /* 再等一会，确认还在源源不断刷新 */
+      const aliveLater = __$$('#epArea .ep-item').length;
+      const t1 = Date.now();
+      let hits2 = 0;
+      while (Date.now() - t1 < 4000) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect();
+          __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); hits2++; }
+        await __wait(150);
+      }
+      let stored = null;
+      try { stored = localStorage.getItem('mouse_endless_best'); } catch (e) {}
+      return JSON.stringify({
+        startScore, swings, ticksWithItem, mid, hits2, aliveLater,
+        stillSpawning: aliveLater > 0,
+        score: Number(__$('#epScore').textContent),
+        level: __$('#epLevel').textContent,
+        bestShown: __$('#epBest').textContent,
+        bestStored: stored,
+        tipHidden: __$('#epTip').classList.contains('hide'),
+        finaleStillOn: __$('#finale').classList.contains('show'),
+        bandHeight: Math.round(area.getBoundingClientRect().height)
+      });
     `), shot: true }
   ]
 });
