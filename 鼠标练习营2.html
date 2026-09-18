@@ -422,15 +422,8 @@
   html.no-flexgap .finale-chips .chip > *:not(:last-child){margin-right:7px}
   .finale-chips .chip i{font-style:normal;font-size:1.2em}
   .finale-chips .chip b{color:#ffd23f}
-  .finale-stars{
-    display:inline-flex;align-items:center;gap:8px;
-    background:rgba(255,255,255,.16);border:2px solid rgba(255,210,63,.6);
-    border-radius:999px;padding:6px 16px;font-weight:900;
-    font-size:17px;font-size:clamp(13px,2.6vw,17px);color:#fff6cf;
-  }
-  html.no-flexgap .finale-stars > *:not(:last-child){margin-right:8px}
-  .finale-actions{margin-top:12px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-  html.no-flexgap .finale-actions > *:not(:last-child){margin-right:12px}
+  /* 通关页刻意不放「总星」和「回到关卡列表」：跟鼠标练习营一致，
+     这一页就是奖杯 + 文案 + 小游戏，学生不会去点别的东西。 */
   /* ===== 通关页的「无尽点点乐」：先做完的学生一直有得玩 =====
      规则只有一条——点掉飘下来的小东西就加分。无限关、没有失败、也不会离开本页。
      普通物件 +1 分，金色 🌟 +5 分；漏掉不扣分、不惩罚，什么都没发生。
@@ -502,10 +495,6 @@
     .big-trophy{font-size:94px;font-size:min(94px,22vw)}
     .finale-title{font-size:34px;font-size:clamp(24px,4.6vw,34px);letter-spacing:1px}
     .finale-sub{font-size:15px;font-size:clamp(12px,2.2vw,15px);margin-bottom:8px}
-    /* 屏幕不高时省掉六个技能牌，把高度让给下面的小游戏 */
-    .finale-chips{display:none}
-    .finale-stars{padding:5px 13px;font-size:15px}
-    .finale-actions{margin-top:9px}
   }
   @media(max-height:560px){
     .trophy-wrap{width:104px;max-width:24vw;width:min(104px,24vw);height:104px;max-height:24vw;height:min(104px,24vw)}
@@ -637,10 +626,6 @@
       <h2 class="finale-title" id="finaleTitle">学会啦</h2>
       <p class="finale-sub" id="finaleSub"></p>
       <div class="finale-chips" id="finaleChips"></div>
-      <div class="finale-stars"><span>⭐</span><span id="finaleStarTxt"></span></div>
-      <div class="finale-actions">
-        <button class="btn primary" id="finaleOk">回到关卡列表</button>
-      </div>
     </div>
   </div>
 
@@ -2398,17 +2383,15 @@
   /* 六关全通的通关大奖：大奖杯 + 烟花 + 无尽点点乐。只有最后一关做完才会走到这里 */
   function showFinale(){
     const box=$('#finale');
-    let chips='', total=0, got=0;
+    let chips='';
     for(let i=0;i<LEVELS.length;i++){
       const lv=LEVELS[i];
-      total+=PER; got+=(best[lv.id]||0);
       chips+='<span class="chip"><i>'+lv.emo+'</i>'+lv.name+'<b>✓</b></span>';
     }
     $('#bigTrophy').textContent='🏆';
     $('#finaleTitle').textContent='六关全部通关';
     $('#finaleSub').innerHTML='鼠标的六个本领你都练过了，真是电脑小达人！<br>以后在电脑上多试试吧。';
     $('#finaleChips').innerHTML=chips;
-    $('#finaleStarTxt').textContent='总星 ⭐ '+got+' / '+total;
 
     hideModal();
     document.documentElement.style.overflow='hidden';
@@ -2604,7 +2587,8 @@
     playDemo();
   };
   $('#mOk').onclick=hideModal;
-  $('#finaleOk').onclick=function(){ hideFinale(); enterHome(); };
+  /* 通关页现在是"进去就留在里面"（和鼠标练习营一致）：没有回到关卡列表的按钮，
+     学生想回去就刷新页面，进度已经存在本地，刷新后回到关卡列表继续。 */
 
   /* 同一台电脑会换学生用：给老师留一个清空进度的口子，点了要再确认一次 */
   $('#btnReset').onclick=function(){

@@ -291,6 +291,8 @@ add({
         hud: __$$('.ep-head .ep-k').map(e => e.textContent.trim()),
         chips: __$$('.ep-head .ep-k').length,
         comboGone: !__$('#epCombo'), bestGone: !__$('#epBest'),
+        starLineGone: !__$('#finaleStarTxt') && !__$('.finale-stars'),
+        exitGone: !__$('#finaleOk') && !__$('.finale-actions'),
         items: __$$('#epArea .ep-item').length,
         bandWidth: Math.round(area.width), bandWidthCapped: area.width <= 1002,
         bandHeight: Math.round(area.height),
@@ -317,16 +319,20 @@ add({
         finaleStillOn: __$('#finale').classList.contains('show')
       });
     `), shot: true },
-    { label: '点「回到关卡列表」后小游戏停下并清干净', js: wrap(`
-      __$('#finaleOk').click();
-      await __wait(1500);
-      const scoreRightAfter = __$('#epScore').textContent;
-      await __wait(1800);                     /* 停下来的话不会再冒出新的掉落物 */
+    { label: '通关页锁死：没有出口按钮、页面留在原地、游戏一直有得玩', js: wrap(`
+      const path0 = location.pathname + location.search;
+      const itemsBefore = __$$('#epArea .ep-item').length;
+      /* 点一下页面正中（奖杯卡附近），不该发生任何跳转/关闭 */
+      const box = __$('#finale').getBoundingClientRect();
+      __pd(__$('#finale'), 'pointerdown', box.left + box.width / 2, box.top + 60);
+      await __wait(2200);
+      const covered = __$('#finale').contains(document.elementFromPoint(12, 12));
       return JSON.stringify({
-        finaleHidden: !__$('#finale').classList.contains('show'),
-        leftovers: __$$('#epArea .ep-item').length,
-        scoreReset: scoreRightAfter === '0' && __$('#epScore').textContent === '0',
-        backToHome: __$$('#play .lvcard').length === 6
+        stayed: location.pathname + location.search === path0,
+        stillShown: __$('#finale').classList.contains('show'),
+        overlayCoversNav: covered,
+        itemsBefore, itemsAfter: __$$('#epArea .ep-item').length,
+        stillSpawning: __$$('#epArea .ep-item').length > 0
       });
     `), shot: true }
   ]
