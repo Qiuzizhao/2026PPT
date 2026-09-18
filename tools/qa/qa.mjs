@@ -293,6 +293,7 @@ add({
         comboGone: !__$('#epCombo'), bestGone: !__$('#epBest'),
         starLineGone: !__$('#finaleStarTxt') && !__$('.finale-stars'),
         exitGone: !__$('#finaleOk') && !__$('.finale-actions'),
+        skillChipsGone: !__$('#finaleChips') && !__$('.finale-chips'),
         items: __$$('#epArea .ep-item').length,
         bandWidth: Math.round(area.width), bandWidthCapped: area.width <= 1002,
         bandHeight: Math.round(area.height),
@@ -625,6 +626,7 @@ add({
       ['reaction','whack','aim','drag','track','trace','dbl','frenzy']
         .forEach(id => { rows[id] = { best:null, stars:3, plays:1 }; });
       localStorage.setItem('mouseReactionLab.v1', JSON.stringify(rows));
+      localStorage.removeItem('mouseReactionLab.finale.v1');   /* 别把「正在庆典里」带进下一个场景 */
       return JSON.stringify({ seeded: Object.keys(rows).length });
     `) }
   ]
@@ -660,6 +662,188 @@ add({
         finaleAfterWait: __$('#finale').classList.contains('show'),
         sheetStillOn: __$('#overlay').classList.contains('show'),
         stars: __$('.total').textContent.trim() });
+    `), shot: true }
+  ]
+});
+
+/* 进度存档：练到一半退出/刷新，下次进这一关接着做。
+   「前半」把两个关卡都做一半就退出（现场落盘），「后半」是一个全新的页面
+   （等价于刷新，场景共用一个浏览器 profile），检查标记、接着做和重新开始。 */
+add({
+  name: '反应力-进度存档-清档',
+  page: 'index.html',
+  steps: [
+    { label: '清掉前面场景留下的存档，从零开始', js: wrap(`
+      localStorage.removeItem('mouseReactionLab.v1');
+      localStorage.removeItem('mouseReactionLab.stage.v1');
+      localStorage.removeItem('mouseReactionLab.finale.v1');
+      return JSON.stringify({ left: Object.keys(localStorage).filter(k => k.indexOf('mouseReactionLab') === 0) });
+    `) }
+  ]
+});
+
+add({
+  name: '反应力-进度存档-前半',
+  page: '鼠标反应力实验室.html',
+  steps: [
+    { label: '打地鼠打到一半就退出', js: wrap(`${openMode('打地鼠')}
+      await __wait(6200);
+      let hits = 0;
+      for (let i = 0; i < 40; i++) {
+        const mole = __$('.hole.up .mole');
+        if (mole) {
+          const hole = mole.closest('.hole');
+          const [x, y] = __center(mole);
+          __pd(hole, 'pointerdown', x, y); __pd(hole, 'pointerup', x, y);
+          hits++;
+        }
+        await __wait(170);
+      }
+      const hud = __hud();
+      ${exitGame}
+      const raw = JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}');
+      return JSON.stringify({ hits, hud, halfDone: !!(raw.stage && raw.stage.whack),
+        snap: (raw.stage && raw.stage.whack) ? raw.stage.whack.snap : null });
+    `) },
+    { label: '闪电反应做完两回合也退出', js: wrap(`${openMode('闪电反应')}
+      await __wait(400);
+      const st = __$('#stage');
+      const [cx, cy] = __center(st);
+      __pd(st, 'pointerdown', cx, cy); __pd(st, 'pointerup', cx, cy);
+      for (let i = 0; i < 5; i++) {
+        let waited = 0;
+        while (waited < 6000 && !__$('#stage').classList.contains('rx-go')) { await __wait(80); waited += 80; }
+        __pd(st, 'pointerdown', cx, cy); __pd(st, 'pointerup', cx, cy);
+        await __wait(900);
+        if (__$$('.rx-dots i.done').length >= 2) break;
+      }
+      const done = __$$('.rx-dots i.done').length;
+      const hud = __hud();
+      ${exitGame}
+      const raw = JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}');
+      return JSON.stringify({ done, hud,
+        snap: (raw.stage && raw.stage.reaction) ? raw.stage.reaction.snap : null,
+        modes: Object.keys(raw.stage || {}) });
+    `) }
+  ]
+});
+
+add({
+  name: '反应力-进度存档-后半',
+  page: '鼠标反应力实验室.html',
+  steps: [
+    { label: '新打开的页面在首页标出「上次做到一半」，星级不受影响', js: wrap(`
+      await __wait(600);
+      const cats = __$$('#homeGrid .mode .m-cat').map(e => e.textContent.trim());
+      return JSON.stringify({ halfRows: cats.filter(t => t.indexOf('上次做到一半') >= 0).length,
+        cats, total: __$('.total').textContent.trim() });
+    `), shot: true },
+    { label: '进打地鼠接着做：分数和剩余时间都在；「重新开始」能从头做', js: wrap(`
+      const raw = JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}');
+      const snap = (raw.stage && raw.stage.whack) ? raw.stage.whack.snap : null;
+      ${openMode('打地鼠')}
+      await __wait(800);
+      const hud0 = __hud();
+      const chip = !__$('#resumeChip').classList.contains('hidden');
+      const rbtn = !__$('#restartBtn').classList.contains('hidden');
+      const left0 = Number(String(hud0[3] || '').replace('剩余', '').replace('s', '').trim());
+      const scoreKept = !!snap && hud0[0] === ('得分' + snap.score);
+      __$('#restartBtn').click();
+      await __wait(900);
+      const hud1 = __hud();
+      return JSON.stringify({ snap, hud0, scoreKept,
+        left0, leftKept: !!snap && isFinite(left0) && left0 > 0 && left0 < 30,
+        chip, rbtn, hud1, chipGoneAfterRestart: __$('#resumeChip').classList.contains('hidden'),
+        stillHalfDone: !!(JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}').stage || {}).whack });
+    `), shot: true },
+    { label: '进闪电反应接着做：已经测完的回合还在', js: wrap(`
+      const raw = JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}');
+      const snap = (raw.stage && raw.stage.reaction) ? raw.stage.reaction.snap : null;
+      ${openMode('闪电反应')}
+      await __wait(700);
+      return JSON.stringify({ snap, hud: __hud(),
+        doneDots: __$$('.rx-dots i.done').length,
+        chip: !__$('#resumeChip').classList.contains('hidden') });
+    `), shot: true }
+  ]
+});
+
+/* 通关闭幕也存现场：在庆典页玩着无尽点点乐时刷新，应该还在庆典、分数还在。
+   同样分两半：前半真进庆典玩一会儿，后半是全新页面（等价于刷新）。 */
+add({
+  name: '反应力-庆典存档-前置存档',
+  page: 'index.html',
+  steps: [
+    { label: '把八关都记成三星（24 / 24）', js: wrap(`
+      const rows = {};
+      ['reaction','whack','aim','drag','track','trace','dbl','frenzy']
+        .forEach(id => { rows[id] = { best:null, stars:3, plays:1 }; });
+      localStorage.setItem('mouseReactionLab.v1', JSON.stringify(rows));
+      localStorage.removeItem('mouseReactionLab.finale.v1');
+      localStorage.removeItem('mouseReactionLab.stage.v1');
+      return 'seeded';
+    `) }
+  ]
+});
+
+add({
+  name: '反应力-庆典存档-前半',
+  page: '鼠标反应力实验室.html',
+  steps: [
+    { label: '从首页金色横幅进庆典，玩无尽关攒点分', js: wrap(`
+      await __wait(400);
+      const bar = __$('#celebrateBar');
+      const barShown = !bar.classList.contains('hidden');
+      bar.click();
+      await __wait(2600);                       /* 等幕布拉开 + 无尽关启动 */
+      const opened = __$('#finale').classList.contains('show');
+      const t0 = Date.now();
+      let hits = 0;
+      while (Date.now() - t0 < 20000 && Number(__$('#epScore').textContent) < 6) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect();
+          __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); hits++; }
+        await __wait(150);
+      }
+      const score = Number(__$('#epScore').textContent);
+      const level = Number(__$('#epLevel').textContent);
+      const saved = JSON.parse(localStorage.getItem('mouseReactionLab.finale.v1') || 'null');
+      return JSON.stringify({ barShown, opened, hits, score, level,
+        saved, savedMatchesScore: !!saved && saved.score === score });
+    `), shot: true }
+  ]
+});
+
+add({
+  name: '反应力-庆典存档-后半',
+  page: '鼠标反应力实验室.html',
+  steps: [
+    { label: '新页面直接回到庆典，分数接着上次继续', js: wrap(`
+      const saved = JSON.parse(localStorage.getItem('mouseReactionLab.finale.v1') || 'null');
+      await __wait(1200);
+      const autoOpened = __$('#finale').classList.contains('show');
+      const score = Number(__$('#epScore').textContent);
+      const level = Number(__$('#epLevel').textContent);
+      const locked = document.body.classList.contains('locked') &&
+        document.documentElement.style.overflow === 'hidden';
+      /* 再点几个，确认是在原来的分数上继续加 */
+      await __wait(1400);
+      const t0 = Date.now();
+      let added = 0;
+      while (Date.now() - t0 < 15000 && Number(__$('#epScore').textContent) <= score) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect();
+          __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); added++; }
+        await __wait(150);
+      }
+      const grew = Number(__$('#epScore').textContent) > score;
+      /* 收尾：把"正在庆典里"清掉，后面的分辨率检查才看得到正常的关卡列表 */
+      localStorage.removeItem('mouseReactionLab.finale.v1');
+      return JSON.stringify({ saved, autoOpened, score, level, locked, added,
+        scoreKept: !!saved && score === saved.score,
+        levelKept: !!saved && level >= saved.level,
+        grewAfterResume: grew,
+        stillFinale: __$('#finale').classList.contains('show') });
     `), shot: true }
   ]
 });
