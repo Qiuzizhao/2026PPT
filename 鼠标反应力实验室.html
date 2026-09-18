@@ -306,6 +306,169 @@
   }
   @keyframes ripple{from{transform:scale(.3);opacity:.6}to{transform:scale(1.8);opacity:0}}
 
+  /* ===== 通关闭幕（八关全满，24 / 24 星）=====
+     和鼠标练习营的结束页是同一套：大奖杯 + 烟花 + 不会结束的「无尽点点乐」。
+     只在八关全部拿到三星时进入；进来了就锁死在页面上（和练习营一致）。
+     下半区的掉落小游戏是通关后的无限练习：点掉一个 +1 分、金色 🌟 +5 分，
+     每 10 分升一关，更快更密，不设上限；漏掉不扣分。只显示「得分」和「第几关」。 */
+  body.locked{overflow:hidden}
+  .finale{
+    position:fixed;top:0;right:0;bottom:0;left:0;z-index:30000;display:none;overflow:hidden;
+    flex-direction:column;align-items:center;justify-content:center;padding:14px;
+    background:radial-gradient(circle at 50% 36%,#4b3a8c 0%,#2c2356 48%,#16122f 100%);
+  }
+  .finale.show{display:flex}
+  .finale-fx{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
+  /* 通关页分上下两半：上半是奖杯，下半全是掉落物小游戏 */
+  .finale-top{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;flex:1 1 50%;width:100%;min-height:0}
+  .finale-card{
+    position:relative;z-index:3;text-align:center;color:#fff;max-width:780px;
+    opacity:0;transform:translateY(30px) scale(.82);
+  }
+  .finale.card-in .finale-card{animation:card-in .9s cubic-bezier(.18,1.5,.45,1) forwards}
+  @keyframes card-in{
+    0%{opacity:0;transform:translateY(34px) scale(.8)}
+    60%{opacity:1;transform:translateY(-8px) scale(1.04)}
+    100%{opacity:1;transform:none}
+  }
+  .trophy-wrap{
+    position:relative;display:inline-flex;align-items:center;justify-content:center;
+    width:168px;max-width:34vw;width:min(168px,34vw);height:168px;max-height:34vw;height:min(168px,34vw);
+  }
+  .trophy-wrap::before{
+    content:"";position:absolute;top:4%;right:4%;bottom:4%;left:4%;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,210,63,.45),rgba(255,210,63,0) 68%);
+    animation:glowpulse 2.4s ease-in-out infinite;
+  }
+  .trophy-rays{
+    position:absolute;top:-20%;right:-20%;bottom:-20%;left:-20%;border-radius:50%;opacity:.75;
+    background:conic-gradient(from 0deg,rgba(255,224,120,.75) 0 5deg,transparent 5deg 22deg);
+    -webkit-mask:radial-gradient(circle,#000 30%,transparent 72%);
+    mask:radial-gradient(circle,#000 30%,transparent 72%);
+    animation:spin 18s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes glowpulse{0%,100%{opacity:.6;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}
+  .big-trophy{
+    position:relative;font-size:118px;font-size:min(118px,26vw);line-height:1;
+    filter:drop-shadow(0 14px 26px rgba(255,178,40,.6));
+    animation:bob 2.6s ease-in-out infinite;
+  }
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .finale-title{
+    margin:4px 0 6px;font-size:42px;font-size:clamp(26px,5.4vw,42px);font-weight:900;letter-spacing:2px;
+    background:linear-gradient(180deg,#fffbe4,#ffd23f 46%,#ff9f45);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 4px 0 rgba(0,0,0,.28));
+  }
+  .finale-sub{margin:0;font-size:18px;font-size:clamp(13px,2.4vw,18px);font-weight:700;color:#e4dcff}
+
+  /* ===== 通关页的「无尽点点乐」：先做完的学生一直有得玩 =====
+     普通物件 +1 分，金色 🌟 +5 分；漏掉不扣分、不惩罚，什么都没发生。
+     每 10 分升一关，落得更快、来得更密，所以永远玩不完。
+     游戏区宽度封顶 1000px：屏幕再宽也不能把掉落范围拉成一整条，否则点不过来。 */
+  .ep{
+    position:relative;z-index:4;flex:1 1 50%;width:100%;max-width:1000px;min-height:0;
+    padding:0 2px 2px;box-sizing:border-box;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  html.no-flexgap .ep > *:not(:last-child){margin-bottom:8px}
+  .ep-head{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;color:#fff}
+  html.no-flexgap .ep-head > *:not(:last-child){margin-right:10px}
+  .ep-k{
+    display:flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.28);
+    border-radius:999px;padding:4px 13px;font-weight:800;
+    font-size:16px;font-size:clamp(13px,2.2vw,16px);backdrop-filter:blur(2px);
+  }
+  html.no-flexgap .ep-k > *:not(:last-child){margin-right:6px}
+  .ep-k b{color:#ffd23f;font-size:1.15em;font-variant-numeric:tabular-nums}
+  .ep-lv b{color:#8ff0bc}
+  .ep-lv.flash{animation:ep-flash .55s ease}
+  @keyframes ep-flash{
+    0%{transform:scale(1)}
+    45%{transform:scale(1.16);background:rgba(143,240,188,.36)}
+    100%{transform:scale(1)}
+  }
+  .ep-area{
+    position:relative;flex:1;min-height:0;overflow:hidden;
+    border-radius:20px;border:2px solid rgba(255,255,255,.16);
+    background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
+  }
+  .ep-area::after{
+    content:"";position:absolute;right:0;bottom:0;left:0;height:3px;pointer-events:none;
+    background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.4),rgba(255,255,255,0));
+  }
+  .ep-tip{
+    position:absolute;top:50%;right:20px;left:20px;transform:translateY(-50%);
+    text-align:center;color:#ffe9a8;font-weight:800;pointer-events:none;
+    text-shadow:0 2px 8px rgba(20,10,50,.6);
+    font-size:18px;font-size:clamp(14px,2.6vw,18px);transition:opacity .5s ease;
+  }
+  .ep-tip.hide{opacity:.5}
+  .ep-item{
+    position:absolute;top:0;left:0;display:flex;align-items:center;justify-content:center;
+    border-radius:50%;background:rgba(255,255,255,.94);
+    box-shadow:0 6px 14px rgba(20,10,50,.35);cursor:pointer;user-select:none;
+    -webkit-user-select:none;touch-action:none;transition:opacity .2s linear;will-change:transform;
+  }
+  .ep-item.gold{
+    background:linear-gradient(180deg,#fff6c9,#ffd23f);
+    box-shadow:0 0 0 3px rgba(255,210,63,.55),0 6px 16px rgba(255,178,40,.5);
+  }
+  .ep-plus{
+    position:absolute;top:0;left:0;transform:translate(-50%,0);pointer-events:none;
+    color:#ffe9a8;font-weight:900;font-size:18px;text-shadow:0 2px 6px rgba(0,0,0,.35);
+    animation:ep-rise .85s ease forwards;
+  }
+  .ep-plus.big{color:#ffd23f;font-size:24px}
+  @keyframes ep-rise{
+    from{opacity:1;transform:translate(-50%,0) scale(.9)}
+    to{opacity:0;transform:translate(-50%,-52px) scale(1.2)}
+  }
+  /* 通关页撒的花：z-index 必须高过 .finale(30000)，否则被幕布盖住 */
+  .finale-cf{
+    position:fixed;top:0;width:12px;height:16px;z-index:32000;pointer-events:none;
+    border-radius:3px;animation:finaleFall 1.6s ease-in forwards;
+  }
+  @keyframes finaleFall{to{transform:translateY(110vh) rotate(540deg);opacity:.2}}
+  /* 屏幕不高时把上半区的奖杯缩小，保证上下两半都不挤 */
+  @media(max-height:700px){
+    .trophy-wrap{width:136px;max-width:28vw;width:min(136px,28vw);height:136px;max-height:28vw;height:min(136px,28vw)}
+    .big-trophy{font-size:94px;font-size:min(94px,22vw)}
+    .finale-title{font-size:34px;font-size:clamp(24px,4.6vw,34px);letter-spacing:1px}
+    .finale-sub{font-size:15px;font-size:clamp(12px,2.2vw,15px)}
+  }
+  @media(max-height:560px){
+    .trophy-wrap{width:104px;max-width:24vw;width:min(104px,24vw);height:104px;max-height:24vw;height:min(104px,24vw)}
+    .big-trophy{font-size:72px;font-size:min(72px,18vw)}
+    .finale-title{font-size:28px;font-size:clamp(20px,4vw,28px)}
+    .ep-head{gap:6px}
+    html.no-flexgap .ep-head > *:not(:last-child){margin-right:6px}
+    .ep-tip{font-size:14px}
+  }
+
+  /* ===== 首页的庆典入口 =====
+     八关全满之后，首页顶部多一条金色横幅；正常没满时它是 .hidden。
+     它只是"回去再玩一次"的通路，不影响任何课件页的独立入口约定。 */
+  .celebrate-bar{
+    width:100%;border:0;border-bottom:1px solid var(--line);cursor:pointer;font:inherit;
+    padding:15px 20px;text-align:center;
+    color:#4a3708;font-size:17px;font-weight:600;letter-spacing:.02em;
+    background:linear-gradient(90deg,#fff7dd,#ffe9a8 42%,#fff7dd);
+  }
+  .celebrate-bar:hover{background:linear-gradient(90deg,#ffefc2,#ffdd80 42%,#ffefc2)}
+  .celebrate-bar:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+
+  /* 通关那一局的结算卡：比普通结算卡更紧凑，
+     保证「进入通关庆典」按钮在教室常见的小屏（1366×768）上不会被挤出可视区 */
+  .sheet.celebration{padding:20px 30px 18px}
+  .sheet.celebration .s-stars{margin-bottom:8px}
+  .sheet.celebration .s-value{font-size:42px}
+  .sheet.celebration .s-label{margin-top:6px}
+  .sheet.celebration .s-badge{margin-top:8px;padding:4px 14px}
+  .sheet.celebration .s-actions{margin-top:14px}
+
   /* ===== 窄屏 ===== */
   @media(max-width:780px){
     .wrap{padding:0 18px 36px}
@@ -403,6 +566,7 @@
   </header>
 
   <main class="panel" id="panel">
+    <button class="celebrate-bar hidden" id="celebrateBar" type="button">🎉 八关全满 24 星 · 进入通关庆典</button>
     <div class="modes" id="homeGrid"></div>
 
     <div class="game hidden" id="gameBox">
@@ -420,6 +584,31 @@
     </div>
   </main>
 
+</div>
+
+<div class="finale" id="finale">
+  <canvas class="finale-fx" id="fxCanvas"></canvas>
+  <div class="finale-top">
+    <div class="finale-card">
+      <div class="trophy-wrap">
+        <div class="trophy-rays"></div>
+        <div class="big-trophy">🏆</div>
+      </div>
+      <h2 class="finale-title">全部关卡已通关</h2>
+      <p class="finale-sub">八个反应力本领全部拿到三星，真是电脑小达人！</p>
+    </div>
+  </div>
+
+  <!-- 通关之后的无限小游戏：等同学的时候一直有得玩 -->
+  <div class="ep" id="endless">
+    <div class="ep-head">
+      <span class="ep-k">得分<b id="epScore">0</b></span>
+      <span class="ep-k ep-lv" id="epLvChip">第<b id="epLevel">1</b>关</span>
+    </div>
+    <div class="ep-area" id="epArea">
+      <div class="ep-tip" id="epTip">🎯 点掉飘下来的小东西就能得分！金色 🌟 值 5 分，点得越多分越高～</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -483,9 +672,20 @@
   let records = {};
   try{ records = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }catch(e){ records = {}; }
   function saveRecords(){ try{ localStorage.setItem(KEY, JSON.stringify(records)); }catch(e){} }
-  function refreshTotal(){
-    const total = MODES.reduce((sum,m)=> sum + ((records[m.id] && records[m.id].stars) || 0), 0);
-    $('#starNum').textContent = total;
+  function totalStars(){
+    return MODES.reduce((sum,m)=> sum + ((records[m.id] && records[m.id].stars) || 0), 0);
+  }
+  /* 八关全部三星（24 / 24）才算完美通关，才开放通关闭幕。 */
+  function allPerfect(){
+    return MODES.every(m => ((records[m.id] && records[m.id].stars) || 0) >= 3);
+  }
+  function refreshTotal(){ $('#starNum').textContent = totalStars(); }
+  /* 首页顶部的金色横幅：只有"在首页"并且"八关全满"时才露出来。
+     游戏视图是绝对定位铺满整个面板的，横幅留在页面上会从游戏视图底下透出来，
+     所以进关卡时也要把它收起来。 */
+  function refreshCelebrateBar(){
+    const bar = $('#celebrateBar');
+    if(bar) bar.classList.toggle('hidden', !allPerfect() || !gameBox.classList.contains('hidden'));
   }
 
   /* ================= 图标（线性几何，1.4px 描边） ================= */
@@ -549,6 +749,7 @@
   /* ================= 主页列表 ================= */
   function renderHome(){
     homeGrid.innerHTML = '';
+    refreshCelebrateBar();
     MODES.forEach(m=>{
       const rec = records[m.id] || {};
       const stars = rec.stars || 0;
@@ -643,6 +844,7 @@
   function endGame(s, res){
     const m = s.mode;
     s.destroy();
+    const wasPerfect = allPerfect();           /* 这一局开打之前是不是已经八关全满 */
     const rec = records[m.id] || { best:null, stars:0, plays:0 };
     rec.plays = (rec.plays || 0) + 1;
     let isNew = false;
@@ -651,27 +853,41 @@
     }
     rec.stars = Math.max(rec.stars || 0, res.stars || 0);
     records[m.id] = rec;
-    saveRecords(); refreshTotal();
+    if(!previewFinale) saveRecords();          /* 预览通关页那次不写存档 */
+    refreshTotal();
+    const perfect = allPerfect();
+    /* 只有"刚刚凑齐 24 / 24"的那一局才走庆典卡并自动进庆典；
+       已经全满之后再回来重玩某一关，仍然给正常的结算卡（能再玩一次、能返回）。 */
+    const celebration = perfect && !wasPerfect;
 
     const dots = [0,1,2].map(i =>
       '<i class="'+(i < (res.stars||0) ? 'on':'')+'" style="animation-delay:'+(0.1+i*0.12)+'s">★</i>'
     ).join('');
     const bestTxt = m.fmt(records[m.id]);
     $('#gameBest').textContent = bestTxt ? '最好 ' + bestTxt : '';
+    /* 八关全三星：结算卡只留「进入通关庆典」一个出口（不点也会自动进去） */
+    const actions = celebration
+      ? '<button class="btn primary" data-act="finale">🎉 进入通关庆典</button>'
+      : '<button class="btn primary" data-act="retry">再玩一次</button>'+
+        '<button class="btn plain" data-act="home">返回</button>';
     overlay.innerHTML =
-      '<div class="sheet">'+
+      '<div class="sheet'+(celebration ? ' celebration' : '')+'">'+
         '<div class="s-stars">'+dots+'</div>'+
         '<div class="s-value">'+res.valueText+(res.unit?'<small>'+res.unit+'</small>':'')+'</div>'+
         '<div class="s-label">'+res.headline+'</div>'+
-        (isNew ? '<div><span class="s-badge">新纪录</span></div>' : '')+
-        '<div class="s-detail">'+(res.lines||[]).join(' · ')+'</div>'+
-        '<div class="s-actions">'+
-          '<button class="btn primary" data-act="retry">再玩一次</button>'+
-          '<button class="btn plain" data-act="home">返回</button>'+
-        '</div>'+
+        /* 通关卡只留一块牌子：这一局的纪录牌省掉，把位置让给「进入通关庆典」按钮 */
+        (isNew && !celebration ? '<div><span class="s-badge">新纪录</span></div>' : '')+
+        (celebration ? '<div><span class="s-badge">🎉 24 / 24 全部通关</span></div>' : '')+
+        /* 通关卡走紧凑版：明细行也省掉，保证按钮出现在可视区里 */
+        (celebration ? '' : '<div class="s-detail">'+(res.lines||[]).join(' · ')+'</div>')+
+        '<div class="s-actions">'+actions+'</div>'+
       '</div>';
     overlay.classList.remove('hidden');
     requestAnimationFrame(()=>overlay.classList.add('show'));
+    if(celebration){
+      clearCelebrateTimer();
+      celebrateTimer = setTimeout(enterFinale, 6000);   /* 学生不动手也能进庆典 */
+    }
 
     if(isNew && res.stars >= 2){ confetti(); sfx.win(); }
     else if(res.stars >= 2){ sfx.good(); }
@@ -681,7 +897,8 @@
   overlay.addEventListener('click', e=>{
     const b = e.target.closest('[data-act]');
     if(!b) return;
-    if(b.dataset.act === 'retry') openGame(currentId);
+    if(b.dataset.act === 'finale'){ clearCelebrateTimer(); enterFinale(); }
+    else if(b.dataset.act === 'retry') openGame(currentId);
     else goHome();
   });
 
@@ -696,6 +913,7 @@
     homeGrid.classList.add('hidden');
     gameBox.classList.remove('hidden');
     panel.classList.add('playing');
+    refreshCelebrateBar();
     $('#gameName').textContent = m.name;
     $('#gameTag').textContent = m.hint;
     const best = m.fmt(records[m.id] || {});
@@ -714,9 +932,13 @@
     panel.classList.remove('playing');
     renderHome();
   }
-  function hideOverlay(){ overlay.classList.add('hidden'); overlay.classList.remove('show'); overlay.innerHTML = ''; }
-  $('#backBtn').addEventListener('click', goHome);
-  document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && currentId) goHome(); });
+  function hideOverlay(){
+    clearCelebrateTimer();                     /* 结算卡收起来就别再自动进庆典了 */
+    overlay.classList.add('hidden'); overlay.classList.remove('show'); overlay.innerHTML = '';
+  }
+  $('#backBtn').addEventListener('click', ()=>{ if(!finaleOn) goHome(); });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && currentId && !finaleOn) goHome(); });
+  $('#celebrateBar').addEventListener('click', ()=>{ if(!finaleOn) enterFinale(); });
 
   /* ============================================================
      01 · 闪电反应
@@ -1506,9 +1728,318 @@
     }, 120);
   }
 
+  /* ============================================================
+     通关闭幕：八关全满（24 / 24 星）之后的奖杯页 + 无尽点点乐
+     ——和鼠标练习营的结束页是同一套，入口条件换成了"八关全部三星"。
+       1) 只在 endGame 里算出 24 / 24 时进入；?finale=1 只用于预览验收。
+       2) 进来就锁死：滚动 / 右键 / 拖拽 / 键盘全挡掉，学生出不去这一页。
+       3) 下半区是无限小游戏：点掉掉落物 +1 分、金色 🌟 +5 分，每 10 分升一关，
+          只显示「得分」和「第几关」，不记最高分、不做排行、漏掉不扣分。
+  ============================================================ */
+  let previewFinale = false;             /* ?finale=1 预览：24 星只存在内存里，不写存档 */
+  let finaleOn = false;
+  let celebrateTimer = 0;
+  function clearCelebrateTimer(){
+    if(celebrateTimer){ clearTimeout(celebrateTimer); celebrateTimer = 0; }
+  }
+
+  /* 通关页撒的花：和练习营同一套配色，只是类名换成 .finale-cf，
+     因为本页自己的结算撒花已经占用了 .cf。 */
+  function bigConfetti(){
+    const colors = ['#ff6fa5','#ffd23f','#44a3ff','#4ed47e','#a577ff','#43d2e8','#ff9f45','#fff7d6'];
+    for(let i=0;i<70;i++){
+      const c = document.createElement('div'); c.className = 'finale-cf';
+      const sz = 8 + Math.random()*12;
+      c.style.left = (Math.random()*100)+'vw';
+      c.style.width = sz+'px'; c.style.height = (sz*1.4)+'px';
+      c.style.background = colors[Math.floor(Math.random()*colors.length)];
+      c.style.borderRadius = Math.random()<0.4 ? '50%' : '3px';
+      c.style.animationDuration = (2.2+Math.random()*2)+'s';
+      c.style.animationDelay = (Math.random()*1.2)+'s';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(), 5000);
+    }
+  }
+
+  /* 烟花画布：火箭升空 → 炸成火花，外加一直飘落的纸片 */
+  function startFireworks(){
+    const cv = $('#fxCanvas'), ctx = cv.getContext('2d');
+    let W = 0, H = 0, dpr = 1, S = 1;
+    function resize(){
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = window.innerWidth; H = window.innerHeight;
+      S = Math.max(0.62, Math.min(1.5, H/900));
+      cv.width = Math.max(1, Math.round(W*dpr)); cv.height = Math.max(1, Math.round(H*dpr));
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      ctx.lineCap = 'round';
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    const COLORS = ['#ff6fa5','#ffd23f','#44a3ff','#4ed47e','#a577ff','#43d2e8','#ff9f45','#fff7d6'];
+    const pick = () => COLORS[Math.floor(Math.random()*COLORS.length)];
+    const rockets = [], sparks = [], confs = [];
+    function launch(x){
+      rockets.push({
+        x:(x == null ? W*(0.12+Math.random()*0.76) : Math.max(24, Math.min(W-24, x))),
+        y:H+14, vy:-(H*0.0105+Math.random()*H*0.0042),
+        ty:H*(0.10+Math.random()*0.34), col:pick(), trail:[]
+      });
+    }
+    function explode(x,y,col){
+      const n = 62+Math.floor(Math.random()*40);
+      const spread = 0.85+Math.random()*0.3;
+      for(let i=0;i<n;i++){
+        const a = (Math.PI*2*i)/n + Math.random()*0.12;
+        const sp = (1.5+Math.random()*4.2)*S;
+        sparks.push({
+          x:x, y:y, vx:Math.cos(a)*sp*spread, vy:Math.sin(a)*sp*spread,
+          life:1, decay:0.0055+Math.random()*0.011,
+          col:(Math.random()<0.7 ? col : pick()), r:1.5+Math.random()*2.1
+        });
+      }
+      sparks.push({ x:x, y:y, vx:0, vy:0, life:1, decay:0.06, col:col, r:10*S, flash:true });
+    }
+    function rainConfetti(n){
+      for(let i=0;i<n;i++){
+        confs.push({
+          x:Math.random()*W, y:-Math.random()*H*0.9,
+          vx:(Math.random()-.5)*1.6, vy:0.8+Math.random()*2.2,
+          w:6+Math.random()*8, h:9+Math.random()*10,
+          rot:Math.random()*6.283, vr:(Math.random()-.5)*0.4,
+          col:pick(), seed:Math.random()*100
+        });
+      }
+    }
+    rainConfetti(150);
+    let start = 0, last = 0, nextLaunch = 0;
+    function frame(now){
+      if(!start){ start = now; last = now; }
+      const d = Math.min(2.6, (now-last)/16.667); last = now;
+      const el = now-start;
+      /* 每帧重画，拖尾靠粒子自己带（不用半透明蒙层，火花更干净） */
+      ctx.clearRect(0,0,W,H);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.lineCap = 'round';
+      /* 发射节奏：开头密集一阵，之后变成背景烟花 */
+      if(el > nextLaunch){
+        launch();
+        if(el < 2600){ launch(); if(Math.random() < 0.5) launch(); }
+        nextLaunch = el + (el < 4000 ? 210+Math.random()*170 : 850+Math.random()*950);
+      }
+      for(let i=rockets.length-1;i>=0;i--){
+        const r = rockets[i];
+        r.trail.push({ x:r.x, y:r.y }); if(r.trail.length > 9) r.trail.shift();
+        r.y += r.vy*d; r.vy += 0.05*d*S;
+        for(let k=0;k<r.trail.length;k++){
+          const q = r.trail[k], a = (k+1)/r.trail.length;
+          ctx.globalAlpha = a*0.85; ctx.fillStyle = r.col;
+          ctx.beginPath(); ctx.arc(q.x, q.y, 1.7*a+0.5, 0, 6.283); ctx.fill();
+        }
+        ctx.globalAlpha = 1; ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(r.x, r.y, 2.6, 0, 6.283); ctx.fill();
+        if(r.y <= r.ty || r.vy >= 0){ explode(r.x, r.y, r.col); rockets.splice(i,1); }
+      }
+      for(let i=sparks.length-1;i>=0;i--){
+        const p = sparks[i];
+        if(p.flash){
+          p.life -= p.decay*d;
+          if(p.life <= 0){ sparks.splice(i,1); continue; }
+          ctx.globalAlpha = p.life*0.38; ctx.fillStyle = p.col;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r*(1.25-p.life), 0, 6.283); ctx.fill();
+          continue;
+        }
+        p.px = p.x; p.py = p.y;
+        p.x += p.vx*d; p.y += p.vy*d;
+        p.vy += 0.035*d*S;
+        p.vx *= Math.pow(0.986, d); p.vy *= Math.pow(0.986, d);
+        p.life -= p.decay*d*1.6;
+        if(p.life <= 0){ sparks.splice(i,1); continue; }
+        const rr = p.r*(0.35+p.life*0.95);
+        ctx.globalAlpha = Math.min(1, p.life)*0.9;
+        ctx.strokeStyle = p.col; ctx.lineWidth = rr*1.7;
+        ctx.beginPath(); ctx.moveTo(p.px, p.py); ctx.lineTo(p.x, p.y); ctx.stroke();
+        ctx.globalAlpha = Math.min(1, p.life);
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(p.x, p.y, rr*0.55, 0, 6.283); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
+      for(let i=confs.length-1;i>=0;i--){
+        const c = confs[i];
+        c.x += c.vx*d; c.y += c.vy*d;
+        c.vy = Math.min(c.vy+0.03*d*S, 3.4*S);
+        c.vx += Math.sin((c.y+c.seed)/70)*0.02*d;
+        c.rot += c.vr*d;
+        if(c.y > H+40){ confs.splice(i,1); continue; }
+        ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.rot);
+        ctx.globalAlpha = 0.95; ctx.fillStyle = c.col;
+        ctx.fillRect(-c.w/2, -c.h/2, c.w, c.h);
+        ctx.restore();
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ===== 无尽点点乐 =====
+     普通物件 +1 分，金色 🌟 +5 分；每 10 分升一关——落得更快、来得更密，
+     所以是无限关。物件用 pointerdown（响应更快），同时存在上限 16 个。 */
+  function startEndless(){
+    const area = $('#epArea');
+    if(!area) return;
+    const scoreEl = $('#epScore'), lvEl = $('#epLevel'), lvChip = $('#epLvChip'), tip = $('#epTip');
+    const ITEMS = ['⭐','🎈','🍎','🍓','⚽','🍬','🐤','🌸','🍀'];
+    const GOLD = '🌟';
+    /* 难度曲线：第 1 关每秒下落约 0.3 个掉落区高度（约 3.3 秒落到底）、
+       平均 0.7 秒来一个；每升一关快一点、密一点，不设上限。 */
+    const FALL_H = 0.26, LEVEL_FAST = 0.035;
+    let score = 0, level = 1, items = [], last = 0, nextSpawn = 350;
+    if(tip) setTimeout(()=>tip.classList.add('hide'), 5200);
+
+    function spawn(){
+      const w = area.clientWidth, h = area.clientHeight;
+      if(w < 40 || h < 40) return;
+      const gold = Math.random() < 0.12;
+      const size = Math.max(34, Math.min(62, Math.round(h*0.22)));
+      const x = 6 + Math.random()*Math.max(6, w-size-12);
+      const el = document.createElement('div');
+      el.className = 'ep-item' + (gold ? ' gold' : '');
+      el.style.width = size+'px'; el.style.height = size+'px';
+      el.style.lineHeight = size+'px';
+      el.style.fontSize = Math.round(size*0.56)+'px';
+      el.textContent = gold ? GOLD : ITEMS[Math.floor(Math.random()*ITEMS.length)];
+      const it = { el:el, x:x, y:-size, size:size, gold:gold, dead:false,
+                   vy:h*(FALL_H+level*LEVEL_FAST)*(0.85+Math.random()*0.35) };
+      el.style.transform = 'translate3d('+it.x+'px,'+it.y+'px,0)';
+      area.appendChild(el);
+      el.addEventListener('pointerdown', ev=>{ ev.preventDefault(); hit(it); });
+      items.push(it);
+      if(items.length > 16){                     /* 保险：同时存在太多就淘汰最老的 */
+        const old = items.shift();
+        if(old && old.el && old.el.parentNode) old.el.parentNode.removeChild(old.el);
+      }
+    }
+
+    function rise(it, gain){
+      const p = document.createElement('div');
+      p.className = 'ep-plus' + (gain > 1 ? ' big' : '');
+      p.textContent = '+' + gain;
+      p.style.left = (it.x + it.size/2)+'px';
+      p.style.top = (it.y + it.size*0.15)+'px';
+      area.appendChild(p);
+      setTimeout(()=>{ if(p.parentNode) p.parentNode.removeChild(p); }, 900);
+    }
+
+    function hit(it){
+      if(it.dead) return;
+      it.dead = true;
+      const idx = items.indexOf(it); if(idx >= 0) items.splice(idx,1);
+      const gain = it.gold ? 5 : 1;
+      score += gain;
+      scoreEl.textContent = score;
+      const nl = Math.floor(score/10)+1;
+      if(nl > level){                            /* 每 10 分升一关：更快、更密，并晃一下提示 */
+        level = nl; lvEl.textContent = level;
+        if(lvChip){ lvChip.classList.remove('flash'); void lvChip.offsetWidth; lvChip.classList.add('flash'); }
+      }
+      it.el.style.transform = 'translate3d('+it.x+'px,'+it.y+'px,0) scale(1.45)';
+      it.el.style.opacity = '0';
+      setTimeout(()=>{ if(it.el.parentNode) it.el.parentNode.removeChild(it.el); }, 260);
+      rise(it, gain);
+      beep(it.gold ? 1180 : 880, .09, 'sine', .05);
+    }
+
+    window.addEventListener('resize', ()=>{
+      const w = area.clientWidth;
+      items.forEach(it=>{
+        if(it.x > w-it.size-4){
+          it.x = Math.max(4, w-it.size-4);
+          it.el.style.transform = 'translate3d('+it.x+'px,'+it.y+'px,0)';
+        }
+      });
+    });
+
+    function frame(now){
+      requestAnimationFrame(frame);
+      if(document.hidden) return;
+      if(!last){ last = now; return; }
+      const dt = Math.min(.05, (now-last)/1000); last = now;
+      const h = area.clientHeight;
+      if(h < 40) return;
+      nextSpawn -= dt*1000;
+      if(nextSpawn <= 0){
+        spawn();
+        nextSpawn = Math.max(300, 700-level*45)*(0.8+Math.random()*0.5);
+      }
+      for(let i=items.length-1;i>=0;i--){
+        const it = items[i];
+        it.y += it.vy*dt;
+        if(it.y > h){                            /* 漏掉了：不扣分，也不惩罚 */
+          it.dead = true;
+          if(it.el.parentNode) it.el.parentNode.removeChild(it.el);
+          items.splice(i,1);
+          continue;
+        }
+        it.el.style.transform = 'translate3d('+it.x+'px,'+it.y+'px,0)';
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function startFinale(){
+    if(finaleOn) return;
+    finaleOn = true;
+    const box = $('#finale');
+    document.documentElement.style.overflow = 'hidden';
+    document.body.classList.add('locked');
+    hideOverlay();
+    $('#celebrateBar').disabled = true;
+    document.querySelectorAll('#homeGrid .mode').forEach(b=>{ b.disabled = true; });
+    box.classList.add('show');
+    bigConfetti();                                        /* 撒花 */
+    startFireworks();                                     /* 烟花 */
+    setTimeout(()=>box.classList.add('card-in'), 1500);    /* 大奖杯 */
+    setTimeout(bigConfetti, 2700);
+    setTimeout(startEndless, 1700);                        /* 通关后一直有得玩 */
+    /* 锁定：画面停在这里，不接受任何滚动 / 右键 / 键盘操作 */
+    const block = e => { e.preventDefault(); e.stopPropagation(); };
+    const stopKeys = [' ','Spacebar','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown','Home','End'];
+    document.addEventListener('wheel', block, { passive:false, capture:true });
+    document.addEventListener('touchmove', block, { passive:false, capture:true });
+    document.addEventListener('contextmenu', block, { capture:true });
+    document.addEventListener('dragstart', block, { capture:true });
+    document.addEventListener('selectstart', block, { capture:true });
+    document.addEventListener('keydown', e=>{ if(stopKeys.indexOf(e.key) >= 0) block(e); }, true);
+    document.addEventListener('click', e=>{ if(!box.contains(e.target)) block(e); }, true);
+  }
+
+  /* 结算卡按「进入通关庆典」、首页金色横幅都走这里：先收回游戏视图再开幕 */
+  function enterFinale(){
+    if(finaleOn) return;
+    clearCelebrateTimer();
+    goHome();
+    startFinale();
+  }
+
   /* ================= 启动 ================= */
   refreshTotal();
   renderHome();
+
+  /* ===== 测试用快捷入口 =====
+     在网址后面加 ?finale=1 直接进通关闭幕（预览 / 验收用，不写进任何界面提示）。
+     正常打开（没有这个参数）时，这里一行都不会生效；预览期间的星级只在内存里，
+     不写 localStorage，不会污染学生机上的真实进度。 */
+  if(/[?&]finale=1\b/.test(location.search)){
+    previewFinale = true;
+    MODES.forEach(m=>{
+      const r = records[m.id] || { best:null, stars:0, plays:0 };
+      r.stars = 3; records[m.id] = r;
+    });
+    refreshTotal();
+    renderHome();
+    setTimeout(startFinale, 60);
+  }
 })();
 </script>
 </body>

@@ -275,6 +275,63 @@ add({
   ]
 });
 
+/* ============ 3c. 鼠标练习营2：通关页 + 无尽点点乐（同一套玩法，卡片更高） ============ */
+add({
+  name: '鼠标练习营2-通关页无尽关',
+  page: '鼠标练习营2.html?finale=1',
+  wait: 6000,
+  steps: [
+    { label: '通关页出现、只有得分/第几关两块牌子、预览入口不写进度', js: wrap(`
+      await __wait(1500);
+      const card = __$('.finale-card').getBoundingClientRect();
+      const head = __$('.ep-head').getBoundingClientRect();
+      const area = __$('#epArea').getBoundingClientRect();
+      return JSON.stringify({
+        jumped: __$('#finale').classList.contains('show'),
+        hud: __$$('.ep-head .ep-k').map(e => e.textContent.trim()),
+        chips: __$$('.ep-head .ep-k').length,
+        comboGone: !__$('#epCombo'), bestGone: !__$('#epBest'),
+        items: __$$('#epArea .ep-item').length,
+        bandWidth: Math.round(area.width), bandWidthCapped: area.width <= 1002,
+        bandHeight: Math.round(area.height),
+        noOverlap: head.top >= card.bottom - 1,
+        gap: Math.round(head.top - card.bottom),
+        previewSavedNothing: !localStorage.getItem('mousecamp2.progress.v1')
+      });
+    `), shot: true },
+    { label: '点掉落物能加分、每 10 分升一关、一直有得玩', js: wrap(`
+      const t0 = Date.now();
+      let taps = 0;
+      while (Date.now() - t0 < 22000 && Number(__$('#epScore').textContent) < 12) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect();
+          __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); taps++; }
+        await __wait(160);
+      }
+      await __wait(2500);                     /* 再等一会，确认物件还在源源不断刷新 */
+      return JSON.stringify({
+        taps, score: Number(__$('#epScore').textContent),
+        level: Number(__$('#epLevel').textContent), levelUpWorks: Number(__$('#epLevel').textContent) >= 2,
+        tipHidden: __$('#epTip').classList.contains('hide'),
+        stillSpawning: __$$('#epArea .ep-item').length > 0,
+        finaleStillOn: __$('#finale').classList.contains('show')
+      });
+    `), shot: true },
+    { label: '点「回到关卡列表」后小游戏停下并清干净', js: wrap(`
+      __$('#finaleOk').click();
+      await __wait(1500);
+      const scoreRightAfter = __$('#epScore').textContent;
+      await __wait(1800);                     /* 停下来的话不会再冒出新的掉落物 */
+      return JSON.stringify({
+        finaleHidden: !__$('#finale').classList.contains('show'),
+        leftovers: __$$('#epArea .ep-item').length,
+        scoreReset: scoreRightAfter === '0' && __$('#epScore').textContent === '0',
+        backToHome: __$$('#play .lvcard').length === 6
+      });
+    `), shot: true }
+  ]
+});
+
 /* ============ 4. 鼠标反应力实验室：八个关卡逐个进入并操作 ============ */
 const openMode = (label) => `
   const mode = __$$('.mode').find(m => m.textContent.includes(${JSON.stringify(label)}));
@@ -476,6 +533,257 @@ add({
   ]
 });
 
+/* 真的打完最后一关：先在同一个浏览器 profile 里把七关记成三星（场景共用一个
+   user-data-dir，localStorage 会带到下一个场景），再实打实打完第八关。 */
+add({
+  name: '反应力-最后一关前置存档',
+  page: 'index.html',
+  steps: [
+    { label: '把七关记成三星（21 / 24）', js: wrap(`
+      const rows = {};
+      ['reaction','whack','aim','drag','track','trace','dbl'].forEach(id => { rows[id] = { best:null, stars:3, plays:1 }; });
+      localStorage.setItem('mouseReactionLab.v1', JSON.stringify(rows));
+      return JSON.stringify({ seeded: Object.keys(rows).length,
+        raw: localStorage.getItem('mouseReactionLab.v1').length });
+    `) }
+  ]
+});
+
+add({
+  name: '反应力-最后一关进庆典',
+  page: '鼠标反应力实验室.html',
+  steps: [
+    { label: '打完第八关（连点狂潮）直接进通关闭幕并能继续玩', js: wrap(`${openMode('连点狂潮')}
+      const seeded = __$('.total').textContent.trim();
+      const st = __$('#stage');
+      const [cx, cy] = __center(st);
+      await __wait(300);
+      /* 进关卡后首页金色横幅必须收起来，否则会从游戏视图底下透出来 */
+      const barHiddenWhilePlaying = __$('#celebrateBar').classList.contains('hidden');
+      const t0 = Date.now();
+      let sawSheet = false, finaleBtn = false, homeBtn = false, retryBtn = false, sheetAt = null, clicks = 0;
+      let btnFits = null;
+      while (Date.now() - t0 < 60000 && !__$('#finale').classList.contains('show')) {
+        if (__$('#overlay').classList.contains('show')) {
+          if (!sawSheet) { sawSheet = true; sheetAt = Date.now() - t0; }
+          finaleBtn = finaleBtn || !!__$('#overlay [data-act="finale"]');
+          homeBtn = homeBtn || !!__$('#overlay [data-act="home"]');
+          retryBtn = retryBtn || !!__$('#overlay [data-act="retry"]');
+          const b = __$('#overlay [data-act="finale"]');
+          if (b && btnFits === null) {
+            const br = b.getBoundingClientRect(), orr = __$('#overlay').getBoundingClientRect();
+            const sh = __$('#overlay .sheet').getBoundingClientRect();
+            btnFits = { btnBottom: Math.round(br.bottom), boxBottom: Math.round(orr.bottom),
+                        sheetH: Math.round(sh.height),
+                        scrolls: __$('#overlay .sheet').scrollHeight > __$('#overlay .sheet').clientHeight + 1,
+                        fullyVisible: br.bottom <= orr.bottom + 1 && br.top >= orr.top - 1 };
+          }
+          if (b) b.click();
+          await __wait(150);
+        } else {
+          __pd(st, 'pointerdown', cx, cy); __pd(st, 'pointerup', cx, cy); clicks++;
+          await __wait(60);
+        }
+      }
+      const before = { stars: __$('.total').textContent.trim(), clicks, sawSheet, sheetAt,
+        finaleBtn, btnFits, barHiddenWhilePlaying, homeBtnGone: !homeBtn, retryBtnGone: !retryBtn,
+        timedOut: !__$('#finale').classList.contains('show') };
+      await __wait(2600);
+      const after = { finaleOn: __$('#finale').classList.contains('show'),
+        card: !!__$('.finale-card'),
+        title: (__$('.finale-title') || {}).textContent || '',
+        endless: !!__$('#epArea'),
+        locked: document.body.classList.contains('locked'),
+        savedStars: (JSON.parse(localStorage.getItem('mouseReactionLab.v1') || '{}').frenzy || {}).stars };
+      const t1 = Date.now();
+      let hits = 0;
+      while (Date.now() - t1 < 10000 && Number(__$('#epScore').textContent) < 3) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect();
+          __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); hits++; }
+        await __wait(160);
+      }
+      return JSON.stringify({ seeded, before, after, hits, score: __$('#epScore').textContent,
+        bandHeight: Math.round(__$('#epArea').getBoundingClientRect().height) });
+    `), shot: true }
+  ]
+});
+
+/* 已经八关全满的存档：重玩某一关应该给普通结算卡，不把人硬拉进庆典 */
+add({
+  name: '反应力-全满后重玩-前置存档',
+  page: 'index.html',
+  steps: [
+    { label: '把八关都记成三星（24 / 24）', js: wrap(`
+      const rows = {};
+      ['reaction','whack','aim','drag','track','trace','dbl','frenzy']
+        .forEach(id => { rows[id] = { best:null, stars:3, plays:1 }; });
+      localStorage.setItem('mouseReactionLab.v1', JSON.stringify(rows));
+      return JSON.stringify({ seeded: Object.keys(rows).length });
+    `) }
+  ]
+});
+
+add({
+  name: '反应力-全满后重玩',
+  page: '鼠标反应力实验室.html',
+  steps: [
+    { label: '首页露出金色横幅，头部 24 / 24', js: wrap(`
+      await __wait(400);
+      return JSON.stringify({ stars: __$('.total').textContent.trim(),
+        barShown: !__$('#celebrateBar').classList.contains('hidden'),
+        barText: __$('#celebrateBar').textContent.trim(),
+        overflowX: document.documentElement.scrollWidth > window.innerWidth + 1 });
+    `), shot: true },
+    { label: '重玩一关仍是普通结算卡，8 秒内不会自己进庆典', js: wrap(`${openMode('连点狂潮')}
+      const st = __$('#stage'); const [cx, cy] = __center(st);
+      const t0 = Date.now();
+      let barHidden = false;
+      while (Date.now() - t0 < 60000 && !__$('#overlay').classList.contains('show')) {
+        if (Date.now() - t0 > 300) barHidden = barHidden || __$('#celebrateBar').classList.contains('hidden');
+        __pd(st, 'pointerdown', cx, cy); __pd(st, 'pointerup', cx, cy);
+        await __wait(60);
+      }
+      const shown = { homeBtn: !!__$('#overlay [data-act="home"]'),
+        retryBtn: !!__$('#overlay [data-act="retry"]'),
+        finaleBtn: !!__$('#overlay [data-act="finale"]'),
+        celebrationCard: !!__$('#overlay .sheet.celebration'),
+        barHidden };
+      await __wait(8000);                       /* 比自动进庆典的 6 秒更长 */
+      return JSON.stringify({ shown,
+        finaleAfterWait: __$('#finale').classList.contains('show'),
+        sheetStillOn: __$('#overlay').classList.contains('show'),
+        stars: __$('.total').textContent.trim() });
+    `), shot: true }
+  ]
+});
+
+/* 防误触兜底回归：这一页加了通关闭幕后，右键拦截和历史哨兵都不能被带坏 */
+add({
+  name: '反应力-防误触兜底',
+  page: '鼠标反应力实验室.html',
+  steps: [
+    { label: 'history 哨兵：back/forward/go(-6) 都留在原地且页面没重载', js: wrap(`
+      window.__probe = 'kept';
+      const before = location.pathname;
+      history.back(); await __wait(500);
+      const afterBack = location.pathname;
+      history.forward(); await __wait(500);
+      const afterForward = location.pathname;
+      history.go(-6); await __wait(500);
+      return JSON.stringify({ probeKept: window.__probe === 'kept',
+        samePlace: before === afterBack && before === afterForward && before === location.pathname,
+        path: location.pathname });
+    `) },
+    { label: '右键被拦下，但事件继续冒泡（页内逻辑照常收到）', js: wrap(`
+      let reachedDoc = false, reachedPanel = false;
+      const spyDoc = () => { reachedDoc = true; };
+      const spyPanel = () => { reachedPanel = true; };
+      document.addEventListener('contextmenu', spyDoc);
+      __$('#panel').addEventListener('contextmenu', spyPanel);
+      const ev = new MouseEvent('contextmenu', { bubbles: true, cancelable: true,
+        button: 2, clientX: 400, clientY: 300 });
+      __$('#panel').dispatchEvent(ev);
+      document.removeEventListener('contextmenu', spyDoc);
+      await __wait(200);
+      return JSON.stringify({ defaultPrevented: ev.defaultPrevented, reachedPanel, reachedDoc });
+    `) }
+  ]
+});
+
+/* ============ 4b. 反应力实验室 · 通关闭幕（?finale=1 测试入口） ============ */
+add({
+  name: '反应力-通关庆典',
+  page: '鼠标反应力实验室.html?finale=1',
+  steps: [
+    { label: '?finale=1 直达通关闭幕，无尽点点乐能加分/升关/加速', js: wrap(`
+      await __wait(2500);
+      const jumped = __$('#finale').classList.contains('show');
+      const band = __$('#epArea').getBoundingClientRect();
+      const head = __$('.ep-head').getBoundingClientRect();
+      const saved = localStorage.getItem('mouseReactionLab.v1');
+      const scrollBefore = window.scrollY;
+      window.scrollTo(0, 600);
+      await __wait(300);
+      const locked = window.scrollY === scrollBefore &&
+        document.documentElement.style.overflow === 'hidden' &&
+        document.body.classList.contains('locked');
+      const speedOf = async () => {
+        const it = __$('#epArea .ep-item');
+        if (!it) return null;
+        /* 不动正则：模板字符串里的反斜杠会被吃掉，直接按逗号拆 "translate3d(xpx, ypx, 0)" */
+        const readY = () => {
+          const parts = (it.style.transform || '').split(',');
+          if (parts.length < 2) return null;
+          const v = parseFloat(parts[1]);
+          return isNaN(v) ? null : v;
+        };
+        const y0 = readY(), ts = Date.now();
+        await __wait(320);
+        const y1 = readY();
+        if (y0 === null || y1 === null || y1 <= y0) return null;
+        return Math.round((y1 - y0) / ((Date.now() - ts) / 1000));
+      };
+      const sampleSpeed = async (n) => {
+        const out = [];
+        for (let i = 0; i < n * 5 && out.length < n; i++) { const v = await speedOf(); if (v) out.push(v); await __wait(160); }
+        return out;
+      };
+      const mean = a => a.length ? Math.round(a.reduce((x, y) => x + y, 0) / a.length) : null;
+      await __wait(900);
+      const earlySpeeds = await sampleSpeed(3);
+      const t0 = Date.now();
+      let swings = 0;
+      while (Date.now() - t0 < 24000 && Number(__$('#epScore').textContent) < 12) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect();
+          __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); swings++; }
+        await __wait(170);
+      }
+      const mid = { score: Number(__$('#epScore').textContent),
+                    level: Number(__$('#epLevel').textContent) };
+      const lateSpeeds = await sampleSpeed(3);
+      await __wait(2200);                                  /* 再等一会，确认还在源源不断刷新 */
+      return JSON.stringify({
+        jumped, totalStars: __$('#starNum').textContent.trim(),
+        celebrateBarShown: !__$('#celebrateBar').classList.contains('hidden'),
+        rowDisabled: __$$('#homeGrid .mode').every(b => b.disabled),
+        savedIsNull: saved === null,                        /* 预览那次不写存档 */
+        locked, swings, mid,
+        bandWidth: Math.round(band.width), bandWidthCapped: band.width <= 1002,
+        headWidth: Math.round(head.width), bandHeight: Math.round(band.height),
+        centered: Math.abs((band.left + band.right) / 2 - window.innerWidth / 2) < 3,
+        earlySpeed: mean(earlySpeeds), lateSpeed: mean(lateSpeeds),
+        speedUpAfterLevels: (mean(lateSpeeds) || 0) > (mean(earlySpeeds) || 0),
+        levelUpWorks: mid.level >= 2,
+        stillSpawning: __$$('#epArea .ep-item').length > 0,
+        chips: __$$('.ep-head .ep-k').length,
+        bestGone: !__$('#epBest'), comboGone: !__$('#epCombo'),
+        levelShown: !!__$('#epLevel'),
+        finaleStillOn: __$('#finale').classList.contains('show')
+      });
+    `), shot: true }
+  ]
+});
+
+/* 宽屏下游戏区必须仍然封顶，否则物件撒得太开没法点 */
+add({
+  name: '反应力-通关庆典-宽屏',
+  page: '鼠标反应力实验室.html?finale=1',
+  viewport: [2560, 1080],
+  steps: [
+    { label: '2560 宽屏下游戏区宽度仍封顶', js: wrap(`
+      await __wait(2500);
+      const band = __$('#epArea').getBoundingClientRect();
+      return JSON.stringify({ innerW: window.innerWidth,
+        bandWidth: Math.round(band.width), bandHeight: Math.round(band.height),
+        capped: band.width <= 1002,
+        centered: Math.abs((band.left + band.right) / 2 - window.innerWidth / 2) < 3,
+        jumped: __$('#finale').classList.contains('show') });
+    `), shot: true }
+  ]
+});
+
 /* ============ 5. 鼠标 3D 探索馆 ============ */
 add({
   name: '3D探索馆',
@@ -636,7 +944,7 @@ add({
 
 /* ============ 8. 多分辨率不溢出 ============ */
 for (const [w, h] of [[1024, 768], [1920, 1080]]) {
-  for (const page of ['index.html', '键盘练习营.html', '鼠标练习营.html', '鼠标反应力实验室.html', '数据自画像-猜猜我是谁.html', '数据自画像-教师端看板.html']) {
+  for (const page of ['index.html', '键盘练习营.html', '鼠标练习营.html', '鼠标练习营2.html', '鼠标反应力实验室.html', '数据自画像-猜猜我是谁.html', '数据自画像-教师端看板.html']) {
     add({
       name: `${w}x${h}-${page.replace('.html', '')}`,
       page,

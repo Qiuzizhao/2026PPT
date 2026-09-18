@@ -176,6 +176,40 @@ const SHOTS = [
       }
       return 'ok';`) },
 
+  /* 反应力实验室的通关闭幕：预览入口 ?finale=1（不写存档），截图时点几个掉落物让计分牌有分 */
+  { name: '反应力-通关闭幕', page: '鼠标反应力实验室.html?finale=1', js: j(`
+      await __wait(2600);
+      for (let i = 0; i < 40 && Number(__$('#epScore').textContent) < 8; i++) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect(); __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); }
+        await __wait(150);
+      }
+      await __wait(700); return 'ok';`) },
+  { name: '反应力-通关闭幕-1080p', viewport: [1920, 1080], page: '鼠标反应力实验室.html?finale=1', js: j(`
+      await __wait(2600);
+      for (let i = 0; i < 40 && Number(__$('#epScore').textContent) < 8; i++) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect(); __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); }
+        await __wait(150);
+      }
+      await __wait(700); return 'ok';`) },
+  /* 结算卡：先把七关记成三星，再真打完第八关（连点狂潮），截「进入通关庆典」那张卡 */
+  { name: '反应力-通关结算卡(前置存档)', page: 'index.html', js: j(`
+      const rows = {};
+      ['reaction','whack','aim','drag','track','trace','dbl'].forEach(id => { rows[id] = { best:null, stars:3, plays:1 }; });
+      localStorage.setItem('mouseReactionLab.v1', JSON.stringify(rows)); return 'ok';`) },
+  { name: '反应力-通关结算卡', page: '鼠标反应力实验室.html', js: j(`
+      __openMode('连点狂潮');
+      const st = __$('#stage'); const [cx, cy] = __center(st);
+      const t0 = Date.now();
+      while (Date.now() - t0 < 60000 && !__$('#overlay').classList.contains('show')) {
+        __pd(st, 'pointerdown', cx, cy); __pd(st, 'pointerup', cx, cy);
+        await __wait(60);
+      }
+      await __wait(700); return 'ok';`) },
+  { name: '反应力-首页庆典入口', page: '鼠标反应力实验室.html', js: j(`
+      await __wait(600); return 'ok';`) },
+
   { name: '3D-第一屏', page: '鼠标3D探索馆.html', wait: 20000, js: j(`return 'ok';`) },
   { name: '3D-拆解70%', page: '鼠标3D探索馆.html', wait: 20000, js: j(`
       const r = __$('#explodeRange'); r.value = 70; r.dispatchEvent(new Event('input', { bubbles: true }));
@@ -247,7 +281,9 @@ for (const sh of SHOTS) {
     await s('Emulation.setDeviceMetricsOverride', { width: sh.viewport[0], height: sh.viewport[1], deviceScaleFactor: 1, mobile: false });
   }
   if (sh.block) await s('Network.setBlockedURLs', { urls: sh.block });
-  await s('Page.navigate', { url: baseUrl + encodeURIComponent(sh.page) });
+  const shotUrl = baseUrl + encodeURIComponent(sh.page)
+    .replace(/%3F/gi, '?').replace(/%3D/gi, '=').replace(/%26/gi, '&');
+  await s('Page.navigate', { url: shotUrl });
   await sleep(sh.wait || 2500);
   await s('Runtime.evaluate', { expression: sh.js, awaitPromise: true, returnByValue: true });
   await sleep(350);
