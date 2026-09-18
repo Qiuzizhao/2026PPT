@@ -127,6 +127,16 @@
   /* ===== 首页：六关列表 ===== */
   .home-grid{position:absolute;top:16px;right:16px;bottom:16px;left:16px;max-width:560px;margin-left:auto;margin-right:auto;display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center;align-content:center}
   html.no-flexgap .home-grid > *:not(:last-child){margin-right:14px}
+  /* 首页底部的「清空进度」：练习区外面、灰、小、要二次确认，
+     既不压住关卡圆圈，学生也不容易误点掉别人的成绩 */
+  .home-foot{display:none;text-align:center;padding:14px 0 0}
+  .home-foot.show{display:block}
+  .home-foot .btn-mini{
+    border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:800;
+    color:#8a8aa8;background:rgba(255,255,255,.78);border-radius:999px;padding:7px 16px;
+    box-shadow:0 3px 0 rgba(0,0,0,.06);
+  }
+  .home-foot .btn-mini:hover{color:#5b6488;background:#fff}
   .lvcard{
     width:158px;height:158px;border-radius:50%;border:none;cursor:pointer;color:#fff;
     box-shadow:0 8px 0 rgba(0,0,0,.12), var(--shadow);transition:transform .12s ease;
@@ -193,6 +203,8 @@
     position:relative;width:46px;height:46px;border-radius:50%;background:#f2f6ff;
     display:flex;align-items:center;justify-content:center;font-size:24px;
   }
+  /* 「图片」图标是内联 SVG，跟 emoji 一样按 font-size 大小显示 */
+  .picico{width:1em;height:1em;display:block}
   .mb .ring{position:absolute;left:0;top:0;width:46px;height:46px;pointer-events:none}
   .mb .ring-bg{fill:none;stroke:#e6ecfb;stroke-width:4}
   .mb .ring-go{fill:none;stroke:var(--green);stroke-width:4;stroke-linecap:round;
@@ -356,11 +368,13 @@
   body.locked{overflow:hidden}
   .finale{
     position:fixed;top:0;right:0;bottom:0;left:0;z-index:30000;display:none;overflow:hidden;
-    align-items:center;justify-content:center;padding:16px;
+    flex-direction:column;align-items:center;justify-content:center;padding:16px;
     background:radial-gradient(circle at 50% 36%,#4b3a8c 0%,#2c2356 48%,#16122f 100%);
   }
   .finale.show{display:flex}
   .finale-fx{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
+  /* 通关页分上下两块：上面是奖杯卡（按内容高度，不伸缩），下面是掉落物小游戏（占满剩下的） */
+  .finale-top{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:100%}
   .finale-card{position:relative;z-index:3;text-align:center;color:#fff;max-width:820px;opacity:0;transform:translateY(30px) scale(.82)}
   .finale.card-in .finale-card{animation:card-in .9s cubic-bezier(.18,1.5,.45,1) forwards}
   @keyframes card-in{
@@ -370,7 +384,7 @@
   }
   .trophy-wrap{
     position:relative;display:inline-flex;align-items:center;justify-content:center;
-    width:236px;max-width:52vw;width:min(236px,52vw);height:236px;max-height:52vw;height:min(236px,52vw);
+    width:140px;max-width:32vw;width:min(140px,32vw);height:140px;max-height:32vw;height:min(140px,32vw);
   }
   .trophy-wrap::before{
     content:"";position:absolute;top:4%;right:4%;bottom:4%;left:4%;border-radius:50%;
@@ -386,24 +400,24 @@
   }
   @keyframes glowpulse{0%,100%{opacity:.6;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}
   .big-trophy{
-    position:relative;font-size:170px;font-size:min(170px,36vw);line-height:1;
+    position:relative;font-size:106px;font-size:min(106px,24vw);line-height:1;
     filter:drop-shadow(0 14px 26px rgba(255,178,40,.6));
     animation:bob 2.6s ease-in-out infinite;
   }
   .finale-title{
-    margin:6px 0 10px;font-size:56px;font-size:clamp(28px,7.4vw,56px);font-weight:900;letter-spacing:3px;
+    margin:4px 0 6px;font-size:42px;font-size:clamp(26px,5.4vw,42px);font-weight:900;letter-spacing:2px;
     background:linear-gradient(180deg,#fffbe4,#ffd23f 46%,#ff9f45);
     -webkit-background-clip:text;background-clip:text;color:transparent;
     filter:drop-shadow(0 4px 0 rgba(0,0,0,.28));
   }
-  .finale-sub{margin:0 0 14px;font-size:20px;font-size:clamp(15px,3vw,20px);font-weight:700;color:#e4dcff}
-  .finale-chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-bottom:14px}
-  html.no-flexgap .finale-chips > *:not(:last-child){margin-right:9px}
+  .finale-sub{margin:0 0 10px;font-size:17px;font-size:clamp(13px,2.4vw,17px);font-weight:700;color:#e4dcff}
+  .finale-chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:10px}
+  html.no-flexgap .finale-chips > *:not(:last-child){margin-right:7px}
   .finale-chips .chip{
     display:flex;align-items:center;gap:7px;
     background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.3);
-    border-radius:999px;padding:7px 15px;font-weight:800;
-    font-size:16px;font-size:clamp(13px,2.4vw,16px);
+    border-radius:999px;padding:5px 12px;font-weight:800;
+    font-size:14px;font-size:clamp(12px,2.2vw,14px);
   }
   html.no-flexgap .finale-chips .chip > *:not(:last-child){margin-right:7px}
   .finale-chips .chip i{font-style:normal;font-size:1.2em}
@@ -411,16 +425,96 @@
   .finale-stars{
     display:inline-flex;align-items:center;gap:8px;
     background:rgba(255,255,255,.16);border:2px solid rgba(255,210,63,.6);
-    border-radius:999px;padding:8px 20px;font-weight:900;
-    font-size:20px;font-size:clamp(15px,3vw,20px);color:#fff6cf;
+    border-radius:999px;padding:6px 16px;font-weight:900;
+    font-size:17px;font-size:clamp(13px,2.6vw,17px);color:#fff6cf;
   }
   html.no-flexgap .finale-stars > *:not(:last-child){margin-right:8px}
-  .finale-actions{margin-top:18px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .finale-actions{margin-top:12px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
   html.no-flexgap .finale-actions > *:not(:last-child){margin-right:12px}
-  @media(max-height:640px){
-    .trophy-wrap{width:140px;max-width:36vw;width:min(140px,36vw);height:140px;max-height:36vw;height:min(140px,36vw)}
-    .big-trophy{font-size:104px;font-size:min(104px,24vw)}
-    .finale-sub{margin-bottom:8px}
+  /* ===== 通关页的「无尽点点乐」：先做完的学生一直有得玩 =====
+     规则只有一条——点掉飘下来的小东西就加分。无限关、没有失败、也不会离开本页。
+     普通物件 +1 分，金色 🌟 +5 分；漏掉不扣分、不惩罚，什么都没发生。
+     每 10 分升一关，落得更快、来得更密，所以永远玩不完。
+     游戏区宽度封顶 1000px：屏幕再宽也不能把掉落范围拉成一整条，
+     否则物件横向撒得太开，学生根本点不过来。 */
+  .ep{
+    position:relative;z-index:4;flex:1 1 auto;width:100%;max-width:1000px;min-height:150px;margin-top:10px;
+    padding:0 2px 2px;box-sizing:border-box;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  html.no-flexgap .ep > *:not(:last-child){margin-bottom:8px}
+  .ep-head{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;color:#fff}
+  html.no-flexgap .ep-head > *:not(:last-child){margin-right:10px}
+  .ep-k{
+    display:flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.28);
+    border-radius:999px;padding:4px 13px;font-weight:800;
+    font-size:16px;font-size:clamp(13px,2.2vw,16px);backdrop-filter:blur(2px);
+  }
+  html.no-flexgap .ep-k > *:not(:last-child){margin-right:6px}
+  .ep-k b{color:#ffd23f;font-size:1.15em;font-variant-numeric:tabular-nums}
+  .ep-lv b{color:#8ff0bc}
+  .ep-lv.flash{animation:ep-flash .55s ease}
+  @keyframes ep-flash{
+    0%{transform:scale(1)}
+    45%{transform:scale(1.16);background:rgba(143,240,188,.36)}
+    100%{transform:scale(1)}
+  }
+  .ep-area{
+    position:relative;flex:1;min-height:0;overflow:hidden;
+    border-radius:20px;border:2px solid rgba(255,255,255,.16);
+    background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
+  }
+  .ep-area::after{
+    content:"";position:absolute;right:0;bottom:0;left:0;height:3px;pointer-events:none;
+    background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.4),rgba(255,255,255,0));
+  }
+  .ep-tip{
+    position:absolute;top:50%;right:20px;left:20px;transform:translateY(-50%);
+    text-align:center;color:#ffe9a8;font-weight:800;pointer-events:none;
+    text-shadow:0 2px 8px rgba(20,10,50,.6);
+    font-size:18px;font-size:clamp(14px,2.6vw,18px);transition:opacity .5s ease;
+  }
+  .ep-tip.hide{opacity:.5}
+  .ep-item{
+    position:absolute;top:0;left:0;display:flex;align-items:center;justify-content:center;
+    border-radius:50%;background:rgba(255,255,255,.94);
+    box-shadow:0 6px 14px rgba(20,10,50,.35);cursor:pointer;user-select:none;
+    -webkit-user-select:none;touch-action:none;transition:opacity .2s linear;will-change:transform;
+  }
+  .ep-item.gold{
+    background:linear-gradient(180deg,#fff6c9,#ffd23f);
+    box-shadow:0 0 0 3px rgba(255,210,63,.55),0 6px 16px rgba(255,178,40,.5);
+  }
+  .ep-plus{
+    position:absolute;top:0;left:0;transform:translate(-50%,0);pointer-events:none;
+    color:#ffe9a8;font-weight:900;font-size:18px;text-shadow:0 2px 6px rgba(0,0,0,.35);
+    animation:ep-rise .85s ease forwards;
+  }
+  .ep-plus.big{color:#ffd23f;font-size:24px}
+  @keyframes ep-rise{
+    from{opacity:1;transform:translate(-50%,0) scale(.9)}
+    to{opacity:0;transform:translate(-50%,-52px) scale(1.2)}
+  }
+  /* 屏幕不高时把上半区的奖杯缩小，保证上下两半都不挤 */
+  @media(max-height:700px){
+    .trophy-wrap{width:130px;max-width:28vw;width:min(130px,28vw);height:130px;max-height:28vw;height:min(130px,28vw)}
+    .big-trophy{font-size:94px;font-size:min(94px,22vw)}
+    .finale-title{font-size:34px;font-size:clamp(24px,4.6vw,34px);letter-spacing:1px}
+    .finale-sub{font-size:15px;font-size:clamp(12px,2.2vw,15px);margin-bottom:8px}
+    /* 屏幕不高时省掉六个技能牌，把高度让给下面的小游戏 */
+    .finale-chips{display:none}
+    .finale-stars{padding:5px 13px;font-size:15px}
+    .finale-actions{margin-top:9px}
+  }
+  @media(max-height:560px){
+    .trophy-wrap{width:104px;max-width:24vw;width:min(104px,24vw);height:104px;max-height:24vw;height:min(104px,24vw)}
+    .big-trophy{font-size:72px;font-size:min(72px,18vw)}
+    .finale-title{font-size:28px;font-size:clamp(20px,4vw,28px)}
+    .finale-chips .chip{padding:4px 10px;font-size:12px}
+    .ep-head{gap:6px}
+    html.no-flexgap .ep-head > *:not(:last-child){margin-right:6px}
+    .ep-tip{font-size:14px}
   }
   @media(max-width:640px){
     .star-total{top:8px;right:8px;padding:7px 12px;font-size:18px}
@@ -514,6 +608,10 @@
     <div class="stepbar" id="stepbar"></div>
     <button class="btn ghost" id="btnDemo">再看一遍 👀</button>
   </div>
+
+  <div class="home-foot" id="homeFoot">
+    <button class="btn-mini" id="btnReset">清空进度</button>
+  </div>
 </div>
 
 <div class="overlay" id="overlay">
@@ -530,17 +628,30 @@
 
 <div class="finale" id="finale">
   <canvas class="finale-fx" id="fxCanvas"></canvas>
-  <div class="finale-card">
-    <div class="trophy-wrap">
-      <div class="trophy-rays"></div>
-      <div class="big-trophy" id="bigTrophy">🏆</div>
+  <div class="finale-top">
+    <div class="finale-card">
+      <div class="trophy-wrap">
+        <div class="trophy-rays"></div>
+        <div class="big-trophy" id="bigTrophy">🏆</div>
+      </div>
+      <h2 class="finale-title" id="finaleTitle">学会啦</h2>
+      <p class="finale-sub" id="finaleSub"></p>
+      <div class="finale-chips" id="finaleChips"></div>
+      <div class="finale-stars"><span>⭐</span><span id="finaleStarTxt"></span></div>
+      <div class="finale-actions">
+        <button class="btn primary" id="finaleOk">回到关卡列表</button>
+      </div>
     </div>
-    <h2 class="finale-title" id="finaleTitle">学会啦</h2>
-    <p class="finale-sub" id="finaleSub"></p>
-    <div class="finale-chips" id="finaleChips"></div>
-    <div class="finale-stars"><span>⭐</span><span id="finaleStarTxt"></span></div>
-    <div class="finale-actions">
-      <button class="btn primary" id="finaleOk">回到关卡列表</button>
+  </div>
+
+  <!-- 通关之后的无限小游戏：等同学的时候一直有得玩 -->
+  <div class="ep" id="endless">
+    <div class="ep-head">
+      <span class="ep-k">得分<b id="epScore">0</b></span>
+      <span class="ep-k ep-lv" id="epLvChip">第<b id="epLevel">1</b>关</span>
+    </div>
+    <div class="ep-area" id="epArea">
+      <div class="ep-tip" id="epTip">🎯 点掉飘下来的小东西就能得分！金色 🌟 值 5 分，点得越多分越高～</div>
     </div>
   </div>
 </div>
@@ -560,6 +671,18 @@
   const NS = 'http://www.w3.org/2000/svg';
   const CURSOR_SVG = '<svg class="cur" width="36" height="44" viewBox="0 0 36 44">'
     +'<path d="M3 2 L3 32 L11 24.5 L17 39 L23.5 36 L17.5 22 L29 21 Z" fill="#fff" stroke="#2b2b45" stroke-width="3" stroke-linejoin="round"/></svg>';
+
+  /* ===== 「图片」图标 =====
+     原本用系统 emoji 🖼，Windows 上那个字形是深绿色相框，缩到 24px 就是一团深绿，
+     跟本页清爽的画风不搭，学生也看不出是照片。这里统一换成自己画的内联 SVG：
+     浅蓝像框 + 黄色太阳 + 绿色山丘，尺寸跟着 font-size 走（.picico 是 1em）。 */
+  const PIC_ICON = '<svg class="picico" viewBox="0 0 32 32" aria-hidden="true">'
+    +'<rect x="3" y="5.5" width="26" height="21" rx="5" fill="#d9edff"/>'
+    +'<circle cx="10.2" cy="11.6" r="2.7" fill="#ffd23f"/>'
+    +'<path d="M3 21 L8.5 14.5 L12 18.2 L16.2 12.6 L21 18.2 L24.5 15.4 L29 21 L29 21.5 A5 5 0 0 1 24 26.5 L8 26.5 A5 5 0 0 1 3 21.5 Z" fill="#4ed47e"/>'
+    +'<rect x="3" y="5.5" width="26" height="21" rx="5" fill="none" stroke="#44a3ff" stroke-width="2.6"/>'
+    +'</svg>';
+  function iconHTML(s){ return s==='🖼'?PIC_ICON:s; }
 
   /* ================= 六关元数据 =================
      每关 10 次练习，每次都计星：一关 10 颗，六关一共 60 颗。
@@ -940,7 +1063,7 @@
       Object.keys(cfg.menus).forEach(function(name){
         const b=el('button','mb');
         b.dataset.name=name;
-        b.innerHTML='<span class="mbi">'+(EMO[name]||'📋')
+        b.innerHTML='<span class="mbi">'+iconHTML(EMO[name]||'📋')
           +'<svg class="ring" viewBox="0 0 46 46" width="46" height="46">'
           +'<circle class="ring-bg" cx="23" cy="23" r="19.5"/>'
           +'<circle class="ring-go" cx="23" cy="23" r="19.5"/>'
@@ -1623,7 +1746,7 @@
           : '<span class="wbtns"><button class="wb min" title="最小化">—</button>'
             +'<button class="wb max" title="最大化">🗖</button>'
             +'<button class="wb cls" title="关闭">✕</button></span>';
-        we.innerHTML='<div class="tbar"><span class="wico">'+(w.ico||'📁')+'</span>'
+        we.innerHTML='<div class="tbar"><span class="wico">'+iconHTML(w.ico||'📁')+'</span>'
           +'<span class="wtxt">'+w.title+'</span>'
           +btns+'</div>'
           +'<div class="wbody">'+(w.body||'这里是一些字……<br>这里是一些字……<br>这里是一些字……<br>这里是一些字……')+'</div>';
@@ -1905,13 +2028,65 @@
   let L='point', roundIndex=-1, starsEarned=0, cur=null;
   let navs=[];
   const cleared={}, best={};
+  const stage={};                  /* stage[关卡]={round,stars}：这一关练到第几轮、攒了几颗星 */
 
   function totalStars(){ let t=0; for(const k in best) t+=(best[k]||0); return t; }
   function refreshTotal(){
     const n=document.getElementById('starNum');
     if(n) n.textContent=totalStars();
   }
-  function recordStars(id,n){ if((best[id]||0)<n) best[id]=n; refreshTotal(); }
+  /* 记一次成绩：星星取历史最好成绩，stage 记"这一关练到第几轮"，然后落盘 */
+  function recordStars(id,n){
+    if((best[id]||0)<n) best[id]=n;
+    if(L===id&&roundIndex>=0) stage[id]={round:roundIndex+1, stars:n};
+    refreshTotal();
+    writeSave();
+  }
+
+  /* ===== 进度保存（localStorage） =====
+     学生练到一半关掉标签页是常事，之前六关的成绩只留在内存里，一刷新就归零。
+     现在每关的进度都写进 localStorage，下次打开接着做：
+       best[关卡]    这一关拿到过的最多星星（0~10）
+       cleared[关卡] 这一关是否已经通关
+       stage[关卡]   {round,stars} 这一关进行到第几轮、已经攒了几颗星
+     存储被禁用（浏览器隐私设置、老策略）时静默降级成"只记在内存里"：
+     读写都包在 try/catch 里，最坏情况只是不保存，绝不让页面报错。 */
+  const SAVE_KEY='mousecamp2.progress.v1';
+  function writeSave(){
+    try{
+      window.localStorage.setItem(SAVE_KEY,JSON.stringify({
+        v:1, best:best, cleared:cleared, stage:stage, ts:Date.now()
+      }));
+    }catch(e){}
+  }
+  function clearSave(){
+    try{ window.localStorage.removeItem(SAVE_KEY); }catch(e){}
+    for(const k in best) delete best[k];
+    for(const k in cleared) delete cleared[k];
+    for(const k in stage) delete stage[k];
+    refreshTotal();
+  }
+  /* 读回来的数据一律按"已知的六关"过滤，坏数据、旧版本数据都不会把页面带崩 */
+  function restoreSave(){
+    let d=null;
+    try{
+      const raw=window.localStorage.getItem(SAVE_KEY);
+      if(raw) d=JSON.parse(raw);
+    }catch(e){ d=null; }
+    if(!d||typeof d!=='object') return;
+    for(let i=0;i<LEVELS.length;i++){
+      const id=LEVELS[i].id;
+      const b=d.best?d.best[id]:0;
+      if(b>0) best[id]=Math.max(0,Math.min(PER,Math.round(b)));
+      if(d.cleared&&d.cleared[id]) cleared[id]=true;
+      const st=d.stage?d.stage[id]:null;
+      if(st&&!cleared[id]){
+        const r=Math.round(st.round||0), s=Math.round(st.stars||0);
+        if(r>1) stage[id]={round:r, stars:Math.max(0,Math.min(PER,s))};
+      }
+    }
+    refreshTotal();
+  }
 
   function allCleared(){
     for(let i=0;i<LEVELS.length;i++){ if(!cleared[LEVELS[i].id]) return false; }
@@ -1940,6 +2115,7 @@
     clearTimers(); stopDemo(); clearHandlers();
     dragOp=null; winDrag=null; sel=null;
     hideModal(); hideFinale();
+    $('#homeFoot').classList.remove('show');
     markNav(id);
     mascot.textContent=levelOf(id).emo;
     /* 已经通关过的关卡：先把上次的成绩摆出来（星星是满的），想再练点「再玩一次」 */
@@ -1948,21 +2124,30 @@
       showDonePanel(id,true);
       return;
     }
+    /* 这一关上次练到一半：从那一轮接着做，星星接着攒 */
+    const st=stage[id];
+    if(st&&st.round>1){ beginLevel(id,st); return; }
     beginLevel(id);
   }
 
-  /* 从第 1 次开始练这一关 */
-  function beginLevel(id){
+  /* 练这一关。传 from（{round,stars}）就是从上次中断的地方接着做 */
+  function beginLevel(id,from){
     L=id;
     clearTimers(); stopDemo(); clearHandlers();
     dragOp=null; winDrag=null; sel=null;
     hideModal(); hideFinale();
-    starsEarned=0; setStars(0,PER);
+    const g=GAMES[id];
+    /* stage.round 是"上次练到第几轮"（从 1 数）。nextRound() 会先 ++ 再取轮次，
+       所以这里要减 2：接着做的那一轮正好是 stage.round。 */
+    const startAt=(from&&from.round>1)?Math.min(from.round,g.rounds.length)-2:-1;
+    starsEarned=(from&&from.stars>0)?Math.min(from.stars,PER):0;
+    setStars(starsEarned,PER);
     ctrlrow.style.display='';
     markNav(id);
     mascot.textContent=levelOf(id).emo;
-    roundIndex=-1;
+    roundIndex=startAt;
     nextRound();
+    if(startAt>=0) T(1500,function(){ say('接着上次继续：你已经有 '+starsEarned+' 颗星啦 ⭐'); });
   }
 
   function nextRound(){
@@ -1974,6 +2159,8 @@
     play.innerHTML='';
     play.dataset.level=L;                 /* 页内轮次标记：给自检脚本读，学生看不到 */
     play.dataset.round=String(roundIndex+1);
+    stage[L]={round:roundIndex+1, stars:starsEarned};   /* 这一轮一开始就落盘：中途关掉也能接着做 */
+    writeSave();
     cur={cfg:cfg, game:g, done:false, finished:false, arrow:null, cap:null};
     g.build(cfg);
     if(g.layout) g.layout();
@@ -2052,6 +2239,8 @@
     clearTimers(); stopDemo(); clearHandlers();
     dragOp=null; winDrag=null; sel=null;
     cleared[L]=true;
+    delete stage[L];                      /* 这一关做完了，不需要再"接着上次" */
+    writeSave();
     markNav(L);
     const all=allCleared();
     say(all ? '六关全部做完啦！🎉' : '这一关做完啦！🎉');
@@ -2059,7 +2248,154 @@
     if(all) T(900,function(){ showFinale(); });
   }
 
-  /* 六关全通的通关大奖：大奖杯 + 烟花。只有最后一关做完才会走到这里 */
+  /* ===== 通关页的「无尽点点乐」 =====
+     给先做完的学生一个不会结束的小练习：飘下来的小东西点掉就加分。
+     普通物件 +1 分，金色 🌟 +5 分；漏掉不扣分、不惩罚，什么都不发生。
+     每 10 分升一关——东西落得更快、来得更密，所以是无限关。
+     页面只显示「得分」和「第几关」，不记最高分、不做排行、不显示连击。
+     只在通关页启动，不碰任何一个正课关卡；点「回到关卡列表」后立刻停下。 */
+  let epAudio=null;
+  function epBeep(freq,dur){
+    try{
+      if(!epAudio) epAudio=new (window.AudioContext||window.webkitAudioContext)();
+      if(epAudio.state==='suspended'&&epAudio.resume) epAudio.resume();
+      const o=epAudio.createOscillator(), g=epAudio.createGain();
+      o.type='sine'; o.frequency.value=freq; g.gain.value=.05;
+      o.connect(g); g.connect(epAudio.destination); o.start();
+      g.gain.exponentialRampToValueAtTime(.0001,epAudio.currentTime+(dur||.09));
+      o.stop(epAudio.currentTime+(dur||.09)+.02);
+    }catch(e){}
+  }
+  let epOn=false, epStop=null, epTipTimer=0;
+  function stopEndless(){ if(epStop) epStop(); }
+  function startEndless(){
+    const area=$('#epArea');
+    if(!area||epOn) return;
+    epOn=true;
+    const scoreEl=$('#epScore'), lvEl=$('#epLevel'), lvChip=$('#epLvChip'), tip=$('#epTip');
+    const ITEMS=['⭐','🎈','🍎','🍓','⚽','🍬','🐤','🌸','🍀'];
+    const GOLD='🌟';
+    /* 难度曲线：每 10 分一关。第 1 关每秒下落约 0.26 个掉落区高度（约 3.8 秒落到底），
+       平均 0.7 秒来一个；每升一关快一点、密一点，不设上限。 */
+    const FALL_H=0.26, LEVEL_FAST=0.035;
+    let score=0, level=1, items=[], last=0, nextSpawn=350;
+    scoreEl.textContent='0'; lvEl.textContent='1';
+    if(tip){
+      tip.classList.remove('hide');
+      epTipTimer=setTimeout(function(){ tip.classList.add('hide'); },5200);
+    }
+
+    function spawn(){
+      const w=area.clientWidth, h=area.clientHeight;
+      if(w<40||h<40) return;
+      const gold=Math.random()<0.12;
+      const size=Math.max(34,Math.min(62,Math.round(h*0.22)));
+      const x=6+Math.random()*Math.max(6,w-size-12);
+      const it=document.createElement('div');
+      it.className='ep-item'+(gold?' gold':'');
+      it.style.width=size+'px'; it.style.height=size+'px';
+      it.style.lineHeight=size+'px';
+      it.style.fontSize=Math.round(size*0.56)+'px';
+      it.textContent=gold?GOLD:ITEMS[Math.floor(Math.random()*ITEMS.length)];
+      const rec={el:it,x:x,y:-size,size:size,gold:gold,dead:false,
+                 vy:h*(FALL_H+level*LEVEL_FAST)*(0.85+Math.random()*0.35)};
+      it.style.transform='translate3d('+rec.x+'px,'+rec.y+'px,0)';
+      area.appendChild(it);
+      /* 用 pointerdown 不用 click：响应更快，也不会和页面上其它点击逻辑打架 */
+      it.addEventListener('pointerdown',function(ev){ ev.preventDefault(); hit(rec); });
+      items.push(rec);
+      if(items.length>16){                       /* 保险：同时存在太多就淘汰最老的 */
+        const old=items.shift();
+        if(old&&old.el&&old.el.parentNode) old.el.parentNode.removeChild(old.el);
+      }
+    }
+
+    function rise(rec,gain){
+      const p=document.createElement('div');
+      p.className='ep-plus'+(gain>1?' big':'');
+      p.textContent='+'+gain;
+      p.style.left=(rec.x+rec.size/2)+'px';
+      p.style.top=(rec.y+rec.size*0.15)+'px';
+      area.appendChild(p);
+      setTimeout(function(){ if(p.parentNode) p.parentNode.removeChild(p); },900);
+    }
+
+    function hit(rec){
+      if(rec.dead) return;
+      rec.dead=true;
+      const idx=items.indexOf(rec); if(idx>=0) items.splice(idx,1);
+      const gain=rec.gold?5:1;
+      score+=gain;
+      scoreEl.textContent=score;
+      const nl=Math.floor(score/10)+1;
+      if(nl>level){                              /* 每 10 分升一关：更快、更密，并且晃一下提示 */
+        level=nl; lvEl.textContent=level;
+        if(lvChip){ lvChip.classList.remove('flash'); void lvChip.offsetWidth; lvChip.classList.add('flash'); }
+      }
+      rec.el.style.transform='translate3d('+rec.x+'px,'+rec.y+'px,0) scale(1.45)';
+      rec.el.style.opacity='0';
+      setTimeout(function(){ if(rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); },260);
+      rise(rec,gain);
+      epBeep(rec.gold?1180:880,.09);
+    }
+
+    function onResize(){
+      const w=area.clientWidth;
+      for(let i=0;i<items.length;i++){
+        const rec=items[i];
+        if(rec.x>w-rec.size-4){
+          rec.x=Math.max(4,w-rec.size-4);
+          rec.el.style.transform='translate3d('+rec.x+'px,'+rec.y+'px,0)';
+        }
+      }
+    }
+    window.addEventListener('resize',onResize);
+
+    function frame(now){
+      if(!epOn) return;                          /* 离开通关页后彻底停下 */
+      requestAnimationFrame(frame);
+      if(document.hidden) return;
+      if(!last){ last=now; return; }
+      const dt=Math.min(.05,(now-last)/1000); last=now;
+      const h=area.clientHeight;
+      if(h<40) return;
+      nextSpawn-=dt*1000;
+      if(nextSpawn<=0){
+        spawn();
+        nextSpawn=Math.max(300,700-level*45)*(0.8+Math.random()*0.5);
+      }
+      for(let i=items.length-1;i>=0;i--){
+        const rec=items[i];
+        rec.y+=rec.vy*dt;
+        if(rec.y>h){                               /* 漏掉了：不扣分、不惩罚，直接消失 */
+          rec.dead=true;
+          if(rec.el.parentNode) rec.el.parentNode.removeChild(rec.el);
+          items.splice(i,1);
+          continue;
+        }
+        rec.el.style.transform='translate3d('+rec.x+'px,'+rec.y+'px,0)';
+      }
+    }
+    requestAnimationFrame(frame);
+
+    /* 离开通关页时收摊：停帧、清干净掉落物、分数归零，下次进来是新的一局 */
+    epStop=function(){
+      epOn=false; epStop=null; last=0;
+      window.removeEventListener('resize',onResize);
+      if(epTipTimer){ clearTimeout(epTipTimer); epTipTimer=0; }
+      for(let i=0;i<items.length;i++){
+        if(items[i].el.parentNode) items[i].el.parentNode.removeChild(items[i].el);
+      }
+      items=[];
+      const plus=area.querySelectorAll('.ep-plus');
+      for(let i=0;i<plus.length;i++){ if(plus[i].parentNode) plus[i].parentNode.removeChild(plus[i]); }
+      score=0; level=1;
+      scoreEl.textContent='0'; lvEl.textContent='1';
+      if(tip) tip.classList.remove('hide');
+    };
+  }
+
+  /* 六关全通的通关大奖：大奖杯 + 烟花 + 无尽点点乐。只有最后一关做完才会走到这里 */
   function showFinale(){
     const box=$('#finale');
     let chips='', total=0, got=0;
@@ -2082,6 +2418,7 @@
     startFireworks();
     setTimeout(function(){ box.classList.add('card-in'); },1400);
     setTimeout(bigConfetti,2600);
+    setTimeout(startEndless,1700);              /* 通关后一直有得玩 */
     /* 只挡住滚轮和翻页键；不调用 stopPropagation，事件照常继续传播 */
     if(!window.__mtLocked){
       window.__mtLocked=true;
@@ -2093,6 +2430,7 @@
     }
   }
   function hideFinale(){
+    stopEndless();
     const box=$('#finale');
     if(!box.classList.contains('show')) return;
     box.classList.remove('show','card-in');
@@ -2239,6 +2577,7 @@
       grid.appendChild(b);
     }
     play.appendChild(grid);
+    $('#homeFoot').classList.add('show');
   }
 
   /* ================= 启动 ================= */
@@ -2266,6 +2605,14 @@
   };
   $('#mOk').onclick=hideModal;
   $('#finaleOk').onclick=function(){ hideFinale(); enterHome(); };
+
+  /* 同一台电脑会换学生用：给老师留一个清空进度的口子，点了要再确认一次 */
+  $('#btnReset').onclick=function(){
+    if(!window.confirm('确定要清空所有进度吗？\n清空后六关都要从头开始练，不能恢复。')) return;
+    clearSave();
+    enterHome();
+    say('进度已经清空，可以重新开始练啦～');
+  };
   window.addEventListener('resize',function(){
     if(cur&&!dragOp&&!winDrag&&!sel&&cur.game&&cur.game.layout) cur.game.layout();
   });
@@ -2285,7 +2632,21 @@
     }
   })();
 
+  restoreSave();
   enterHome();
+
+  /* ===== 测试用快捷入口 =====
+     在网址后面加 ?finale=1 直接进通关页（预览/验收用，不写进任何界面提示）。
+     只在带参数的这一次打开时生效，**不写入进度**，学生正常打开看不到。 */
+  if(/[?&]finale=1\b/.test(location.search)){
+    for(let i=0;i<LEVELS.length;i++){
+      const id=LEVELS[i].id;
+      cleared[id]=true;
+      if((best[id]||0)<PER) best[id]=PER;
+    }
+    refreshTotal();
+    setTimeout(showFinale,80);
+  }
 })();
 </script>
 </body>
