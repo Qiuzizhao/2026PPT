@@ -94,6 +94,14 @@
   .back:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
   .gtitle{font-size:20px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
   .gcat{font-size:15px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* 「接着上次继续」时标题栏多出来的两样：一枚小标 + 一个重新开始 */
+  .rstart{min-height:44px;padding:0 16px;font-size:14px;white-space:nowrap;flex:0 0 auto}
+  .resume-chip{
+    display:inline-flex;align-items:center;flex:0 0 auto;
+    padding:4px 12px;border-radius:999px;white-space:nowrap;
+    font-size:13px;letter-spacing:.04em;color:#4a3708;
+    background:#ffe9a8;border:1px solid #e8cf7e;
+  }
   .gbest{margin-left:auto;font-size:15px;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
   .stats{display:flex;gap:46px;flex-wrap:wrap}
   html.no-flexgap .stats > *:not(:last-child){margin-right:46px}
@@ -572,8 +580,10 @@
     <div class="game hidden" id="gameBox">
       <div class="gbar">
         <button class="back" id="backBtn">← 返回</button>
+        <button class="back rstart hidden" id="restartBtn">重新开始</button>
         <div class="gtitle" id="gameName"></div>
         <div class="gcat" id="gameTag"></div>
+        <span class="resume-chip hidden" id="resumeChip">⏱ 接着上次</span>
         <div class="gbest" id="gameBest"></div>
       </div>
       <div class="stats" id="hud"></div>
@@ -672,6 +682,62 @@
   let records = {};
   try{ records = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }catch(e){ records = {}; }
   function saveRecords(){ try{ localStorage.setItem(KEY, JSON.stringify(records)); }catch(e){} }
+
+  /* ===== 进行中的现场（localStorage）=====
+     成绩（每关最好成绩 + 星级）一直都会存；但"这一关做到哪一步"以前一刷新就没了：
+     闪电反应做到第 4 回合、打地鼠还剩 12 秒……学生手一抖刷新或关掉标签页就白做一遍。
+     现在每关的现场也落盘，下次进这一关接着做：
+       stage[关卡] = {snap:各关自己的现场, ts:最后一次更新时间}
+     三个约定：
+       1) 读数一律按"已知的八关"过滤，坏数据、旧版本数据都不会把页面带崩；
+       2) 存储被禁用（隐私设置、老策略）时静默降级成"只记在内存里"，
+          读写都包在 try/catch 里，最坏情况只是不保存，绝不让页面报错；
+       3) 超过 STAGE_FRESH 没动过的现场算过期，直接丢掉，免得学生第二天打开
+          还被拉回昨天做到一半的那一局。 */
+  const STAGE_KEY = 'mouseReactionLab.stage.v1';
+  const STAGE_FRESH = 6*60*60*1000;
+  const stageSave = {};
+  let stageWriteAt = 0;
+  function writeStage(){
+    try{ localStorage.setItem(STAGE_KEY, JSON.stringify({ v:1, stage:stageSave })); }catch(e){}
+  }
+  /* 从存档里读回来（要等 MODES 定义好之后再调，见启动处） */
+  function restoreStageSave(){
+    let d = null;
+    try{ d = JSON.parse(localStorage.getItem(STAGE_KEY) || 'null'); }catch(e){ d = null; }
+    if(!d || typeof d !== 'object' || !d.stage || typeof d.stage !== 'object') return;
+    const now = Date.now();
+    for(let i=0;i<MODES.length;i++){
+      const id = MODES[i].id, it = d.stage[id];
+      if(!it || typeof it !== 'object') continue;
+      if(!it.snap || typeof it.snap !== 'object') continue;
+      if(!(now - (it.ts || 0) < STAGE_FRESH)) continue;
+      stageSave[id] = { snap: it.snap, ts: it.ts || now };
+    }
+  }
+  /* 游戏里每 100ms 就报一次现场，这里写盘限流到 0.7 秒一次：
+     内存里永远是最新的，刷新前最多丢最后不到一秒的进度 */
+  function saveStage(id, snap, force){
+    if(!id || !snap) return;
+    stageSave[id] = { snap:snap, ts:Date.now() };
+    const now = Date.now();
+    if(!force && now - stageWriteAt < 250) return;    /* 计分、过关这类离散事件传 true，立刻落盘 */
+    stageWriteAt = now; writeStage();
+  }
+  function clearStage(id){
+    if(!id || !stageSave[id]) return;
+    delete stageSave[id]; writeStage();
+  }
+  function getStage(id){
+    const it = stageSave[id];
+    if(!it) return null;
+    if(Date.now() - it.ts > STAGE_FRESH){ clearStage(id); return null; }
+    return it.snap;
+  }
+  /* 页面被切走或关掉时补一次落盘 */
+  window.addEventListener('pagehide', writeStage);
+  document.addEventListener('visibilitychange', function(){ if(document.hidden) writeStage(); });
+
   function totalStars(){
     return MODES.reduce((sum,m)=> sum + ((records[m.id] && records[m.id].stars) || 0), 0);
   }
@@ -754,6 +820,7 @@
       const rec = records[m.id] || {};
       const stars = rec.stars || 0;
       const best = m.fmt(rec);
+      const half = !!getStage(m.id);            /* 这一关上次做了一半 */
       let dots = '';
       for(let i=0;i<3;i++) dots += '<i class="'+(i<stars?'on':'')+'">★</i>';
       const row = document.createElement('button');
@@ -763,7 +830,7 @@
       row.innerHTML =
         svgIcon(m.icon)+
         '<span class="m-body"><span class="m-name">'+m.name+'</span>'+
-        '<span class="m-cat">'+m.tag+'</span></span>'+
+        '<span class="m-cat">'+m.tag+(half ? ' · ⏱ 上次做到一半' : '')+'</span></span>'+
         '<span class="m-right"><span class="m-best">'+(best || '—')+'</span>'+
         '<span class="m-stars">'+dots+'</span></span>';
       row.addEventListener('click', ()=> openGame(m.id));
@@ -854,6 +921,7 @@
     rec.stars = Math.max(rec.stars || 0, res.stars || 0);
     records[m.id] = rec;
     if(!previewFinale) saveRecords();          /* 预览通关页那次不写存档 */
+    if(!previewFinale) clearStage(m.id);       /* 这一关做完了，现场不用再留着 */
     refreshTotal();
     const perfect = allPerfect();
     /* 只有"刚刚凑齐 24 / 24"的那一局才走庆典卡并自动进庆典；
@@ -898,29 +966,36 @@
     const b = e.target.closest('[data-act]');
     if(!b) return;
     if(b.dataset.act === 'finale'){ clearCelebrateTimer(); enterFinale(); }
-    else if(b.dataset.act === 'retry') openGame(currentId);
+    else if(b.dataset.act === 'retry') openGame(currentId, false);
     else goHome();
   });
 
   /* ================= 打开 / 返回 ================= */
   let session = null, currentId = null;
-  function openGame(id){
+  /* openGame(id)        进关卡：这一关有做了一半的现场就接着做
+     openGame(id,false)  这次从头做（「再玩一次」「重新开始」走这条）
+     openGame(id,snap)   按指定的现场接着做 */
+  function openGame(id, from){
     const m = getMode(id);
     if(!m) return;
     if(session){ session.destroy(); session = null; }
     hideOverlay();
     currentId = id;
+    const snap = (from === false) ? null : ((from && typeof from === 'object') ? from : getStage(id));
     homeGrid.classList.add('hidden');
     gameBox.classList.remove('hidden');
     panel.classList.add('playing');
     refreshCelebrateBar();
     $('#gameName').textContent = m.name;
     $('#gameTag').textContent = m.hint;
+    $('#resumeChip').classList.toggle('hidden', !snap);
+    $('#restartBtn').classList.toggle('hidden', !snap);
     const best = m.fmt(records[m.id] || {});
     $('#gameBest').textContent = best ? '最好 ' + best : '';
     hud.innerHTML = '';
     const stage = freshStage();
     session = createSession(m, stage);
+    session.from = snap || null;
     m.init(session);
   }
   function goHome(){
@@ -937,6 +1012,11 @@
     overlay.classList.add('hidden'); overlay.classList.remove('show'); overlay.innerHTML = '';
   }
   $('#backBtn').addEventListener('click', ()=>{ if(!finaleOn) goHome(); });
+  $('#restartBtn').addEventListener('click', ()=>{
+    if(finaleOn) return;
+    clearStage(currentId);                      /* 从头做：把做了一半的现场丢掉 */
+    openGame(currentId, false);
+  });
   document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && currentId && !finaleOn) goHome(); });
   $('#celebrateBar').addEventListener('click', ()=>{ if(!finaleOn) enterFinale(); });
 
@@ -945,7 +1025,11 @@
   ============================================================ */
   function gameReaction(s){
     const TOTAL = 5;
-    let times = [], early = 0, idx = 0, phase = 'idle', t0 = 0, timer = null;
+    /* 接着上次：已经测完的回合成绩存在 times 里，idx 跟着 times 走 */
+    const from = s.from;
+    let times = (from && from.times) ? from.times.slice(0, TOTAL-1) : [];
+    let early = (from && from.early) ? Math.max(0, Math.round(from.early)) : 0;
+    let idx = times.length, phase = 'idle', t0 = 0, timer = null;
     s.stage.className = 'stage rx-idle';
     s.stage.innerHTML =
       '<div class="center-fill">'+
@@ -978,6 +1062,12 @@
       ]);
     }
     drawDots(); drawHud();
+    if(times.length){
+      /* 上次做到一半：不用再点一次开始，直接进下一回合 */
+      phase = 'wait';
+      sub.textContent = '接着上次继续';
+      s.timeout(startRound, 700);
+    }
     function startRound(){
       if(s.dead) return;
       phase = 'ready'; paint('ready');
@@ -1009,6 +1099,7 @@
         title.textContent = '抢跑';
         sub.textContent = '等变深再点';
         sfx.bad(); drawDots(); drawHud();
+        saveStage(s.mode.id, { times:times, early:early });
         s.timeout(startRound, 1200);
         return;
       }
@@ -1020,6 +1111,7 @@
         title.textContent = rt + ' ms';
         sub.textContent = rt<=230 ? '极快' : rt<=300 ? '很快' : rt<=400 ? '不错' : '再快一点';
         sfx.good(); drawDots(); drawHud();
+        saveStage(s.mode.id, { times:times, early:early });
         if(idx >= TOTAL) s.timeout(finish, 800);
         else s.timeout(startRound, 900);
       }
@@ -1031,8 +1123,18 @@
   ============================================================ */
   function gameWhack(s){
     const DUR = 30;
+    /* 接着上次：分数和剩下的秒数都留着，时钟从上次停下的地方接着走 */
+    const from = s.from;
     let score = 0, combo = 0, bestCombo = 0, miss = 0, escape = 0;
     let left = DUR, running = false, startAt = 0;
+    if(from){
+      score = Math.max(0, Math.round(from.score || 0));
+      combo = Math.max(0, Math.round(from.combo || 0));
+      bestCombo = Math.max(combo, Math.round(from.bestCombo || 0));
+      miss = Math.max(0, Math.round(from.miss || 0));
+      escape = Math.max(0, Math.round(from.escape || 0));
+      left = clamp(Number(from.left) || DUR, 0.5, DUR);
+    }
     const cells = [];
     const holeHtml = '<div class="hole"><div class="mole"><i class="eye l"></i><i class="eye r"></i><i class="nose"></i></div></div>';
     s.stage.innerHTML = '<div class="whack-grid">' + holeHtml.repeat(9) + '</div>';
@@ -1093,11 +1195,12 @@
     });
     s.timeout(()=>{
       countdown(s, 3, ()=>{
-        running = true; startAt = performance.now();
+        running = true; startAt = performance.now() - (DUR-left)*1000;
         spawn();
         s.interval(()=>{
           left = Math.max(0, DUR - (performance.now()-startAt)/1000);
           drawHud();
+          saveStage(s.mode.id, { score:score, combo:combo, bestCombo:bestCombo, miss:miss, escape:escape, left:left });
           if(left <= 0 && running){
             running = false;
             cells.forEach(c=>{ s.clear(c.timer); c.busy = false; c.el.classList.remove('up'); });
@@ -1117,8 +1220,18 @@
   ============================================================ */
   function gameAim(s){
     const DUR = 30;
+    /* 接着上次：命中、脱靶、连击和剩下的秒数都留着 */
+    const from = s.from;
     let hits = 0, miss = 0, combo = 0, bestCombo = 0, escape = 0;
     let left = DUR, running = false, startAt = 0, target = null, spawnQueued = false;
+    if(from){
+      hits = Math.max(0, Math.round(from.hits || 0));
+      miss = Math.max(0, Math.round(from.miss || 0));
+      combo = Math.max(0, Math.round(from.combo || 0));
+      bestCombo = Math.max(combo, Math.round(from.bestCombo || 0));
+      escape = Math.max(0, Math.round(from.escape || 0));
+      left = clamp(Number(from.left) || DUR, 0.5, DUR);
+    }
     drawHud();
 
     function drawHud(){
@@ -1180,11 +1293,12 @@
     });
     s.timeout(()=>{
       countdown(s, 3, ()=>{
-        running = true; startAt = performance.now();
+        running = true; startAt = performance.now() - (DUR-left)*1000;
         spawn();
         s.interval(()=>{
           left = Math.max(0, DUR - (performance.now()-startAt)/1000);
           drawHud();
+          saveStage(s.mode.id, { hits:hits, miss:miss, combo:combo, bestCombo:bestCombo, escape:escape, left:left });
           if(!target) queueSpawn(0);
           if(left <= 0 && running){
             running = false;
@@ -1212,7 +1326,14 @@
       { c:'#a3566a' }, { c:'#5566a8' }, { c:'#5f8163' },
       { c:'#a97c2f' }, { c:'#7d5b96' }, { c:'#3d7f86' }
     ];
-    let round = 0, placed = 0, errors = 0, t0 = 0, running = false;
+    /* 接着上次：从上次那一轮接着做，已经用掉的时间也接着算（星星按总用时评） */
+    const from = s.from;
+    let round = 0, placed = 0, errors = 0, t0 = 0, running = false, carried = 0;
+    if(from){
+      round = clamp(Math.round(from.round || 0), 0, ROUNDS-1);
+      errors = Math.max(0, Math.round(from.errors || 0));
+      carried = Math.max(0, Number(from.sec) || 0);
+    }
     s.stage.innerHTML = '<div class="drag-area"></div>';
     const area = s.stage.querySelector('.drag-area');
 
@@ -1335,9 +1456,12 @@
     }
     s.timeout(()=>{
       countdown(s, 3, ()=>{
-        t0 = performance.now();
+        t0 = performance.now() - carried*1000;
         buildRound();
-        s.interval(drawHud, 100);
+        s.interval(()=>{
+          drawHud();
+          saveStage(s.mode.id, { round:round, errors:errors, sec:(performance.now()-t0)/1000 });
+        }, 100);
       });
     }, 120);
   }
@@ -1347,7 +1471,16 @@
   ============================================================ */
   function gameTrack(s){
     const DUR = 20, R = 36;
+    /* 接着上次：跟住的秒数、脱靶次数都留着，计时从上次的地方接着走 */
+    const from = s.from;
     let running = false, elapsed = 0, insideTime = 0, breaks = 0, streak = 0, bestStreak = 0, inside = false, hudAcc = 0;
+    if(from){
+      elapsed = clamp(Number(from.elapsed) || 0, 0, DUR);
+      insideTime = Math.max(0, Number(from.insideTime) || 0);
+      breaks = Math.max(0, Math.round(from.breaks || 0));
+      streak = Math.max(0, Number(from.streak) || 0);
+      bestStreak = Math.max(streak, Number(from.bestStreak) || 0);
+    }
     const pos = { x:120, y:120 }, tgt = { x:200, y:200 }, mouse = { x:-999, y:-999 };
     s.stage.innerHTML = '<div class="tdot"></div>';
     const dot = s.stage.querySelector('.tdot');
@@ -1399,6 +1532,8 @@
       if(nowIn !== inside){ inside = nowIn; dot.classList.toggle('in', inside); }
       hudAcc += dt;
       if(hudAcc >= 120){ hudAcc = 0; drawHud(); }
+      saveStage(s.mode.id, { elapsed:elapsed, insideTime:insideTime, breaks:breaks,
+                             streak:streak, bestStreak:bestStreak });
       if(elapsed >= DUR){ running = false; finish(); }
     });
 
@@ -1441,6 +1576,17 @@
     let prev = null, prevDir = null, wasOff = false, hudT = 0;
     let acc = { on:0, off:0, out:0, turn:0, n:0 };
     const total = { on:0, off:0, out:0, turn:0, n:0 };
+    /* 接着上次：从上次那一轮接着描，之前几轮的准确率、平稳度都留着 */
+    const from = s.from;
+    if(from){
+      round = clamp(Math.round(from.round || 0), 0, ROUNDS-1);
+      const t = from.total || {};
+      total.on = Math.max(0, Number(t.on) || 0);
+      total.off = Math.max(0, Number(t.off) || 0);
+      total.out = Math.max(0, Number(t.out) || 0);
+      total.turn = Math.max(0, Number(t.turn) || 0);
+      total.n = Math.max(0, Number(t.n) || 0);
+    }
 
     const accPct = a => { const n = a.on + a.off; return n ? a.on/n*100 : 100; };
     const smoothPct = a => { const m = a.n ? a.turn/a.n : 0; return clamp(100 - m*1.5, 0, 100); };
@@ -1519,6 +1665,7 @@
       total.on += acc.on; total.off += acc.off; total.out += acc.out;
       total.turn += acc.turn; total.n += acc.n;
       round++;
+      saveStage(s.mode.id, { round:round, total:total });   /* 一轮做完就落盘，接着做下一轮 */
       if(round >= ROUNDS){ s.timeout(finish, 280); return; }
       const tip = document.createElement('div');
       tip.className = 'round-tip';
@@ -1596,7 +1743,15 @@
   ============================================================ */
   function gameDouble(s){
     const DUR = 30, WINDOW = 460;
+    /* 接着上次：击碎、单点、溜走和剩下的秒数都留着 */
+    const from = s.from;
     let done = 0, singles = 0, escape = 0, left = DUR, running = false, startAt = 0;
+    if(from){
+      done = Math.max(0, Math.round(from.done || 0));
+      singles = Math.max(0, Math.round(from.singles || 0));
+      escape = Math.max(0, Math.round(from.escape || 0));
+      left = clamp(Number(from.left) || DUR, 0.5, DUR);
+    }
     let target = null;
     drawHud();
 
@@ -1652,11 +1807,12 @@
     }
     s.timeout(()=>{
       countdown(s, 3, ()=>{
-        running = true; startAt = performance.now();
+        running = true; startAt = performance.now() - (DUR-left)*1000;
         spawn();
         s.interval(()=>{
           left = Math.max(0, DUR - (performance.now()-startAt)/1000);
           drawHud();
+          saveStage(s.mode.id, { done:done, singles:singles, escape:escape, left:left });
           if(left <= 0 && running){
             running = false;
             if(target){ s.clear(target.timer); target.el.remove(); target = null; }
@@ -1676,10 +1832,19 @@
   ============================================================ */
   function gameFrenzy(s){
     const DUR = 10;
+    /* 接着上次：点击数、峰值都留着，计时从上次剩下的秒数接着走 */
+    const from = s.from;
+    let carried = 0;
     let count = 0, running = false, startAt = 0, peak = 0, secCount = 0, secAcc = 0;
+    if(from){
+      count = Math.max(0, Math.round(from.count || 0));
+      peak = Math.max(0, Math.round(from.peak || 0));
+      carried = clamp(DUR - (Number(from.left) || DUR), 0, DUR);
+    }
     s.stage.innerHTML =
       '<div class="frenzy-center"><b id="fzNum">0</b><span>使劲点这里</span></div>';
     const num = s.stage.querySelector('#fzNum');
+    if(count) num.textContent = count;
     drawHud();
 
     function drawHud(){
@@ -1707,12 +1872,13 @@
     });
     s.timeout(()=>{
       countdown(s, 3, ()=>{
-        running = true; startAt = performance.now(); secAcc = startAt;
+        running = true; startAt = performance.now() - carried*1000; secAcc = performance.now();
         s.interval(()=>{
           const now = performance.now();
           if(now - secAcc >= 1000){ peak = Math.max(peak, secCount); secCount = 0; secAcc += 1000; }
           drawHud();
           const left = DUR - (now-startAt)/1000;
+          saveStage(s.mode.id, { count:count, peak:peak, left:Math.max(0, left) });
           if(left <= 0 && running){
             running = false;
             peak = Math.max(peak, secCount);
@@ -1741,6 +1907,36 @@
   let celebrateTimer = 0;
   function clearCelebrateTimer(){
     if(celebrateTimer){ clearTimeout(celebrateTimer); celebrateTimer = 0; }
+  }
+
+  /* ===== 通关闭幕的现场（localStorage）=====
+     和每个关卡的现场同理：学生正在庆典页玩无尽点点乐时手一抖刷新了，
+     不该被丢回关卡列表、更不该把攒的分数清零。所以这一页也落盘：
+       {ts, score, level}——在不在庆典（ts 是最后活动时间）、无尽关的得分和第几关。
+     只有两种情况下会落盘：真的进了庆典，而且不是 ?finale=1 预览。
+     FINALE_FRESH 之外的存档算过期：上一节课做完的庆典，下一节课打开是正常的
+     关卡列表（首页那条金色横幅还在，点一下就能回到庆典），不会被永远锁在庆典里。 */
+  const FINALE_KEY = 'mouseReactionLab.finale.v1';
+  const FINALE_FRESH = 30*60*1000;
+  let finaleEndless = { score:0, level:1 };
+  let finaleWriteAt = 0;
+  function writeFinaleState(force){
+    if(previewFinale) return;
+    const now = Date.now();
+    if(!force && now - finaleWriteAt < 900) return;
+    finaleWriteAt = now;
+    try{
+      localStorage.setItem(FINALE_KEY, JSON.stringify({
+        v:1, ts:now, score:finaleEndless.score, level:finaleEndless.level
+      }));
+    }catch(e){}
+  }
+  function readFinaleState(){
+    let d = null;
+    try{ d = JSON.parse(localStorage.getItem(FINALE_KEY) || 'null'); }catch(e){ d = null; }
+    if(!d || typeof d !== 'object') return null;
+    if(!(Date.now() - (d.ts || 0) < FINALE_FRESH)) return null;
+    return { score: Math.max(0, Math.round(d.score || 0)), level: Math.max(1, Math.round(d.level || 1)) };
   }
 
   /* 通关页撒的花：和练习营同一套配色，只是类名换成 .finale-cf，
@@ -1894,7 +2090,11 @@
     /* 难度曲线：第 1 关每秒下落约 0.3 个掉落区高度（约 3.3 秒落到底）、
        平均 0.7 秒来一个；每升一关快一点、密一点，不设上限。 */
     const FALL_H = 0.26, LEVEL_FAST = 0.035;
-    let score = 0, level = 1, items = [], last = 0, nextSpawn = 350;
+    /* 刷新前攒的分数和第几关接着用（startFinale 已经把存档读进 finaleEndless） */
+    let score = finaleEndless.score, level = finaleEndless.level;
+    let items = [], last = 0, nextSpawn = 350;
+    if(scoreEl) scoreEl.textContent = score;
+    if(lvEl) lvEl.textContent = level;
     if(tip) setTimeout(()=>tip.classList.add('hide'), 5200);
 
     function spawn(){
@@ -1943,6 +2143,8 @@
         level = nl; lvEl.textContent = level;
         if(lvChip){ lvChip.classList.remove('flash'); void lvChip.offsetWidth; lvChip.classList.add('flash'); }
       }
+      finaleEndless.score = score; finaleEndless.level = level;
+      writeFinaleState(true);                    /* 得分是离散事件，立刻落盘，刷新后不会少分 */
       it.el.style.transform = 'translate3d('+it.x+'px,'+it.y+'px,0) scale(1.45)';
       it.el.style.opacity = '0';
       setTimeout(()=>{ if(it.el.parentNode) it.el.parentNode.removeChild(it.el); }, 260);
@@ -1963,6 +2165,7 @@
     function frame(now){
       requestAnimationFrame(frame);
       if(document.hidden) return;
+      writeFinaleState();                        /* 滑一下存档时间：正在玩就别算过期 */
       if(!last){ last = now; return; }
       const dt = Math.min(.05, (now-last)/1000); last = now;
       const h = area.clientHeight;
@@ -1991,6 +2194,9 @@
     if(finaleOn) return;
     finaleOn = true;
     const box = $('#finale');
+    /* 预览不看存档、也不写存档；正常进来就接着上次的分数继续 */
+    finaleEndless = previewFinale ? { score:0, level:1 } : (readFinaleState() || { score:0, level:1 });
+    writeFinaleState(true);
     document.documentElement.style.overflow = 'hidden';
     document.body.classList.add('locked');
     hideOverlay();
@@ -2023,21 +2229,24 @@
   }
 
   /* ================= 启动 ================= */
-  refreshTotal();
-  renderHome();
-
-  /* ===== 测试用快捷入口 =====
-     在网址后面加 ?finale=1 直接进通关闭幕（预览 / 验收用，不写进任何界面提示）。
-     正常打开（没有这个参数）时，这里一行都不会生效；预览期间的星级只在内存里，
-     不写 localStorage，不会污染学生机上的真实进度。 */
-  if(/[?&]finale=1\b/.test(location.search)){
-    previewFinale = true;
+  /* 网址后面加 ?finale=1 直接进通关闭幕（预览 / 验收用，不写进任何界面提示）。
+     先认这个参数：预览期间 24 星只标在内存里，不写 localStorage，
+     也不写"正在庆典里"的标记，免得污染学生机上的真实进度。 */
+  previewFinale = /[?&]finale=1\b/.test(location.search);
+  restoreStageSave();      /* 先把各关"做了一半的现场"读回来，首页才标得出「上次做到一半」 */
+  if(previewFinale){
     MODES.forEach(m=>{
       const r = records[m.id] || { best:null, stars:0, plays:0 };
       r.stars = 3; records[m.id] = r;
     });
-    refreshTotal();
-    renderHome();
+  }
+  refreshTotal();
+  renderHome();
+  if(previewFinale){
+    setTimeout(startFinale, 60);
+  } else if(allPerfect() && readFinaleState()){
+    /* 刷新前就停在通关闭幕里（误按刷新、误关标签页都算）：直接回到庆典，
+       无尽点点乐的得分和第几关也接着上次继续 */
     setTimeout(startFinale, 60);
   }
 })();
