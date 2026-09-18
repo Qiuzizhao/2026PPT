@@ -2035,6 +2035,7 @@
   }
   function clearSave(){
     try{ window.localStorage.removeItem(SAVE_KEY); }catch(e){}
+    clearFinaleState();
     for(const k in best) delete best[k];
     for(const k in cleared) delete cleared[k];
     for(const k in stage) delete stage[k];
@@ -2228,6 +2229,48 @@
      每 10 分升一关——东西落得更快、来得更密，所以是无限关。
      页面只显示「得分」和「第几关」，不记最高分、不做排行、不显示连击。
      只在通关页启动，不碰任何一个正课关卡；通关页离开时（hideFinale）立刻停下。 */
+
+  /* 通关页的现场（localStorage）：学生正在这一页玩无尽点点乐时手一抖刷新了，
+     不该被丢回关卡列表，更不该把攒的分数清零。存的就是这一页看到的两个数：
+       {ts, score, level}——ts 是最后活动时间、得分、第几关。
+     只有真的进了结束页才落盘，?finale=1 预览不写（免得污染学生机上的真实进度）。
+     超过 FINALE_FRESH 没动过的存档算过期：上一节课玩的结束页，下一节课打开是正常的
+     关卡列表，不会被永远锁在结束页里。 */
+  const FINALE_KEY='mousecamp2.finale.v1';
+  const FINALE_FRESH=30*60*1000;
+  let previewFinale=false;                 /* ?finale=1 预览：只标在内存里，不写存档 */
+  let finaleEndless={score:0, level:1};
+  let finaleWriteAt=0, finaleFlushTimer=0;
+  function writeFinaleState(force){
+    if(previewFinale) return;
+    const now=Date.now();
+    /* 得分是离散事件，点了就立刻落盘；帧循环里的调用按 900ms 节流，只为了刷 ts */
+    if(!force && now-finaleWriteAt<900){
+      if(!finaleFlushTimer){
+        finaleFlushTimer=setTimeout(function(){ finaleFlushTimer=0; writeFinaleState(true); },900-(now-finaleWriteAt));
+      }
+      return;
+    }
+    if(finaleFlushTimer){ clearTimeout(finaleFlushTimer); finaleFlushTimer=0; }
+    finaleWriteAt=now;
+    try{
+      localStorage.setItem(FINALE_KEY,JSON.stringify({
+        v:1, ts:now, score:finaleEndless.score, level:finaleEndless.level
+      }));
+    }catch(e){}
+  }
+  function readFinaleState(){
+    let d=null;
+    try{ d=JSON.parse(localStorage.getItem(FINALE_KEY)||'null'); }catch(e){ d=null; }
+    if(!d||typeof d!=='object') return null;
+    if(!(Date.now()-(d.ts||0)<FINALE_FRESH)) return null;      /* 过期：回关卡列表 */
+    return { score:Math.max(0,Math.round(d.score||0)), level:Math.max(1,Math.round(d.level||1)) };
+  }
+  function clearFinaleState(){
+    if(finaleFlushTimer){ clearTimeout(finaleFlushTimer); finaleFlushTimer=0; }
+    try{ localStorage.removeItem(FINALE_KEY); }catch(e){}
+  }
+
   let epAudio=null;
   function epBeep(freq,dur){
     try{
@@ -2252,8 +2295,9 @@
     /* 难度曲线：每 10 分一关。第 1 关每秒下落约 0.26 个掉落区高度（约 3.8 秒落到底），
        平均 0.7 秒来一个；每升一关快一点、密一点，不设上限。 */
     const FALL_H=0.26, LEVEL_FAST=0.035;
-    let score=0, level=1, items=[], last=0, nextSpawn=350;
-    scoreEl.textContent='0'; lvEl.textContent='1';
+    /* 刷新前攒的分数和第几关接着用（showFinale 已经把存档读进 finaleEndless） */
+    let score=finaleEndless.score, level=finaleEndless.level, items=[], last=0, nextSpawn=350;
+    scoreEl.textContent=score; lvEl.textContent=level;
     if(tip){
       tip.classList.remove('hide');
       epTipTimer=setTimeout(function(){ tip.classList.add('hide'); },5200);
@@ -2306,6 +2350,8 @@
         level=nl; lvEl.textContent=level;
         if(lvChip){ lvChip.classList.remove('flash'); void lvChip.offsetWidth; lvChip.classList.add('flash'); }
       }
+      finaleEndless.score=score; finaleEndless.level=level;
+      writeFinaleState(true);                    /* 得分是离散事件，点了就落盘，刷新后不会少分 */
       rec.el.style.transform='translate3d('+rec.x+'px,'+rec.y+'px,0) scale(1.45)';
       rec.el.style.opacity='0';
       setTimeout(function(){ if(rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); },260);
@@ -2329,6 +2375,7 @@
       if(!epOn) return;                          /* 离开通关页后彻底停下 */
       requestAnimationFrame(frame);
       if(document.hidden) return;
+      writeFinaleState();                        /* 滑一下存档时间：正在玩就别算过期 */
       if(!last){ last=now; return; }
       const dt=Math.min(.05,(now-last)/1000); last=now;
       const h=area.clientHeight;
@@ -2364,6 +2411,8 @@
       const plus=area.querySelectorAll('.ep-plus');
       for(let i=0;i<plus.length;i++){ if(plus[i].parentNode) plus[i].parentNode.removeChild(plus[i]); }
       score=0; level=1;
+      finaleEndless={score:0, level:1};
+      clearFinaleState();                        /* 离开结束页=这一局结束，下次打开是关卡列表 */
       scoreEl.textContent='0'; lvEl.textContent='1';
       if(tip) tip.classList.remove('hide');
     };
@@ -2372,6 +2421,9 @@
   /* 六关全通的通关大奖：大奖杯 + 烟花 + 无尽点点乐。只有最后一关做完才会走到这里 */
   function showFinale(){
     const box=$('#finale');
+    /* 预览不看存档、也不写存档；正常进来就接着上次的得分和第几关继续 */
+    finaleEndless=previewFinale?{score:0, level:1}:(readFinaleState()||{score:0, level:1});
+    writeFinaleState(true);
     $('#bigTrophy').textContent='🏆';
     $('#finaleTitle').textContent='六关全部通关';
     $('#finaleSub').innerHTML='鼠标的六个本领你都练过了，真是电脑小达人！<br>以后在电脑上多试试吧。';
@@ -2599,21 +2651,24 @@
     }
   })();
 
+  /* ===== 启动 =====
+     网址后面加 ?finale=1 直接进结束页（预览/验收用，不写进任何界面提示）。
+     先认这个参数：预览期间六关只标在内存里，**进度和结束页存档都不写**，
+     学生正常打开（没有这个参数）时这里一行都不会生效。 */
+  previewFinale=/[?&]finale=1\b/.test(location.search);
   restoreSave();
-  enterHome();
-
-  /* ===== 测试用快捷入口 =====
-     在网址后面加 ?finale=1 直接进通关页（预览/验收用，不写进任何界面提示）。
-     只在带参数的这一次打开时生效，**不写入进度**，学生正常打开看不到。 */
-  if(/[?&]finale=1\b/.test(location.search)){
+  if(previewFinale){
     for(let i=0;i<LEVELS.length;i++){
       const id=LEVELS[i].id;
       cleared[id]=true;
       if((best[id]||0)<PER) best[id]=PER;
     }
     refreshTotal();
-    setTimeout(showFinale,80);
   }
+  enterHome();
+  if(previewFinale) setTimeout(showFinale,80);
+  /* 刷新回结束页：六关都通关过、而且存档还新鲜，就直接接着玩，得分和第几关都在 */
+  else if(allCleared() && readFinaleState()) setTimeout(showFinale,80);
 })();
 </script>
 </body>

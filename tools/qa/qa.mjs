@@ -339,6 +339,73 @@ add({
   ]
 });
 
+/* ============ 3d. 鼠标练习营2：结束页的得分/第几关存在本地，刷新还留在结束页 ============
+   场景共用一个浏览器 profile，所以"种存档"放在 index.html 上做，
+   下一页打开练习营2 就等价于学生刷新了一次。 */
+const seedMouse2 = (expired) => wrap(`
+  const best = {}, cleared = {};
+  ['point','hover','drag','select','cursor','window'].forEach(id => { best[id] = 10; cleared[id] = true; });
+  localStorage.setItem('mousecamp2.progress.v1', JSON.stringify({ v:1, best, cleared, stage:{}, ts: Date.now() }));
+  localStorage.setItem('mousecamp2.finale.v1', JSON.stringify({
+    v:1, ts: Date.now() - ${expired ? '40*60*1000' : '0'}, score:23, level:3
+  }));
+  return JSON.stringify({ progress: !!localStorage.getItem('mousecamp2.progress.v1'),
+    finale: JSON.parse(localStorage.getItem('mousecamp2.finale.v1')) });
+`);
+add({ name: '鼠标练习营2-结束页存档-种新鲜存档', page: 'index.html', steps: [
+  { label: '六关已通关 + 结束页存档 23 分第 3 关', js: seedMouse2(false) }
+]});
+add({ name: '鼠标练习营2-结束页存档-刷新还在结束页', page: '鼠标练习营2.html', wait: 7000, steps: [
+  { label: '重新打开直接回到结束页，得分和第几关都接着算', js: wrap(`
+      await __wait(1500);
+      const saved = JSON.parse(localStorage.getItem('mousecamp2.finale.v1') || 'null');
+      return JSON.stringify({
+        finaleShown: __$('#finale').classList.contains('show'),
+        score: __$('#epScore').textContent, level: __$('#epLevel').textContent,
+        savedScore: saved && saved.score, savedLevel: saved && saved.level,
+        fresh: !!saved && (Date.now() - saved.ts) < 60000
+      });
+    `), shot: true },
+  { label: '点掉落物：分数往上走并立刻落盘', js: wrap(`
+      const before = Number(__$('#epScore').textContent);
+      const t0 = Date.now();
+      while (Date.now() - t0 < 9000 && Number(__$('#epScore').textContent) === before) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect();
+          __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); }
+        await __wait(250);
+      }
+      const saved = JSON.parse(localStorage.getItem('mousecamp2.finale.v1') || 'null');
+      return JSON.stringify({ before, now: Number(__$('#epScore').textContent),
+        savedScore: saved && saved.score, savedLevel: saved && saved.level,
+        levelNow: Number(__$('#epLevel').textContent) });
+    `) }
+]});
+add({ name: '鼠标练习营2-结束页存档-种过期存档', page: 'index.html', steps: [
+  { label: '存档时间推到 40 分钟前（上一节课留下的）', js: seedMouse2(true) }
+]});
+add({ name: '鼠标练习营2-结束页存档-过期回关卡列表', page: '鼠标练习营2.html', steps: [
+  { label: '过期存档不生效，落回关卡列表', js: wrap(`
+      await __wait(2500);
+      return JSON.stringify({
+        finaleShown: __$('#finale').classList.contains('show'),
+        cards: __$$('#play .lvcard').length,
+        resetBtn: !!__$('#homeFoot .btn-mini')
+      });
+    `), shot: true }
+]});
+add({ name: '鼠标练习营2-结束页存档-预览不写存档', page: '鼠标练习营2.html?finale=1', wait: 7000, steps: [
+  { label: '?finale=1 从 0 分开始，且不覆盖学生存档', js: wrap(`
+      await __wait(1500);
+      const saved = JSON.parse(localStorage.getItem('mousecamp2.finale.v1') || 'null');
+      return JSON.stringify({
+        finaleShown: __$('#finale').classList.contains('show'),
+        score: __$('#epScore').textContent, level: __$('#epLevel').textContent,
+        savedUntouched: !!saved && saved.score === 23 && saved.level === 3
+      });
+    `), shot: true }
+]});
+
 /* ============ 4. 鼠标反应力实验室：八个关卡逐个进入并操作 ============ */
 const openMode = (label) => `
   const mode = __$$('.mode').find(m => m.textContent.includes(${JSON.stringify(label)}));
@@ -738,7 +805,7 @@ add({
       return JSON.stringify({ halfRows: cats.filter(t => t.indexOf('上次做到一半') >= 0).length,
         cats, total: __$('.total').textContent.trim() });
     `), shot: true },
-    { label: '进打地鼠接着做：分数和剩余时间都在；「重新开始」能从头做', js: wrap(`
+    { label: '进打地鼠接着做：分数和剩余时间都还在', js: wrap(`
       const raw = JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}');
       const snap = (raw.stage && raw.stage.whack) ? raw.stage.whack.snap : null;
       ${openMode('打地鼠')}
@@ -748,12 +815,16 @@ add({
       const rbtn = !__$('#restartBtn').classList.contains('hidden');
       const left0 = Number(String(hud0[3] || '').replace('剩余', '').replace('s', '').trim());
       const scoreKept = !!snap && hud0[0] === ('得分' + snap.score);
+      return JSON.stringify({ snap, hud0, scoreKept,
+        left0, leftKept: !!snap && isFinite(left0) && left0 > 0 && left0 < 30,
+        chip, rbtn });
+    `), shot: true },
+    { label: '点「重新开始」能从头做', js: wrap(`
       __$('#restartBtn').click();
       await __wait(900);
       const hud1 = __hud();
-      return JSON.stringify({ snap, hud0, scoreKept,
-        left0, leftKept: !!snap && isFinite(left0) && left0 > 0 && left0 < 30,
-        chip, rbtn, hud1, chipGoneAfterRestart: __$('#resumeChip').classList.contains('hidden'),
+      return JSON.stringify({ hud1,
+        chipGoneAfterRestart: __$('#resumeChip').classList.contains('hidden'),
         stillHalfDone: !!(JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}').stage || {}).whack });
     `), shot: true },
     { label: '进闪电反应接着做：已经测完的回合还在', js: wrap(`
