@@ -84,15 +84,6 @@
   .stars .star .s-in{display:inline-block;font-size:30px;filter:grayscale(1);opacity:.4;transition:all .2s ease}
   .stars .star.pop .s-in{filter:none;opacity:1;transform:scale(1.25)}
   .stars .big-count{color:#fff;font-weight:900;font-size:20px;text-shadow:0 2px 6px rgba(60,40,120,.3);margin-left:8px}
-  /* 接着上次继续时，星星后面多一个「重新开始」小按钮 */
-  .again-btn{
-    border:none;cursor:pointer;font-family:inherit;font-weight:800;
-    border-radius:999px;padding:6px 14px;font-size:15px;color:#fff;background:#7d5b96;
-    box-shadow:0 4px 0 rgba(0,0,0,.12);transition:transform .1s ease;
-  }
-  .again-btn:hover{transform:translateY(-2px)}
-  .again-btn:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(0,0,0,.12)}
-
   /* 五关全通之后才露出来的金色入口：回去看奖杯、玩无尽点点乐 */
   .finale-bar{
     display:block;width:100%;margin:0 auto 14px;border:none;cursor:pointer;font-family:inherit;
@@ -494,7 +485,6 @@
   const SAVE_KEY='mousecamp1.progress.v1';
   const stageMap={};
   let previewMode=false;                 /* ?finale=1 预览：只标在内存里，不写存档 */
-  let againOn=false;                     /* 这一关是不是"接着上次"在做 */
   function writeSave(){
     if(previewMode) return;
     const cleared={};
@@ -606,19 +596,7 @@
     }
     if(total>0) txt = done+' / '+total;
     if(txt){ const b=document.createElement('span'); b.className='big-count'; b.textContent=txt; stars.appendChild(b); }
-    if(againOn) stars.appendChild(againBtn);      /* 「接着上次」时才有的重新开始 */
   }
-  /* ↺ 重新开始：把这一关做了一半的现场丢掉，从头练 */
-  const againBtn=document.createElement('button');
-  againBtn.type='button';
-  againBtn.className='again-btn';
-  againBtn.textContent='↺ 重新开始这一关';
-  againBtn.addEventListener('click', function(){
-    if(currentMode==='home') return;
-    delete stageMap[currentMode];
-    writeSave(); markHalf();
-    showMode(currentMode);
-  });
 
   function showModal(moji,title,text,mstarStr){
     $('#mMoji').textContent=moji;
@@ -1190,12 +1168,11 @@
     document.querySelectorAll('#nav button').forEach(b=>b.style.outline = b.dataset.mode===name ? '3px solid #fff' : 'none');
     /* 这一关上次做到一半（而且还没通关）就接着做，星星接着攒 */
     const st=(name!=='home'&&!doneSet.has(name))?stageMap[name]:null;
-    againOn=!!(st&&st.got);
     refreshFinaleBar();
     if(allCleared()){ showCompleted(name); return; }       // everything cleared: hold on the award screen
     if(doneSet.has(name)){ showCompleted(name); return; }   // completed: hold, no replay
     MODES[name](st&&st.got?st.got:0);
-    /* 等关卡自己的提示说完，再补一句"接着上次"；这一关被重新开始/做完了就别说了 */
+    /* 等关卡自己的提示说完，再补一句"接着上次"；万一这一关中途被打完（现场已清）就不说 */
     if(st&&st.got) setTimeout(function(){
       const now=stageMap[name];
       if(currentMode===name&&now&&now.got===st.got) say('接着上次继续：你已经有 <b>'+st.got+'</b> 颗星啦 ⭐');

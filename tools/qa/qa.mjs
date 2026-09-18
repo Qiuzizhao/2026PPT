@@ -318,23 +318,23 @@ add({
       return JSON.stringify({ total: __$('#starNum').textContent.trim(), half, done,
         leftBtnText: __$('#nav [data-mode="left"]').textContent.trim() });
     `), shot: true },
-    { label: '进左键关接着做：从 4 / 10 继续', js: wrap(`
+    { label: '进左键关接着做：从 4 / 10 继续（没有"重新开始"按钮）', js: wrap(`
       __$('#nav [data-mode="left"]').click();
       await __wait(700);
       const resumed = (__$('#stars .big-count') || {}).textContent || '';
-      const again = !!__$('#stars .again-btn');
-      return JSON.stringify({ resumed, again,
+      return JSON.stringify({ resumed,
+        againBtnGone: !__$('#stars .again-btn'),
+        againTextGone: document.body.textContent.indexOf('重新开始') < 0,
         navOutline: __$('#nav [data-mode="left"]').style.outline ? 'on' : 'off' });
     `), shot: true },
-    { label: '点「↺ 重新开始这一关」从头练', js: wrap(`
-      __$('#stars .again-btn').click();
-      await __wait(700);
-      const afterRestart = (__$('#stars .big-count') || {}).textContent || '';
+    { label: '接着做两下：星星往上走，现场跟着更新', js: wrap(`
+      for (let i = 0; i < 2; i++) { const t = __$('#play .target'); if (!t) break; __mouse(t, 'click'); await __wait(430); }
+      __$('#nav [data-mode="home"]').click();
+      await __wait(300);
       const raw = JSON.parse(localStorage.getItem('mousecamp1.progress.v1') || '{}');
-      return JSON.stringify({ afterRestart,
-        againGoneAfterRestart: !__$('#stars .again-btn'),
-        stageCleared: !(raw.stage && raw.stage.left),
-        bestKept: (raw.best || {}).left });
+      return JSON.stringify({ stageNow: (raw.stage || {}).left, bestNow: (raw.best || {}).left,
+        total: __$('#starNum').textContent.trim(),
+        navHalf: __$$('#nav button.n-half').map(b => b.dataset.mode) });
     `), shot: true }
   ]
 });
