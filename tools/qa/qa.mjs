@@ -275,6 +275,143 @@ add({
   ]
 });
 
+/* ============ 3b2. 鼠标练习营1：进度存档（练一半刷新接着做 + 通关页也存） ============ */
+add({
+  name: '鼠标练习营-进度存档-清档',
+  page: 'index.html',
+  steps: [
+    { label: '清掉存档，从零开始', js: wrap(`
+      localStorage.removeItem('mousecamp1.progress.v1');
+      localStorage.removeItem('mousecamp1.finale.v1');
+      return JSON.stringify({ left: Object.keys(localStorage).filter(k => k.indexOf('mousecamp1') === 0) });
+    `) }
+  ]
+});
+
+add({
+  name: '鼠标练习营-进度存档-前半',
+  page: '鼠标练习营.html',
+  steps: [
+    { label: '左键关做 4 颗星、双击关做 2 颗星就离开', js: wrap(`
+      const start = async m => { __$('#nav [data-mode="' + m + '"]').click(); await __wait(450); };
+      await start('left');
+      for (let i = 0; i < 4; i++) { const t = __$('#play .target'); if (!t) break; __mouse(t, 'click'); await __wait(430); }
+      await start('double');
+      for (let i = 0; i < 2; i++) { const t = __$('#play .target'); if (!t) break; __mouse(t, 'dblclick'); await __wait(430); }
+      __$('#nav [data-mode="home"]').click();
+      await __wait(400);
+      const raw = JSON.parse(localStorage.getItem('mousecamp1.progress.v1') || '{}');
+      return JSON.stringify({ total: __$('#starNum').textContent.trim(),
+        best: raw.best, stage: raw.stage, cleared: raw.cleared });
+    `), shot: true }
+  ]
+});
+
+add({
+  name: '鼠标练习营-进度存档-后半',
+  page: '鼠标练习营.html',
+  steps: [
+    { label: '新打开的页面：星星还在，导航按钮标出「做了一半」', js: wrap(`
+      await __wait(500);
+      const half = __$$('#nav button.n-half').map(b => b.dataset.mode);
+      const done = __$$('#nav button.n-done').map(b => b.dataset.mode);
+      return JSON.stringify({ total: __$('#starNum').textContent.trim(), half, done,
+        leftBtnText: __$('#nav [data-mode="left"]').textContent.trim() });
+    `), shot: true },
+    { label: '进左键关接着做：从 4 / 10 继续', js: wrap(`
+      __$('#nav [data-mode="left"]').click();
+      await __wait(700);
+      const resumed = (__$('#stars .big-count') || {}).textContent || '';
+      const again = !!__$('#stars .again-btn');
+      return JSON.stringify({ resumed, again,
+        navOutline: __$('#nav [data-mode="left"]').style.outline ? 'on' : 'off' });
+    `), shot: true },
+    { label: '点「↺ 重新开始这一关」从头练', js: wrap(`
+      __$('#stars .again-btn').click();
+      await __wait(700);
+      const afterRestart = (__$('#stars .big-count') || {}).textContent || '';
+      const raw = JSON.parse(localStorage.getItem('mousecamp1.progress.v1') || '{}');
+      return JSON.stringify({ afterRestart,
+        againGoneAfterRestart: !__$('#stars .again-btn'),
+        stageCleared: !(raw.stage && raw.stage.left),
+        bestKept: (raw.best || {}).left });
+    `), shot: true }
+  ]
+});
+
+add({
+  name: '鼠标练习营-庆典存档-前置存档',
+  page: 'index.html',
+  steps: [
+    { label: '五关全通（各 10 星）的存档', js: wrap(`
+      const best = {}, cleared = {};
+      ['left','right','double','wheel','menu'].forEach(id => { best[id] = 10; cleared[id] = true; });
+      localStorage.setItem('mousecamp1.progress.v1', JSON.stringify({ v:1, best, cleared, stage:{}, ts:Date.now() }));
+      localStorage.removeItem('mousecamp1.finale.v1');
+      return 'seeded';
+    `) }
+  ]
+});
+
+add({
+  name: '鼠标练习营-庆典存档-前半',
+  page: '鼠标练习营.html',
+  steps: [
+    { label: '全通后从金色入口进通关页，玩无尽关攒点分', js: wrap(`
+      await __wait(500);
+      const bar = __$('#finaleBar');
+      const barShown = !!bar && bar.style.display !== 'none';
+      bar.click();
+      await __wait(2600);
+      const opened = __$('#finale').classList.contains('show');
+      const t0 = Date.now();
+      let hits = 0;
+      while (Date.now() - t0 < 20000 && Number(__$('#epScore').textContent) < 6) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect();
+          __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); hits++; }
+        await __wait(150);
+      }
+      const score = Number(__$('#epScore').textContent);
+      const saved = JSON.parse(localStorage.getItem('mousecamp1.finale.v1') || 'null');
+      return JSON.stringify({ barShown, opened, hits, score,
+        level: Number(__$('#epLevel').textContent),
+        saved, savedMatchesScore: !!saved && saved.score === score });
+    `), shot: true }
+  ]
+});
+
+add({
+  name: '鼠标练习营-庆典存档-后半',
+  page: '鼠标练习营.html',
+  steps: [
+    { label: '新页面直接回到通关页，得分接着上次继续', js: wrap(`
+      const saved = JSON.parse(localStorage.getItem('mousecamp1.finale.v1') || 'null');
+      await __wait(1200);
+      const autoOpened = __$('#finale').classList.contains('show');
+      const score = Number(__$('#epScore').textContent);
+      const locked = document.body.classList.contains('locked');
+      await __wait(1400);
+      const t0 = Date.now();
+      let added = 0;
+      while (Date.now() - t0 < 15000 && Number(__$('#epScore').textContent) <= score) {
+        const it = __$('#epArea .ep-item');
+        if (it) { const r = it.getBoundingClientRect();
+          __pd(it, 'pointerdown', r.left + r.width / 2, r.top + r.height / 2); added++; }
+        await __wait(150);
+      }
+      const grew = Number(__$('#epScore').textContent) > score;
+      /* 收尾：把"正在通关页"清掉，后面的分辨率检查才看得到正常页面 */
+      localStorage.removeItem('mousecamp1.finale.v1');
+      return JSON.stringify({ saved, autoOpened, score, locked, added,
+        scoreKept: !!saved && score === saved.score,
+        grewAfterResume: grew,
+        navDisabled: __$$('#nav button').every(b => b.disabled),
+        stillFinale: __$('#finale').classList.contains('show') });
+    `), shot: true }
+  ]
+});
+
 /* ============ 3c. 鼠标练习营2：通关页 + 无尽点点乐（同一套玩法，卡片更高） ============ */
 add({
   name: '鼠标练习营2-通关页无尽关',

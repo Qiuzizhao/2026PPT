@@ -84,6 +84,27 @@
   .stars .star .s-in{display:inline-block;font-size:30px;filter:grayscale(1);opacity:.4;transition:all .2s ease}
   .stars .star.pop .s-in{filter:none;opacity:1;transform:scale(1.25)}
   .stars .big-count{color:#fff;font-weight:900;font-size:20px;text-shadow:0 2px 6px rgba(60,40,120,.3);margin-left:8px}
+  /* 接着上次继续时，星星后面多一个「重新开始」小按钮 */
+  .again-btn{
+    border:none;cursor:pointer;font-family:inherit;font-weight:800;
+    border-radius:999px;padding:6px 14px;font-size:15px;color:#fff;background:#7d5b96;
+    box-shadow:0 4px 0 rgba(0,0,0,.12);transition:transform .1s ease;
+  }
+  .again-btn:hover{transform:translateY(-2px)}
+  .again-btn:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(0,0,0,.12)}
+
+  /* 五关全通之后才露出来的金色入口：回去看奖杯、玩无尽点点乐 */
+  .finale-bar{
+    display:block;width:100%;margin:0 auto 14px;border:none;cursor:pointer;font-family:inherit;
+    border-radius:22px;padding:14px 18px;
+    font-size:19px;font-size:clamp(16px,2.4vw,19px);font-weight:900;color:#4a3708;
+    background:linear-gradient(90deg,#fff7dd,#ffe9a8 42%,#fff7dd);
+    box-shadow:var(--shadow);position:relative;z-index:1;transition:transform .1s ease;
+  }
+  .finale-bar:hover{transform:translateY(-2px)}
+  .finale-bar:active{transform:translateY(1px)}
+  /* 关卡按钮上的「做了一半」小标 */
+  nav button.n-half::after{content:" ⏱";font-size:.72em;opacity:.9}
 
   /* ===== Play ===== */
   .play{
@@ -394,6 +415,8 @@
     <div class="bubble" id="bubble">点一个圆圈玩游戏吧！</div>
   </header>
 
+  <button class="finale-bar" id="finaleBar" style="display:none">🎉 五关全通 50 星 · 点这里进通关庆典</button>
+
   <nav id="nav">
     <button class="b-home" data-mode="home"><span class="emo">🏠</span>开始</button>
     <button class="b-left" data-mode="left"><span class="emo">👆</span>左键</button>
@@ -459,10 +482,77 @@
   const ctmenu = $('#ctmenu');
   const overlay = $('#overlay');
   const doneSet = new Set();
+
+  /* ===== 进度存档（localStorage）=====
+     以前这一页的成绩（每关几颗星、哪几关做完了）只留在内存里，一刷新就归零，
+     学生手一抖刷新就得从头练。现在每关的进度都写进 localStorage，下次打开接着做：
+       best[关卡]    这一关拿到过的最多星星（0~10）
+       cleared[关卡] 这一关是否已经通关
+       stage[关卡]   {got} 这一关做到第几颗星（这一关做完了就删掉）
+     存不进去（浏览器隐私设置、老策略）时静默降级成"只记在内存里"：
+     读写都包在 try/catch 里，最坏情况只是不保存，绝不让页面报错。 */
+  const SAVE_KEY='mousecamp1.progress.v1';
+  const stageMap={};
+  let previewMode=false;                 /* ?finale=1 预览：只标在内存里，不写存档 */
+  let againOn=false;                     /* 这一关是不是"接着上次"在做 */
+  function writeSave(){
+    if(previewMode) return;
+    const cleared={};
+    doneSet.forEach(function(k){ cleared[k]=true; });
+    try{
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        v:1, best:starBest, cleared:cleared, stage:stageMap, ts:Date.now()
+      }));
+    }catch(e){}
+  }
+  /* 读回来的数据一律按"已知的五关"过滤，坏数据、旧版本数据都不会把页面带崩 */
+  function restoreSave(){
+    let d=null;
+    try{
+      const raw=localStorage.getItem(SAVE_KEY);
+      if(raw) d=JSON.parse(raw);
+    }catch(e){ d=null; }
+    if(!d||typeof d!=='object') return;
+    LEVELS.forEach(function(l){
+      const id=l[0], max=TOTALS[id]||0;
+      const b=d.best?d.best[id]:0;
+      if(b>0) starBest[id]=Math.max(0,Math.min(max,Math.round(b)));
+      if(d.cleared&&d.cleared[id]) markDone(id);
+      const st=d.stage?d.stage[id]:null;
+      if(st&&!doneSet.has(id)){
+        const g=Math.round(st.got||0);
+        if(g>0&&g<max) stageMap[id]={got:g};
+      }
+    });
+    refreshTotal();
+    markHalf();
+    refreshFinaleBar();
+  }
+  function refreshTotal(){
+    const tot=Object.values(starBest).reduce((a,b)=>a+b,0);
+    const n=document.getElementById('starNum');
+    if(n) n.textContent=tot;
+  }
+  /* 导航按钮上的「⏱ 做了一半」小标 */
+  function markHalf(){
+    document.querySelectorAll('#nav button').forEach(function(b){
+      const id=b.dataset.mode;
+      b.classList.toggle('n-half', !!(stageMap[id]&&stageMap[id].got));
+    });
+  }
+  /* 五关全通之后，导航上方那条金色入口才露出来：回去看奖杯、玩无尽点点乐 */
+  function refreshFinaleBar(){
+    const bar=$('#finaleBar');
+    if(bar) bar.style.display=(allCleared()&&!finaleOn)?'block':'none';
+  }
   function markDone(m){
     doneSet.add(m);                       // completed -> locked, cannot replay
     const b=document.querySelector('#nav [data-mode="'+m+'"]');
     if(b) b.classList.add('n-done');      // show a ✓ on the nav button
+    delete stageMap[m];                   /* 这一关做完了，不用再"接着上次" */
+    markHalf();
+    writeSave();
+    refreshFinaleBar();
   }
   const TOTALS={left:10,right:10,double:10,wheel:10,menu:10};
 
@@ -470,9 +560,15 @@
   const starBest={left:0,right:0,double:0,wheel:0,menu:0};
   function recordStars(mode,got){
     if(got>starBest[mode]) starBest[mode]=got;
-    const tot=Object.values(starBest).reduce((a,b)=>a+b,0);
-    const n=document.getElementById('starNum');
-    if(n) n.textContent=tot;
+    if(got<TOTALS[mode]) stageMap[mode]={got:got}; else delete stageMap[mode];
+    refreshTotal();
+    markHalf();
+    writeSave();                          /* 得分是离散事件：点了就落盘，刷新后不会少星 */
+  }
+  /* 接着上次：存档里的 got 就是这一关已经拿到的星数（做完了的关卡不会留 stage） */
+  function resumeAt(from,total){
+    const n=Math.round(from||0);
+    return n>0?Math.max(0,Math.min(n,total-1)):0;
   }
   let modeToken = 0;
   let cleanups = [];
@@ -510,7 +606,19 @@
     }
     if(total>0) txt = done+' / '+total;
     if(txt){ const b=document.createElement('span'); b.className='big-count'; b.textContent=txt; stars.appendChild(b); }
+    if(againOn) stars.appendChild(againBtn);      /* 「接着上次」时才有的重新开始 */
   }
+  /* ↺ 重新开始：把这一关做了一半的现场丢掉，从头练 */
+  const againBtn=document.createElement('button');
+  againBtn.type='button';
+  againBtn.className='again-btn';
+  againBtn.textContent='↺ 重新开始这一关';
+  againBtn.addEventListener('click', function(){
+    if(currentMode==='home') return;
+    delete stageMap[currentMode];
+    writeSave(); markHalf();
+    showMode(currentMode);
+  });
 
   function showModal(moji,title,text,mstarStr){
     $('#mMoji').textContent=moji;
@@ -563,11 +671,11 @@
     });
   }
 
-  function modeLeft(){
+  function modeLeft(from){
     mascot.textContent='👆';
     say('用<b>左键</b>点小星星！');
-    const TOTAL=10; let got=0; const tok=modeToken;
-    setStars(0,TOTAL);
+    const TOTAL=10; let got=resumeAt(from,TOTAL); const tok=modeToken;
+    setStars(got,TOTAL);
     play.innerHTML='<div class="ground"></div>';
     function next(){
       const t=makeTarget(120,'⭐','linear-gradient(150deg,#ffd23f,#ffb52e)');
@@ -585,11 +693,11 @@
     next();
   }
 
-  function modeRight(){
+  function modeRight(from){
     mascot.textContent='🖱️';
     say('这次用<b>右键</b>点它！');
-    const TOTAL=10; let got=0; const tok=modeToken;
-    setStars(0,TOTAL);
+    const TOTAL=10; let got=resumeAt(from,TOTAL); const tok=modeToken;
+    setStars(got,TOTAL);
     play.innerHTML='<div class="ground"></div>';
     addListen(play,'contextmenu',(e)=>e.preventDefault());
     addListen(play,'click',()=>toast('要用<b>右键</b>哦！👈','#fff'));
@@ -608,11 +716,11 @@
     next();
   }
 
-  function modeDouble(){
+  function modeDouble(from){
     mascot.textContent='✌️';
     say('对着它<b>快速点两下</b>！');
-    const TOTAL=10; let got=0; const tok=modeToken;
-    setStars(0,TOTAL);
+    const TOTAL=10; let got=resumeAt(from,TOTAL); const tok=modeToken;
+    setStars(got,TOTAL);
     play.innerHTML='<div class="ground"></div>';
     function next(){
       const t=makeTarget(130,'🍎','linear-gradient(150deg,#ff7a9c,#ff6fa5)');
@@ -629,11 +737,11 @@
     next();
   }
 
-  function modeWheel(){
+  function modeWheel(from){
     mascot.textContent='🌀';
     say('转小轮子，把水装到<b>红线</b>！');
-    const TOTAL=10; let got=0; const tok=modeToken;
-    setStars(0,TOTAL);
+    const TOTAL=10; let got=resumeAt(from,TOTAL); const tok=modeToken;
+    setStars(got,TOTAL);
     play.innerHTML='';
     const z=document.createElement('div'); z.className='wheel-zone';
     z.innerHTML='<div class="pic-wrap"><div class="wheel-num" id="wnum">0</div><div class="wheel-sub">转动滚轮·装到红线🎯</div></div>'
@@ -667,11 +775,12 @@
     newGoal();
   }
 
-  function modeMenu(){
+  function modeMenu(from){
     mascot.textContent='📋';
-    const ROUNDS=10; let got=0; const tok=modeToken;
+    const ROUNDS=10; const tok=modeToken;
     const ALL=['复制','粘贴','删除','重命名','查看属性','另存为'];
-    setStars(0,ROUNDS);
+    let got=resumeAt(from,ROUNDS);
+    setStars(got,ROUNDS);
     play.innerHTML='';
     const z=document.createElement('div'); z.className='menu-zone';
     play.appendChild(z);
@@ -890,6 +999,43 @@
      每 10 分升一关——东西落得更快、来得更密，所以是无限关。
      页面只显示「得分」和「第几关」，**不记最高分、不做排行、不显示连击**。
      只在通关页启动，不碰任何一个正课关卡。 */
+
+  /* 通关页的现场（localStorage）：学生正在这一页玩无尽点点乐时手一抖刷新了，
+     不该被丢回关卡，更不该把攒的分数清零。存的就是这一页看到的两个数：
+       {ts, score, level}——ts 最后活动时间、得分、第几关。
+     只有真的进了通关页才落盘，?finale=1 预览不写（免得污染学生机上的真实进度）。
+     超过 FINALE_FRESH 没动过的存档算过期：上一节课玩的通关页，下一节课打开是正常的
+     关卡（导航上方那条金色入口还在，点一下就能回去），不会被永远锁在通关页里。 */
+  const FINALE_KEY='mousecamp1.finale.v1';
+  const FINALE_FRESH=30*60*1000;
+  let finaleEndless={score:0, level:1};
+  let finaleWriteAt=0, finaleFlushTimer=0;
+  function writeFinaleState(force){
+    if(previewMode) return;
+    const now=Date.now();
+    /* 得分是离散事件，点了就立刻落盘；帧循环里的调用按 900ms 节流，只为了刷 ts */
+    if(!force&&now-finaleWriteAt<900){
+      if(!finaleFlushTimer){
+        finaleFlushTimer=setTimeout(function(){ finaleFlushTimer=0; writeFinaleState(true); },900-(now-finaleWriteAt));
+      }
+      return;
+    }
+    if(finaleFlushTimer){ clearTimeout(finaleFlushTimer); finaleFlushTimer=0; }
+    finaleWriteAt=now;
+    try{
+      localStorage.setItem(FINALE_KEY,JSON.stringify({
+        v:1, ts:now, score:finaleEndless.score, level:finaleEndless.level
+      }));
+    }catch(e){}
+  }
+  function readFinaleState(){
+    let d=null;
+    try{ d=JSON.parse(localStorage.getItem(FINALE_KEY)||'null'); }catch(e){ d=null; }
+    if(!d||typeof d!=='object') return null;
+    if(!(Date.now()-(d.ts||0)<FINALE_FRESH)) return null;      /* 过期：回关卡 */
+    return { score:Math.max(0,Math.round(d.score||0)), level:Math.max(1,Math.round(d.level||1)) };
+  }
+
   let epAudio=null;
   function epBeep(freq,dur){
     try{
@@ -911,7 +1057,9 @@
     /* 难度曲线：每 10 分一关。第 1 关每秒下落约 0.3 个掉落区高度（约 3.3 秒落到底）、
        平均 0.7 秒来一个；每升一关快一点、密一点，不设上限。 */
     const FALL_H=0.26, LEVEL_FAST=0.035;
-    let score=0, level=1, items=[], last=0, nextSpawn=350;
+    /* 刷新前攒的分数和第几关接着用（startFinale 已经把存档读进 finaleEndless） */
+    let score=finaleEndless.score, level=finaleEndless.level, items=[], last=0, nextSpawn=350;
+    scoreEl.textContent=score; lvEl.textContent=level;
     if(tip) setTimeout(()=>tip.classList.add('hide'),5200);
 
     function spawn(){
@@ -960,6 +1108,8 @@
         level=nl; lvEl.textContent=level;
         if(lvChip){ lvChip.classList.remove('flash'); void lvChip.offsetWidth; lvChip.classList.add('flash'); }
       }
+      finaleEndless.score=score; finaleEndless.level=level;
+      writeFinaleState(true);                    /* 得分是离散事件，点了就落盘，刷新后不会少分 */
       it.el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0) scale(1.45)';
       it.el.style.opacity='0';
       setTimeout(()=>{ if(it.el.parentNode) it.el.parentNode.removeChild(it.el); },260);
@@ -980,6 +1130,7 @@
     function frame(now){
       requestAnimationFrame(frame);
       if(document.hidden) return;
+      writeFinaleState();                        /* 滑一下存档时间：正在玩就别算过期 */
       if(!last){ last=now; return; }
       const dt=Math.min(.05,(now-last)/1000); last=now;
       const h=area.clientHeight;
@@ -1008,6 +1159,10 @@
     if(finaleOn) return;
     finaleOn=true;
     const box=$('#finale');
+    /* 预览不看存档、也不写存档；正常进来就接着上次的得分和第几关继续 */
+    finaleEndless=previewMode?{score:0, level:1}:(readFinaleState()||{score:0, level:1});
+    writeFinaleState(true);
+    refreshFinaleBar();
     document.documentElement.style.overflow='hidden';
     document.body.classList.add('locked');
     document.querySelectorAll('#nav button').forEach(b=>b.disabled=true);
@@ -1033,19 +1188,37 @@
     currentMode=name;
     modeToken++; cleanup(); ctmenu.style.display='none'; hideModal();
     document.querySelectorAll('#nav button').forEach(b=>b.style.outline = b.dataset.mode===name ? '3px solid #fff' : 'none');
+    /* 这一关上次做到一半（而且还没通关）就接着做，星星接着攒 */
+    const st=(name!=='home'&&!doneSet.has(name))?stageMap[name]:null;
+    againOn=!!(st&&st.got);
+    refreshFinaleBar();
     if(allCleared()){ showCompleted(name); return; }       // everything cleared: hold on the award screen
     if(doneSet.has(name)){ showCompleted(name); return; }   // completed: hold, no replay
-    MODES[name]();
+    MODES[name](st&&st.got?st.got:0);
+    /* 等关卡自己的提示说完，再补一句"接着上次"；这一关被重新开始/做完了就别说了 */
+    if(st&&st.got) setTimeout(function(){
+      const now=stageMap[name];
+      if(currentMode===name&&now&&now.got===st.got) say('接着上次继续：你已经有 <b>'+st.got+'</b> 颗星啦 ⭐');
+    },1400);
   }
   document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>showMode(b.dataset.mode)));
+  $('#finaleBar').addEventListener('click', function(){ if(!finaleOn) startFinale(); });
   $('#mOk').onclick=()=>{ hideModal(); finishLevel(currentMode); };   // OK -> finished level or grand finale
 
-  /* ===== 测试用快捷入口 =====
-     在网址后面加 ?finale=1 直接进通关页（用于预览/验收，不写进任何界面提示）。
-     正常打开（没有这个参数）时，这里一行都不会生效。 */
-  if(/[?&]finale=1\b/.test(location.search)){
+  /* ===== 启动 =====
+     网址后面加 ?finale=1 直接进通关页（用于预览/验收，不写进任何界面提示）。
+     先认这个参数：预览期间五关只标在内存里，**进度和通关页存档都不写**，
+     学生正常打开（没有这个参数）时这里一行都不会生效。 */
+  previewMode=/[?&]finale=1\b/.test(location.search);
+  restoreSave();          /* 先把上次的成绩、"做了一半的现场"读回来 */
+  showMode('home');
+  if(previewMode){
     LEVELS.forEach(l=>{ markDone(l[0]); starBest[l[0]]=TOTALS[l[0]]||0; });
-    const tot=$('#starNum'); if(tot) tot.textContent='50';
+    refreshTotal();
+    setTimeout(startFinale,60);
+  } else if(allCleared()&&readFinaleState()){
+    /* 刷新前就停在通关页里（误按刷新、误关标签页都算）：直接回到通关页，
+       无尽点点乐的得分和第几关也接着上次继续 */
     setTimeout(startFinale,60);
   }
 
@@ -1065,7 +1238,6 @@
     }
   })();
 
-  showMode('home');
 })();
 </script>
 </body>
