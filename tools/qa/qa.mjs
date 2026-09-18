@@ -870,16 +870,16 @@ add({
   ]
 });
 
-/* 进度存档：练到一半退出/刷新，下次进这一关接着做。
-   「前半」把两个关卡都做一半就退出（现场落盘），「后半」是一个全新的页面
-   （等价于刷新，场景共用一个浏览器 profile），检查标记、接着做和重新开始。 */
+/* 反应力实验室只存"每关打完的成绩（星级/最好成绩）"，**不存关卡中途进度**：
+   这一页每一关都是连续的小测，中途"接着上次"没有意义（老师明确要求去掉）。
+   「前半」打完一关、再把另一关做一半就退出；「后半」是全新页面（等价于刷新），
+   检查成绩还在、而做了一半的那一关是从头开始的。 */
 add({
-  name: '反应力-进度存档-清档',
+  name: '反应力-不存中途进度-清档',
   page: 'index.html',
   steps: [
     { label: '清掉前面场景留下的存档，从零开始', js: wrap(`
       localStorage.removeItem('mouseReactionLab.v1');
-      localStorage.removeItem('mouseReactionLab.stage.v1');
       localStorage.removeItem('mouseReactionLab.finale.v1');
       return JSON.stringify({ left: Object.keys(localStorage).filter(k => k.indexOf('mouseReactionLab') === 0) });
     `) }
@@ -887,10 +887,27 @@ add({
 });
 
 add({
-  name: '反应力-进度存档-前半',
+  name: '反应力-不存中途进度-前半',
   page: '鼠标反应力实验室.html',
   steps: [
-    { label: '打地鼠打到一半就退出', js: wrap(`${openMode('打地鼠')}
+    { label: '闪电反应打完一整局，留下星级', js: wrap(`${openMode('闪电反应')}
+      await __wait(400);
+      const st = __$('#stage');
+      const [cx, cy] = __center(st);
+      __pd(st, 'pointerdown', cx, cy); __pd(st, 'pointerup', cx, cy);
+      for (let i = 0; i < 12 && !__$('#overlay').classList.contains('show'); i++) {
+        let waited = 0;
+        while (waited < 6000 && !__$('#stage').classList.contains('rx-go')) { await __wait(80); waited += 80; }
+        __pd(st, 'pointerdown', cx, cy); __pd(st, 'pointerup', cx, cy);
+        await __wait(600);
+      }
+      const sheetStars = __$$('#overlay .s-stars i.on').length;
+      const totalStars = __$('.total').textContent.trim();
+      ${exitGame}
+      const rec = JSON.parse(localStorage.getItem('mouseReactionLab.v1') || '{}');
+      return JSON.stringify({ sheetStars, totalStars, savedReactionStars: (rec.reaction || {}).stars });
+    `) },
+    { label: '打地鼠只做一半就退出（这一半不该被存下来）', js: wrap(`${openMode('打地鼠')}
       await __wait(6200);
       let hits = 0;
       for (let i = 0; i < 40; i++) {
@@ -905,73 +922,41 @@ add({
       }
       const hud = __hud();
       ${exitGame}
-      const raw = JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}');
-      return JSON.stringify({ hits, hud, halfDone: !!(raw.stage && raw.stage.whack),
-        snap: (raw.stage && raw.stage.whack) ? raw.stage.whack.snap : null });
-    `) },
-    { label: '闪电反应做完两回合也退出', js: wrap(`${openMode('闪电反应')}
-      await __wait(400);
-      const st = __$('#stage');
-      const [cx, cy] = __center(st);
-      __pd(st, 'pointerdown', cx, cy); __pd(st, 'pointerup', cx, cy);
-      for (let i = 0; i < 5; i++) {
-        let waited = 0;
-        while (waited < 6000 && !__$('#stage').classList.contains('rx-go')) { await __wait(80); waited += 80; }
-        __pd(st, 'pointerdown', cx, cy); __pd(st, 'pointerup', cx, cy);
-        await __wait(900);
-        if (__$$('.rx-dots i.done').length >= 2) break;
-      }
-      const done = __$$('.rx-dots i.done').length;
-      const hud = __hud();
-      ${exitGame}
-      const raw = JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}');
-      return JSON.stringify({ done, hud,
-        snap: (raw.stage && raw.stage.reaction) ? raw.stage.reaction.snap : null,
-        modes: Object.keys(raw.stage || {}) });
+      const rec = JSON.parse(localStorage.getItem('mouseReactionLab.v1') || '{}');
+      return JSON.stringify({ hits, hud,
+        savedWhackStars: (rec.whack || {}).stars,
+        savedWhackPlays: (rec.whack || {}).plays,
+        stageKeyExists: localStorage.getItem('mouseReactionLab.stage.v1') !== null });
     `) }
   ]
 });
 
 add({
-  name: '反应力-进度存档-后半',
+  name: '反应力-不存中途进度-后半',
   page: '鼠标反应力实验室.html',
   steps: [
-    { label: '新打开的页面在首页标出「上次做到一半」，星级不受影响', js: wrap(`
+    { label: '新页面：星级还在，首页没有「上次做到一半」，也没有中途存档', js: wrap(`
       await __wait(600);
       const cats = __$$('#homeGrid .mode .m-cat').map(e => e.textContent.trim());
-      return JSON.stringify({ halfRows: cats.filter(t => t.indexOf('上次做到一半') >= 0).length,
-        cats, total: __$('.total').textContent.trim() });
+      const rows = __$$('#homeGrid .mode').map(r => r.textContent.trim());
+      const reactionRow = rows.filter(t => t.indexOf('闪电反应') === 0)[0] || '';
+      return JSON.stringify({
+        halfRows: cats.filter(t => t.indexOf('上次做到一半') >= 0).length,
+        total: __$('.total').textContent.trim(),
+        reactionStarsLit: (reactionRow.match(/★/g) || []).length,
+        stageKeyExists: localStorage.getItem('mouseReactionLab.stage.v1') !== null });
     `), shot: true },
-    { label: '进打地鼠接着做：分数和剩余时间都还在', js: wrap(`
-      const raw = JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}');
-      const snap = (raw.stage && raw.stage.whack) ? raw.stage.whack.snap : null;
-      ${openMode('打地鼠')}
-      await __wait(800);
-      const hud0 = __hud();
-      const chip = !__$('#resumeChip').classList.contains('hidden');
-      const rbtn = !__$('#restartBtn').classList.contains('hidden');
-      const left0 = Number(String(hud0[3] || '').replace('剩余', '').replace('s', '').trim());
-      const scoreKept = !!snap && hud0[0] === ('得分' + snap.score);
-      return JSON.stringify({ snap, hud0, scoreKept,
-        left0, leftKept: !!snap && isFinite(left0) && left0 > 0 && left0 < 30,
-        chip, rbtn });
-    `), shot: true },
-    { label: '点「重新开始」能从头做', js: wrap(`
-      __$('#restartBtn').click();
+    { label: '做了一半的打地鼠：重进是从头开始，也没有「接着上次／重新开始」', js: wrap(`${openMode('打地鼠')}
       await __wait(900);
-      const hud1 = __hud();
-      return JSON.stringify({ hud1,
-        chipGoneAfterRestart: __$('#resumeChip').classList.contains('hidden'),
-        stillHalfDone: !!(JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}').stage || {}).whack });
-    `), shot: true },
-    { label: '进闪电反应接着做：已经测完的回合还在', js: wrap(`
-      const raw = JSON.parse(localStorage.getItem('mouseReactionLab.stage.v1') || '{}');
-      const snap = (raw.stage && raw.stage.reaction) ? raw.stage.reaction.snap : null;
-      ${openMode('闪电反应')}
-      await __wait(700);
-      return JSON.stringify({ snap, hud: __hud(),
-        doneDots: __$$('.rx-dots i.done').length,
-        chip: !__$('#resumeChip').classList.contains('hidden') });
+      const hud = __hud();
+      const left = Number(String(hud[3] || '').replace('剩余', '').replace('s', '').trim());
+      /* 用 innerText（不含页内 <script> 源码），只核对看得见的界面 */
+      const ui = document.body.innerText;
+      return JSON.stringify({ hud,
+        freshFromZero: left > 29 && String(hud[0]) === '得分0',
+        resumeUiGone: ui.indexOf('接着上次') < 0 && ui.indexOf('重新开始') < 0 &&
+          !__$('#resumeChip') && !__$('#restartBtn'),
+        playsCounted: (JSON.parse(localStorage.getItem('mouseReactionLab.v1') || '{}').whack || {}).plays });
     `), shot: true }
   ]
 });
