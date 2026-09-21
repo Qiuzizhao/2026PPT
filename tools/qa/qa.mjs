@@ -1325,9 +1325,94 @@ add({
   ]
 });
 
+/* ============ 7.5 4-1 课堂页（学生端 / 教师端） ============ */
+/* 状态通道与提交都打到 qiuform.qiuzizhao.com，QA 全部拦截，不碰真实课堂数据 */
+add({
+  name: '4-1-学生端-登录到教室寻宝',
+  page: '4-1数据宝藏在身旁.html',
+  blockUrls: ['*qiuform.qiuzizhao.com*'],
+  steps: [
+    { label: '默认停在登录页', js: wrap(`
+      await __wait(800);
+      return JSON.stringify({
+        view: document.querySelector('.view.active').dataset.route,
+        avatars: document.querySelectorAll('#avatar-pick .av').length,
+        rosterTip: !!document.querySelector('#roster-pick .roster-tip')
+      });
+    `), shot: true },
+    { label: '选班级 → 点名字 → 开始探险 → 地图七关全锁', js: wrap(`
+      const sel = document.getElementById('inp-class');
+      sel.value = '41';
+      sel.dispatchEvent(new Event('change'));
+      await __wait(200);
+      document.querySelector('#roster-pick .rp').click();
+      document.getElementById('btn-start').click();
+      await __wait(500);
+      return JSON.stringify({
+        view: document.querySelector('.view.active').dataset.route,
+        stops: document.querySelectorAll('#map .stop').length,
+        locked: document.querySelectorAll('#map .stop.locked').length,
+        who: document.getElementById('whoname').textContent,
+        plabel: document.getElementById('plabel').textContent
+      });
+    `), shot: true },
+    { label: '老师开后 → 教室寻宝可进、背景图在', js: wrap(`
+      state.open = {classroom:true,ledger:true,classify:true,self:true,guess:true,travel:true,quiz:true};
+      buildMap();
+      const locked = document.querySelectorAll('#map .stop.locked').length;
+      document.querySelectorAll('#map .stop')[0].click();
+      await __wait(400);
+      const bg = getComputedStyle(document.querySelector('.stage')).backgroundImage;
+      return JSON.stringify({
+        lockedAfterOpen: locked,
+        view: document.querySelector('.view.active').dataset.route,
+        spots: document.querySelectorAll('.spot').length,
+        bgIsClassroom: bg.indexOf('classroom') >= 0
+      });
+    `), shot: true },
+    { label: '记录一个数据点（弹层可用）', js: wrap(`
+      document.querySelectorAll('.spot')[4].click();
+      await __wait(300);
+      document.querySelectorAll('.wopt')[0].click();
+      document.getElementById('m-ok').click();
+      await __wait(300);
+      return JSON.stringify({
+        found: document.getElementById('found-n').textContent,
+        savedInState: Object.keys(state.found).length,
+        modalClosed: !document.getElementById('modal').classList.contains('show')
+      });
+    `), shot: true }
+  ]
+});
+add({
+  name: '4-1-教师端-看板与任务开关',
+  page: '4-1教师端.html',
+  blockUrls: ['*qiuform.qiuzizhao.com*'],
+  steps: [
+    { label: '看板渲染：KPI / 登录名单 / 猜人面板', js: wrap(`
+      await __wait(1500);
+      return JSON.stringify({
+        kpis: document.querySelectorAll('.kpi').length,
+        loginBoard: document.getElementById('login-board').innerHTML.length > 0,
+        loginKpi: document.getElementById('k-login').textContent,
+        switches: document.querySelectorAll('#task-controls .tc-item').length,
+        guessPanel: !!document.getElementById('guess-card') || !!document.querySelector('#guess .empty')
+      });
+    `), shot: true },
+    { label: '点一次开关：写状态失败要回滚且不报错', js: wrap(`
+      const item = document.querySelectorAll('#task-controls .tc-item')[0];
+      const before = item.querySelector('.tc-state').textContent;
+      item.click();
+      await __wait(800);
+      const after = document.querySelectorAll('#task-controls .tc-item')[0].querySelector('.tc-state').textContent;
+      return JSON.stringify({before, after, reverted: before === after});
+    `), shot: true }
+  ]
+});
+
 /* ============ 8. 多分辨率不溢出 ============ */
 for (const [w, h] of [[1024, 768], [1920, 1080]]) {
-  for (const page of ['index.html', '键盘练习营.html', '鼠标练习营.html', '鼠标练习营2.html', '鼠标反应力实验室.html', '数据自画像-猜猜我是谁.html', '数据自画像-教师端看板.html']) {
+  for (const page of ['index.html', '键盘练习营.html', '鼠标练习营.html', '鼠标练习营2.html', '鼠标反应力实验室.html', '数据自画像-猜猜我是谁.html', '数据自画像-教师端看板.html', '4-1数据宝藏在身旁.html', '4-1教师端.html']) {
     add({
       name: `${w}x${h}-${page.replace('.html', '')}`,
       page,

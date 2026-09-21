@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数据探险岛 · 第1课 数据宝藏在身边</title>
+<style>
+  :root{
+    --blue:#3B6FF6; --blue-deep:#2B56C9;
+    --yellow:#FFB020; --yellow-deep:#E09400;
+    --green:#22C55E; --red:#FF5C5C;
+    --purple:#8B5CF6; --pink:#EC4899; --cyan:#06B6D4; --orange:#F97316;
+    --bg:#EEF3FF; --card:#FFFFFF; --ink:#1E2A4A; --ink-soft:#5B6B8C; --line:#DCE5F7;
+    --radius:22px; --shadow:0 6px 18px rgba(59,111,246,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+    background:linear-gradient(160deg,#E9F0FF 0%,#F6EFFF 60%,#FFF6E0 100%);
+    color:var(--ink); min-height:100vh; -webkit-tap-highlight-color:transparent;
+  }
+  button{font-family:inherit;cursor:pointer;border:none}
+  input,select,textarea{font-family:inherit;font-size:16px}
+  /* 通用横向行：老内核的 flex 不支持 gap，用 margin 兜底 */
+  .hrow{display:flex;align-items:center;gap:10px}
+  html.no-flexgap .hrow > *:not(:last-child){margin-right:10px}
+
+  /* 顶栏 */
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);padding:10px 18px;display:flex;align-items:center;gap:14px}
+  html.no-flexgap .topbar > *:not(:last-child){margin-right:14px}
+  .logo{font-weight:900;font-size:18px;color:var(--blue);display:flex;align-items:center;gap:8px}
+  html.no-flexgap .logo > *:not(:last-child){margin-right:8px}
+  .logo .gem{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--yellow),#FF8A3D);display:grid;place-items:center}
+  .progress-track{flex:1;height:10px;background:#E2E9FA;border-radius:99px;overflow:hidden}
+  .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:99px;transition:width .5s}
+  .progress-label{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .who{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .who b{color:var(--blue)}
+
+main{max-width:1100px;margin:0 auto;padding:24px 18px 80px}
+main.wide{max-width:1700px}   /* 旅行地这一关内容多，铺开用满整屏 */
+  .view{display:none;animation:fade .4s}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .hero{text-align:center;padding:20px 10px 10px}
+  .hero h1{font-size:32px;font-weight:900}
+  .hero h1 .hl{color:var(--blue)}
+  .hero p{margin-top:8px;color:var(--ink-soft);font-size:15px}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 28px;border-radius:99px;
+    font-size:17px;font-weight:700;background:var(--blue);color:#fff;box-shadow:0 4px 0 var(--blue-deep);transition:transform .15s}
+  html.no-flexgap .btn > *:not(:last-child){margin-right:8px}
+  .btn:hover{transform:translateY(-2px)}
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--blue-deep)}
+  .btn.gold{background:var(--yellow);box-shadow:0 4px 0 var(--yellow-deep)}
+  .btn.ghost{background:#fff;color:var(--blue);border:2px solid var(--blue);box-shadow:none}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  html.no-flexgap .btn-row > *:not(:last-child){margin-right:12px}
+
+  /* 登录 */
+  .login-wrap{max-width:560px;margin:20px auto}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+  .field input,.field select{width:100%;padding:14px 16px;border:2px solid var(--line);border-radius:14px;background:#F8FAFF;outline:none}
+  .field input:focus,.field select:focus{border-color:var(--blue)}
+  .avatar-pick{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:6px}
+  .avatar-pick .av{height:78px;border-radius:14px;background:#F1F5FF;display:grid;place-items:center;font-size:28px;border:2px solid transparent;cursor:pointer;transition:all .15s}
+  .avatar-pick .av.sel{border-color:var(--blue);background:#E0EAFF;transform:scale(1.05)}
+  .roster-pick{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:6px}
+  .roster-pick .rp{padding:10px 2px;border-radius:12px;background:#F1F5FF;display:grid;place-items:center;font-size:14px;font-weight:700;color:var(--ink);border:2px solid transparent;cursor:pointer;transition:all .15s}
+  .roster-pick .rp.sel{border-color:var(--blue);background:#E0EAFF;transform:scale(1.05)}
+  .roster-tip{font-size:13px;color:var(--ink-soft);padding:10px;text-align:center}
+
+  /* 地图 */
+  .map-hero{
+    background:linear-gradient(135deg,#3B6FF6 0%,#8B5CF6 60%,#EC4899 100%);
+    border-radius:24px;padding:24px 28px;margin-bottom:18px;
+    display:flex;justify-content:space-between;align-items:center;
+    box-shadow:0 10px 30px rgba(99,80,220,.25);
+    position:relative;overflow:hidden;
+  }
+  .map-hero::after{content:"";position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.1)}
+  .map-hero::before{content:"";position:absolute;right:60px;bottom:-60px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
+  .map-hero-left{display:flex;align-items:center;gap:14px;z-index:1}
+  html.no-flexgap .map-hero-left > *:not(:last-child){margin-right:14px}
+  .map-hero-badge{width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.2);display:grid;place-items:center;backdrop-filter:blur(4px)}
+  .map-hero-right{display:flex;align-items:center;gap:18px;z-index:1}
+  html.no-flexgap .map-hero-right > *:not(:last-child){margin-right:18px}
+  .map-stat{text-align:center}
+  .map-stat .v{font-size:32px;font-weight:900;color:#fff;line-height:1}
+  .map-stat .k{font-size:12px;color:rgba(255,255,255,.8);margin-top:4px}
+  .map-divider{width:1px;height:40px;background:rgba(255,255,255,.3)}
+
+  .map{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+  .stop{
+    background:var(--card);border-radius:20px;padding:0;box-shadow:var(--shadow);cursor:pointer;
+    position:relative;overflow:hidden;transition:all .2s;border:2px solid transparent;
+  }
+  .stop:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(59,111,246,.2)}
+  .stop.locked{opacity:.55;cursor:not-allowed;filter:grayscale(.6)}
+  .stop.locked:hover{transform:none;box-shadow:var(--shadow)}
+  .stop .top-strip{height:6px}
+  .stop .body{padding:18px 20px 20px}
+  .stop .num{
+    position:absolute;right:16px;top:16px;width:36px;height:36px;border-radius:50%;
+    background:#EEF3FF;color:var(--blue);font-weight:800;display:grid;place-items:center;font-size:15px;z-index:2;
+  }
+  .stop.done .num{background:var(--green);color:#fff}
+  .stop .lock-icon{
+    position:absolute;right:16px;top:16px;width:36px;height:36px;border-radius:50%;
+    background:#E2E8F0;color:#94A3B8;display:grid;place-items:center;z-index:2;
+  }
+  .stop .icon-wrap{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;margin-bottom:12px}
+  .stop h3{font-size:19px;margin-bottom:6px;font-weight:900}
+  .stop p{font-size:13px;color:var(--ink-soft);line-height:1.5;min-height:38px}
+  .stop .tag{display:inline-block;margin-top:12px;font-size:12px;padding:4px 12px;border-radius:99px;font-weight:700}
+  .stop.done{background:linear-gradient(135deg,#E8FFF1,#fff);border-color:var(--green)}
+
+  /* 教室寻宝 */
+  .classroom{position:relative;background:#FFF3D6;border-radius:var(--radius);overflow:hidden;border:3px solid #E8C36A}
+  /* 舞台：固定 16:9，跟教室图片等比，宝藏点用百分比定位就不会随窗口跑偏 */
+  .stage{position:relative;width:100%;padding-top:56.25%;background:url("assets/classroom.png") 0 0/100% 100% no-repeat}
+  /* 数据宝藏点 */
+  .spot{position:absolute;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.72);border:2px solid rgba(245,184,0,.85);cursor:pointer;transition:all .25s;z-index:3;animation:treasureGlow 2.4s ease-in-out infinite}
+  .spot svg{width:24px;height:24px;opacity:.25;transition:opacity .2s}
+  .spot:hover{transform:scale(1.35);animation-play-state:paused;box-shadow:0 0 0 10px rgba(245,184,0,.28);z-index:4}
+  .spot:hover svg{opacity:1}
+  .spot.found{width:58px;height:58px;margin:-9px 0 0 -9px;background:var(--green);border-color:var(--green);color:#fff;cursor:default;animation:pop .4s;box-shadow:none}
+  .spot.found svg{stroke:#fff;opacity:1}
+  @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
+  @keyframes treasureGlow{0%,100%{box-shadow:0 0 0 3px rgba(245,184,0,.3)}50%{box-shadow:0 0 0 8px rgba(245,184,0,.08)}}
+  .find-count{position:absolute;top:12px;right:14px;z-index:5;background:#fff;padding:6px 14px;border-radius:99px;font-weight:800;color:var(--yellow-deep);box-shadow:var(--shadow)}
+
+  /* 弹层 */
+  .modal{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(20,30,60,.5);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+  .modal.show{display:flex}
+  .modal-box{background:#fff;border-radius:20px;padding:26px;max-width:420px;width:100%;animation:fade .3s}
+  .modal-box h3{font-size:20px;margin-bottom:6px}
+  .modal-box p{color:var(--ink-soft);font-size:14px;margin-bottom:14px}
+  .modal-box input{width:100%;padding:14px;border:2px solid var(--line);border-radius:12px;font-size:16px;outline:none}
+  .modal-box input:focus{border-color:var(--blue)}
+  .weather-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+  .weather-opts .wopt{padding:10px;background:#F1F5FF;border-radius:12px;text-align:center;cursor:pointer;border:2px solid transparent;font-size:14px}
+  .weather-opts .wopt.sel{border-color:var(--blue);background:#E0EAFF;font-weight:700}
+
+  .toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%) translateY(20px);background:#1E2A4A;color:#fff;padding:12px 22px;border-radius:99px;font-size:15px;opacity:0;pointer-events:none;transition:all .3s;z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.good{background:var(--green)} .toast.bad{background:var(--red)}
+
+  /* 记账本 */
+  .story-box{background:linear-gradient(135deg,#FFF6E0,#FFE9C2);border-radius:14px;padding:14px;margin-bottom:14px;font-size:14px;line-height:1.6}
+  .story-box b{color:var(--yellow-deep)}
+  .ledger{width:100%;border-collapse:separate;border-spacing:0;margin-top:10px}
+  .ledger th,.ledger td{padding:12px;text-align:center;border-bottom:1px solid var(--line)}
+  .ledger th{background:#F1F5FF;font-weight:700;color:var(--ink-soft);font-size:13px}
+  .ledger td.num{font-variant-numeric:tabular-nums;font-weight:700}
+  .ledger tr.income td.num{color:var(--green)}
+  .ledger tr.expense td.num{color:var(--red)}
+  .ledger input.ans{width:90px;padding:8px;border:2px solid var(--line);border-radius:8px;text-align:center;font-size:15px}
+  .ledger input.ans.right{border-color:var(--green);background:#E8FFF1;color:var(--green)}
+  .ledger input.ans.wrong{border-color:var(--red);background:#FFEEEE;color:var(--red)}
+  .start-balance{background:#EEF3FF;padding:10px;border-radius:10px;text-align:center;margin-top:10px;font-weight:700}
+  .start-balance .v{color:var(--blue);font-size:22px}
+
+  /* 分类挑战 */
+  .drop-zone{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:14px}
+  .bin{min-height:170px;border-radius:18px;padding:14px;border:3px dashed transparent;transition:all .2s;position:relative;overflow:hidden}
+  .bin.over{transform:scale(1.03)}
+  .bin .bin-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  html.no-flexgap .bin .bin-head > *:not(:last-child){margin-right:8px}
+  .bin .bin-icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;flex-shrink:0}
+  .bin h4{font-size:15px;font-weight:800}
+  .bin .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:60px;align-content:flex-start}
+  html.no-flexgap .bin .chips > *:not(:last-child){margin-right:8px}
+  .bin-number{background:linear-gradient(135deg,#3B6FF6,#6B9BFF)}
+  .bin-hanzi{background:linear-gradient(135deg,#22C55E,#5BE08A)}
+  .bin-letter{background:linear-gradient(135deg,#FF5C5C,#FF8A8A)}
+  .bin-symbol{background:linear-gradient(135deg,#FFB020,#FFCB6B)}
+  .bin-image{background:linear-gradient(135deg,#8B5CF6,#B49CFF)}
+  .bin-code{background:linear-gradient(135deg,#06B6D4,#5EE3F8)}
+  .bin.bin-number{background:rgba(59,111,246,.08);border-color:#B8CCFF}
+  .bin.bin-hanzi{background:rgba(34,197,94,.08);border-color:#A8E6BF}
+  .bin.bin-letter{background:rgba(255,92,92,.08);border-color:#FFC4C4}
+  .bin.bin-symbol{background:rgba(255,176,32,.1);border-color:#FFE0A8}
+  .bin.bin-image{background:rgba(139,92,246,.08);border-color:#D4C4FF}
+  .bin.bin-code{background:rgba(6,182,212,.08);border-color:#A8E6F0}
+
+  .chip{padding:10px 14px;border-radius:12px;background:#fff;border:2px solid var(--blue);color:var(--blue-deep);font-weight:700;cursor:grab;user-select:none;transition:all .15s;font-size:15px;box-shadow:0 2px 0 rgba(59,111,246,.2)}
+  .chip:hover{transform:translateY(-2px)}
+  .chip.placed{opacity:.55}
+  .chip.right{background:var(--green);border-color:var(--green);color:#fff}
+  .chip.wrong{background:var(--red);border-color:var(--red);color:#fff}
+  .pool{margin-top:18px;padding:16px;border-radius:16px;background:#fff;border:2px solid var(--line);min-height:110px}
+  .pool h4{font-size:14px;color:var(--ink-soft);margin-bottom:10px;text-align:center}
+  .pool .chips{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;justify-items:center}
+  @media (max-width:768px){.pool .chips{grid-template-columns:repeat(4,1fr)}}
+  .score-bar{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#F1F5FF;border-radius:12px;margin-top:12px;font-weight:700}
+
+  /* 自画像表单 */
+  .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .form-grid .field{margin-bottom:0}
+  .form-grid .full{grid-column:1/-1}
+  .color-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  html.no-flexgap .color-row > *:not(:last-child){margin-right:10px}
+  .color-opt{width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s}
+  .color-opt.sel{border-color:#fff;box-shadow:0 0 0 3px var(--ink)}
+  .emoji-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  html.no-flexgap .emoji-row > *:not(:last-child){margin-right:8px}
+  .emoji-opt{padding:8px 12px;border-radius:12px;background:#F1F5FF;cursor:pointer;border:2px solid transparent;font-size:18px}
+  .emoji-opt.sel{border-color:var(--blue);background:#E0EAFF}
+
+  /* 名片 */
+  .card-preview{margin:20px auto;max-width:420px;display:none}
+  .idcard{
+    border-radius:22px;overflow:hidden;position:relative;
+    box-shadow:0 12px 30px rgba(0,0,0,.18);
+    background:linear-gradient(135deg,#3B6FF6,#8B5CF6);
+    color:#fff;
+  }
+  .idcard .top{padding:24px 24px 6px;text-align:center}
+  .idcard .avatar{font-size:64px;line-height:1}
+  .idcard .name{font-size:26px;font-weight:900;margin-top:6px;letter-spacing:2px}
+  .idcard .klass{font-size:13px;opacity:.85;margin-top:2px}
+  .idcard .data{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.15);margin:18px 18px 0;border-radius:14px;overflow:hidden}
+  .idcard .cell{background:rgba(0,0,0,.15);padding:12px;text-align:center}
+  .idcard .cell .v{font-size:18px;font-weight:800}
+  .idcard .cell .k{font-size:11px;opacity:.8;margin-top:2px}
+  .idcard .footer{padding:14px 24px 20px;font-size:12px;opacity:.9;text-align:center}
+
+  /* 旅行地 */
+  .travel-layout{display:grid;grid-template-columns:minmax(0,1fr) 372px;grid-template-areas:"cards wiki" "form wiki";gap:16px 18px;align-items:start}
+  .travel-cards{grid-area:cards;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+  .travel-form{grid-area:form}
+  .travel-form .form-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .travel-card{background:#fff;border:3px solid var(--line);border-radius:18px;overflow:hidden;cursor:pointer;transition:all .2s}
+  .travel-card:hover{transform:translateY(-4px)}
+  .travel-card.sel{border-color:var(--yellow);box-shadow:0 8px 20px rgba(255,176,32,.3)}
+  .travel-card img{width:100%;height:130px;object-fit:cover;display:block}
+  .travel-card .body{padding:12px}
+  .travel-card h4{font-size:16px;margin-bottom:4px}
+  .travel-card p{font-size:12px;color:var(--ink-soft);line-height:1.5}
+  /* 景点小百科（右栏） */
+  .travel-wiki{grid-area:wiki;background:linear-gradient(165deg,#FFF9EC,#F2F7FF);border:2px solid var(--line);border-radius:18px;padding:16px;position:sticky;top:80px}
+  .wiki-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  html.no-flexgap .wiki-head > *:not(:last-child){margin-right:10px}
+  .wiki-emoji{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:26px;flex:0 0 46px;
+    background:linear-gradient(135deg,var(--yellow),#FF8A3D);box-shadow:0 4px 0 var(--yellow-deep)}
+  .wiki-title{font-size:19px;font-weight:900;line-height:1.2}
+  .wiki-sub{font-size:12px;color:var(--ink-soft);margin-top:3px}
+  .wiki-tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+  html.no-flexgap .wiki-tags > *:not(:last-child){margin-right:6px}
+  .wiki-tag{font-size:12px;padding:3px 10px;border-radius:99px;background:#E8F0FF;color:var(--blue);font-weight:700}
+  .wiki-intro{font-size:14px;line-height:1.75;color:var(--ink)}
+  .wiki-facts{margin:10px 0 0;padding:0;list-style:none}
+  .wiki-facts li{font-size:13px;line-height:1.6;padding:7px 0;border-bottom:1px dashed var(--line)}
+  .wiki-facts li:last-child{border-bottom:none}
+  .wiki-hunt{background:#E8F0FF;border-radius:12px;padding:9px 12px;font-size:12.5px;line-height:1.65;color:#2B56C9;margin:10px 0}
+  .wiki-hunt b{color:#1D4ED8}
+  .wiki-tip{margin-top:12px;background:#FFF4D6;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.6;color:#8A5A00}
+  .wiki-ask{margin-top:10px;background:#E9F9EF;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.6;color:#136C3A;font-weight:700}
+  /* 屏幕不够宽时逐级收窄：4 列 → 3 列 → 百科折到下面 */
+  @media (max-width:1330px){
+    .travel-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .travel-form .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:1180px){
+    .travel-layout{grid-template-columns:1fr;grid-template-areas:"cards" "wiki" "form"}
+    .travel-wiki{position:static}
+  }
+  @media (max-width:900px){
+    .travel-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:600px){
+    .travel-cards{grid-template-columns:1fr}
+    .travel-form .form-grid{grid-template-columns:1fr}
+  }
+
+  /* 完成页 */
+  .done-hero{text-align:center;padding:40px 10px}
+  .stars{font-size:36px;letter-spacing:6px;margin:10px 0;color:var(--yellow)}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:20px}
+  .sum-item{background:#fff;border-radius:14px;padding:14px;text-align:center;box-shadow:var(--shadow)}
+  .sum-item .v{font-size:22px;font-weight:900;color:var(--blue)}
+  .sum-item .k{font-size:12px;color:var(--ink-soft);margin-top:4px}
+
+  @media (max-width:768px){
+    .hero h1{font-size:24px}
+    .form-grid{grid-template-columns:1fr}
+    .drop-zone{grid-template-columns:repeat(2,1fr)}
+    .avatar-pick{grid-template-columns:repeat(3,1fr)}
+    .roster-pick{grid-template-columns:repeat(3,1fr)}
+    .who .who-label{display:none}
+  }
+
+  /* 小测 */
+  .quiz-q{margin-bottom:22px;padding-bottom:18px;border-bottom:1px dashed var(--line)}
+  .quiz-q:last-child{border-bottom:none}
+  .quiz-q .qtitle{font-weight:800;font-size:16px;margin-bottom:10px}
+  .quiz-q .qtitle .qn{color:var(--orange);margin-right:6px}
+  .quiz-opts{display:grid;gap:8px}
+  .quiz-opt{
+    padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#F8FAFF;
+    cursor:pointer;font-size:15px;transition:all .15s;display:flex;align-items:center;gap:10px;
+  }
+  html.no-flexgap .quiz-opt > *:not(:last-child){margin-right:10px}
+  .quiz-opt:hover{border-color:var(--blue);background:#EEF3FF}
+  .quiz-opt .letter{
+    width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid var(--line);
+    display:grid;place-items:center;font-weight:800;font-size:13px;flex-shrink:0;
+  }
+  .quiz-opt.sel{border-color:var(--blue);background:#E0EAFF}
+  .quiz-opt.sel .letter{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .quiz-opt.right{border-color:var(--green);background:#E8FFF1}
+  .quiz-opt.right .letter{background:var(--green);color:#fff;border-color:var(--green)}
+  .quiz-opt.wrong{border-color:var(--red);background:#FFE8E8}
+  .quiz-opt.wrong .letter{background:var(--red);color:#fff;border-color:var(--red)}
+  .quiz-opt:disabled{cursor:default}
+  .quiz-feedback{margin-top:8px;font-size:14px;font-weight:700}
+</style>
+<script>
+/* ===== 防误触兜底 =====
+   1) 右键菜单：学生鼠标不熟练，乱按时很容易弹出系统右键菜单挡住画面。
+      这里全局取消默认菜单，但只调 preventDefault、绝不 stopPropagation，
+      页内自己监听 contextmenu 的功能照常收到事件。输入框除外，要用右键粘贴。
+   2) 拖拽：防止图片/文字被拖出页面。拖拽练习走 pointer 事件，不受影响。
+   3) 防误退：Edge 的鼠标手势（右键按住向左拖动）和误按后退键都会触发浏览器
+      后退，把学生从练习页带走。压两层 history 哨兵，任何后退/前进都只会落回
+      本页，popstate 一响立刻再压一层，页面始终留在原地。
+   本页不使用 hash / history 导航，以上都不影响页内功能。 */
+(function () {
+  /* 输入框里保留原生右键菜单，方便右键粘贴 */
+  function keepNative(el) {
+    return !!(el && el.closest &&
+      el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'));
+  }
+  document.addEventListener('contextmenu', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();                    /* 只取消默认菜单，不阻断页内逻辑 */
+  }, true);
+  document.addEventListener('dragstart', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();
+  }, true);
+
+  /* 防误退 */
+  if (location.protocol === 'file:') return;      /* file:// 下浏览器禁止 pushState */
+  function guard() {
+    try { history.pushState({ mtSentinel: 1 }, '', location.href); } catch (e) {}
+  }
+  try {
+    guard(); guard();
+    window.addEventListener('popstate', guard);
+  } catch (e) {}
+})();
+</script>
+<script>
+/* ===== 兼容层 A：flex gap 能力探测 =====
+   老内核（Edge 84 以前、EdgeHTML）的 flex 布局不支持 gap，间距会全部塌掉。
+   这里用真实布局量一次宽度来判断，支持就用原样，不支持就给 <html> 挂上
+   no-flexgap，样式表里预置的 margin 规则接管间距。
+   不用 CSS.supports('gap') 判断：gap 在 Chrome 66 起就作为 grid-gap 的别名存在，
+   老版本会误报"支持"。 */
+(function () {
+  try {
+    var box = document.createElement('div');
+    box.style.cssText = 'position:absolute;top:-9999px;left:-9999px;display:flex;gap:10px;width:auto;height:1px';
+    var a = document.createElement('i');
+    var b = document.createElement('i');
+    a.style.cssText = b.style.cssText = 'display:block;width:10px;height:1px';
+    box.appendChild(a); box.appendChild(b);
+    document.documentElement.appendChild(box);
+    var w = box.getBoundingClientRect().width || box.scrollWidth;
+    document.documentElement.removeChild(box);
+    if (!(w >= 30)) document.documentElement.className += ' no-flexgap';
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <span class="gem"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>
+    数据探险岛
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="pfill"></div></div>
+  <div class="progress-label" id="plabel">0 / 7 关</div>
+  <div class="who"><span class="who-label">探险者：</span><b id="whoname">小探险家</b> <button id="btn-logout" style="margin-left:8px;padding:3px 10px;font-size:12px;border-radius:99px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer">换人</button></div>
+</div>
+
+<main>
+
+<!-- 登录 -->
+<section class="view active" data-route="login">
+  <div class="hero">
+    <h1>欢迎来到 <span class="hl">数据探险岛</span></h1>
+    <p>第1课 · 数据宝藏在身边 · 和小伙伴一起寻找身边的数据吧！</p>
+  </div>
+  <div class="card login-wrap">
+    <div class="field"><label>班级</label>
+      <select id="inp-class">
+        <option value="">请选择班级</option>
+        <option value="41">四(1)班</option><option value="410">四(10)班</option>
+        <option value="测试班">测试班</option>
+      </select>
+    </div>
+    <div class="field"><label>你的名字</label>
+      <div id="roster-pick" class="roster-pick"><div class="roster-tip">请先选择班级</div></div>
+      <input id="inp-name" type="text" maxlength="12" placeholder="输入你的名字或昵称" style="display:none">
+    </div>
+    <div class="field"><label>选一个探险头像</label><div class="avatar-pick" id="avatar-pick"></div></div>
+    <div class="btn-row"><button class="btn gold" id="btn-start">开始探险</button></div>
+  </div>
+</section>
+
+<!-- 地图 -->
+<section class="view" data-route="map">
+  <div class="map-hero">
+    <div class="map-hero-left">
+      <div class="map-hero-badge">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="6"/><path d="M15.5 13.5L17 21l-5-3-5 3 1.5-7.5"/></svg>
+      </div>
+      <div>
+        <h1 style="font-size:28px;font-weight:900;color:#fff;margin:0">数据探险地图</h1>
+        <p style="color:rgba(255,255,255,.85);margin:4px 0 0;font-size:14px">和 <b id="map-who">小探险家</b> 一起，点亮 <span id="map-total">7</span> 个宝藏站！</p>
+      </div>
+    </div>
+    <div class="map-hero-right">
+      <div class="map-stat"><div class="v" id="map-done">0</div><div class="k">已完成</div></div>
+      <div class="map-divider"></div>
+      <div class="map-stat"><div class="v" id="map-open">6</div><div class="k">总关卡</div></div>
+    </div>
+  </div>
+  <div class="map" id="map"></div>
+</section>
+
+<!-- 关卡1：教室寻宝 -->
+<section class="view" data-route="classroom">
+  <div class="hero">
+    <h1>第一站 · 教室里的数据大搜索</h1>
+    <p>看看教室里的真实数据，<b style="color:var(--red)">点击每个物体，把你看到的数据填进去</b>！</p>
+  </div>
+  <div class="card">
+    <div class="classroom" id="classroom">
+      <div class="find-count">数据宝藏 <span id="found-n">0</span> / 5</div>
+      <div class="stage" id="stage">
+      <div class="spot" data-id="clock" data-type="clock" data-k="time">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1E2A4A" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      </div>
+      <div class="spot" data-id="thermo" data-type="temp" data-k="temp">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1E2A4A" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+      </div>
+      <div class="spot" data-id="seat" data-type="seat" data-k="seat">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1E2A4A" stroke-width="2"><path d="M4 4h16v4H4z"/><path d="M6 8v12M18 8v12M10 8v12M14 8v12"/></svg>
+      </div>
+      <div class="spot" data-id="calendar" data-type="date" data-k="date">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1E2A4A" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="spot" data-id="weather" data-type="weather" data-k="weather">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1E2A4A" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-soft);text-align:center;margin-top:10px">小提示：宝藏会发出淡淡的金光，点一点就能记录数据；点错也没关系，再看看别的地方～</p>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="go('map')">返回地图</button>
+      <button class="btn" id="btn-save-find" disabled>上交我记录的数据</button>
+    </div>
+  </div>
+</section>
+
+<!-- 关卡2：记账本 -->
+<section class="view" data-route="ledger">
+  <div class="hero">
+    <h1>第二站 · 小管家算账</h1>
+    <p>9月开学啦，妈妈给了你 <b style="color:var(--yellow-deep)">50 元</b> 零花钱。下面三笔账老师已经帮你记好了，请你算出<b>每一笔后的余额</b>！</p>
+  </div>
+  <div class="card">
+    <div class="story-box">
+      <b>小任务：</b>从 50 元开始，每花一笔就减，每收一笔就加。把"余额"那一列的三个空填好，看看你最后还剩多少钱。
+    </div>
+    <div class="start-balance">起始零花钱：<span class="v">50.00 元</span></div>
+    <table class="ledger">
+      <thead><tr><th>日期</th><th>事件</th><th>金额（元）</th><th>余额（你来算）</th></tr></thead>
+      <tbody id="ledger-body"></tbody>
+    </table>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="go('map')">返回地图</button>
+      <button class="btn" id="btn-check-ledger">检查答案</button>
+      <button class="btn gold" id="btn-save-ledger" disabled>上交账本</button>
+    </div>
+  </div>
+</section>
+
+<!-- 关卡3：分类挑战 -->
+<section class="view" data-route="classify">
+  <div class="hero">
+    <h1>第三站 · 数据分类大挑战</h1>
+    <p>把下面的数据块送到正确的家：<b>数字 / 汉字 / 字母 / 符号 / 图片</b></p>
+  </div>
+  <div class="card">
+    <div class="score-bar">
+      <span>已分类 <span id="cls-done">0</span> / <span id="cls-total">9</span></span>
+      <span>得分：<span id="cls-score">0</span></span>
+    </div>
+    <div class="drop-zone" id="bins"></div>
+    <div class="pool" id="pool">
+      <h4>点一个数据块，再点上面的分类框（也可以直接拖过去）</h4>
+      <div class="chips" id="pool-chips"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="go('map')">返回地图</button>
+      <button class="btn" id="btn-save-cls" disabled>上交成绩</button>
+    </div>
+  </div>
+</section>
+
+<!-- 关卡4：自画像 -->
+<section class="view" data-route="self">
+  <div class="hero">
+    <h1>第四站 · 用数据画一个"我"</h1>
+    <p>填好下面的数据，点按钮生成你的<b style="color:var(--pink)">专属数据名片</b>！</p>
+  </div>
+  <div class="card">
+    <div class="form-grid">
+      <div class="field"><label>我的小名（花名、昵称）</label><input id="f-nick" type="text" maxlength="10" placeholder="例如 小豆子"></div>
+      <div class="field"><label>年龄（岁）</label><input id="f-age" type="number" min="8" max="12" placeholder="例如 10"></div>
+      <div class="field"><label>身高（厘米）</label><input id="f-height" type="number" min="120" max="170" placeholder="例如 145"></div>
+      <div class="field"><label>体重（斤）</label><input id="f-weight" type="number" min="40" max="160" placeholder="例如 70"></div>
+      <div class="field"><label>生日（月-日）</label>
+        <div class="hrow">
+          <select id="f-birth-m" style="flex:1;padding:14px;border:2px solid var(--line);border-radius:14px;background:#F8FAFF">
+            <option value="">月</option>
+          </select>
+          <span style="font-weight:700">月</span>
+          <select id="f-birth-d" style="flex:1;padding:14px;border:2px solid var(--line);border-radius:14px;background:#F8FAFF">
+            <option value="">日</option>
+          </select>
+          <span style="font-weight:700">日</span>
+        </div>
+      </div>
+      <div class="field full"><label>最喜欢的颜色</label><div class="color-row" id="color-row"></div></div>
+      <div class="field full"><label>最喜欢的科目</label><div class="emoji-row" id="subject-row"></div></div>
+      <div class="field full"><label>最喜欢的动物</label><div class="emoji-row" id="animal-row"></div></div>
+      <div class="field full"><label>我喜欢的水果</label><div class="emoji-row" id="fruit-row"></div></div>
+      <div class="field full"><label>我的爱好（必选，可以选好几个）</label><div class="emoji-row" id="hobby-row"></div></div>
+      <div class="field full"><label>我的饮食习惯（可以选好几个）</label><div class="emoji-row" id="diet-row"></div></div>
+    </div>
+    <p style="color:var(--ink-soft);font-size:13px;margin-top:10px;text-align:center">只需要选择至少一个爱好，其他项目可以选填哦。</p>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="go('map')">返回地图</button>
+      <button class="btn pink" id="btn-make-card" style="background:var(--pink);box-shadow:0 4px 0 #BE3479">生成我的数据名片</button>
+    </div>
+    <div class="card-preview" id="card-preview"></div>
+    <div class="btn-row" id="card-actions" style="display:none">
+      <button class="btn ghost" id="btn-edit-card">再改改</button>
+      <button class="btn gold" id="btn-save-self">就交这张名片</button>
+    </div>
+  </div>
+</section>
+
+<!-- 关卡5：猜猜我是谁 -->
+<section class="view" data-route="guess">
+  <div class="hero">
+    <h1>第五站 · 猜猜我是谁</h1>
+    <p>老师在大屏幕上展示了一位同学的<b style="color:var(--cyan)">数据名片</b>，你能猜出他/她是谁吗？</p>
+  </div>
+  <div class="card">
+    <div id="guess-wait" style="text-align:center;padding:30px 10px;color:var(--ink-soft)">
+      <div style="font-size:40px;margin-bottom:10px">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 5 0c0 1.5-2.5 2-2.5 3.5"/><circle cx="12" cy="17" r="0.5" fill="#06B6D4"/></svg>
+      </div>
+      老师还没开始这一轮游戏，请先去完成前面的关卡吧～
+    </div>
+    <div id="guess-active" style="display:none">
+      <div id="guess-card"></div>
+      <div class="field" style="margin-top:16px">
+        <label>我猜这位同学是：</label>
+        <select id="g-answer"><option value="">—— 选择同学的名字 ——</option></select>
+      </div>
+      <div id="guess-feedback" style="margin-top:6px;min-height:24px;font-weight:800;font-size:15px"></div>
+      <div id="guess-tries" style="font-size:13px;color:var(--ink-soft);margin-top:4px"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="go('map')">返回地图</button>
+      <button class="btn" id="btn-save-guess" disabled>我猜是 TA！</button>
+    </div>
+  </div>
+</section>
+
+<!-- 关卡6：旅行推荐 -->
+<section class="view" data-route="travel">
+  <div class="hero">
+    <h1>探险彩蛋 · 推荐一个宝藏旅行地</h1>
+    <p>选一个你喜欢的地方，或者写一个你自己的宝藏地点，用数据介绍它！</p>
+  </div>
+  <div class="card">
+    <div class="travel-layout">
+      <!-- 左边 2/3：选景点 + 填数据 -->
+      <div class="travel-cards" id="travel-cards"></div>
+      <!-- 右边 1/3：景点小百科 -->
+      <aside class="travel-wiki" id="travel-wiki"></aside>
+      <div class="travel-form">
+        <div class="field" style="margin-top:16px"><label>地点名字</label><input id="t-name" type="text" placeholder="地点名字"></div>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="field"><label>海拔 / 高度（米）</label><input id="t-alt" type="text" placeholder="单位：米，例如 1864"></div>
+          <div class="field"><label>全年平均气温（℃）</label><input id="t-temp" type="text" placeholder="单位：℃，例如 18"></div>
+          <div class="field"><label>距离深圳大约（公里）</label><input id="t-dist" type="text" placeholder="单位：公里，例如 1500"></div>
+          <div class="field"><label>你最想告诉同学的一个数据</label><input id="t-fact" type="text" placeholder="例如：每年 4 月有樱花"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost" onclick="go('map')">返回地图</button>
+          <button class="btn" id="btn-save-travel">推荐！</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 课堂小测 -->
+<section class="view" data-route="quiz">
+  <div class="hero">
+    <h1>课堂小测 <span style="color:var(--orange)">📝</span></h1>
+    <p>4 道选择题，做完点"交卷"，看看你今天学会了多少！</p>
+  </div>
+  <div class="card" id="quiz-wrap"></div>
+  <div class="btn-row">
+    <button class="btn ghost" onclick="go('map')">返回地图</button>
+    <button class="btn" id="btn-quiz-submit" disabled>交卷！</button>
+  </div>
+</section>
+
+<!-- 完成 -->
+<section class="view" data-route="done">
+  <div class="done-hero">
+    <div style="font-size:60px">
+      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#FFB020" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    </div>
+    <h1 style="font-size:30px;font-weight:900">恭喜你！数据探险家毕业啦！</h1>
+    <div class="stars">★★★★★</div>
+    <p style="color:var(--ink-soft)">你已经完成了今天的所有任务，老师在大屏幕上看到了你的数据！</p>
+    <div class="summary-grid" id="summary"></div>
+    <div class="btn-row"><button class="btn gold" onclick="go('map')">再玩一次</button></div>
+  </div>
+</section>
+
+</main>
+
+<!-- 弹层：教室寻宝输入 -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3 id="m-title">填数据</h3>
+    <p id="m-desc"></p>
+    <div id="m-body"></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn ghost" id="m-cancel">取消</button>
+      <button class="btn" id="m-ok">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "https://qiuform.qiuzizhao.com/api/m3d4ntcuu14s";
+const SAVE_KEY = "data_treasure_progress_v1";
+const state = {
+  student:"", klass:"", avatar:"🦊",
+  done:{classroom:false,ledger:false,classify:false,self:false,guess:false,travel:false,quiz:false},
+  open:{classroom:false,ledger:false,classify:false,self:false,guess:false,travel:false,quiz:false},
+  found:{},
+  cls:{score:0,right:0,placed:0},
+  clsFinal:0,
+  self:{},
+  travel:{}
+};
+/* 本地持久化：刷新/重启浏览器不丢登录和进度 */
+function saveState(){
+  try{
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      student:state.student, klass:state.klass, avatar:state.avatar,
+      done:state.done, found:state.found, clsFinal:state.clsFinal,
+      self:state.self, travel:state.travel
+    }));
+  }catch(e){}
+}
+function restoreState(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const d=JSON.parse(raw);
+    if(!d.student) return false;
+    state.student=d.student; state.klass=d.klass;
+    // 旧数据里存的是不在候选里的 🐱，统一归一到第一个头像
+    state.avatar=AVATARS.includes(d.avatar)?d.avatar:AVATARS[0];
+    if(d.done) state.done={...state.done,...d.done};
+    if(d.found) state.found=d.found;
+    if(d.clsFinal) state.clsFinal=Number(d.clsFinal)||0;
+    if(d.self) state.self=d.self;
+    if(d.travel) state.travel=d.travel;
+    return true;
+  }catch(e){return false;}
+}
+function clearState(){ try{localStorage.removeItem(SAVE_KEY);}catch(e){} }
+
+/* 把 "2026-09-20 09:57:35" 这类服务器时间转成时间戳（按本机时区解析） */
+function atTime(s){
+  const t=s&&s._at?String(s._at):"";
+  const d=new Date(t.replace(" ","T"));
+  return isNaN(d.getTime())?0:d.getTime();
+}
+function esc(x){
+  return String(x==null?"":x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function toast(msg,kind){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.className="toast show "+(kind||"");
+  clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1800);
+}
+async function postData(p){
+  try{const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)});return await r.json();}
+  catch(e){return {ok:false,error:String(e)};}
+}
+function go(route){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  const el=document.querySelector(`.view[data-route="${route}"]`);
+  if(el)el.classList.add("active");
+  // 旅行地这一关内容多：铺开用满整屏（其它关卡保持原来的宽度）
+  const mainEl=document.querySelector("main");
+  if(mainEl) mainEl.classList.toggle("wide", route==="travel");
+  window.scrollTo({top:0,behavior:"smooth"});
+  updateProgress();
+  if(route==="classroom") syncClassroomUI();
+  if(route==="travel") renderTravelWiki(document.getElementById("t-name").value.trim());
+  if(route==="guess") startGuessLoop(); else stopGuessLoop();
+  state.route=route;
+  postHeartbeat();
+}
+/* 本机时间（写进状态里，方便教师端显示“多久没动静”） */
+function localNow(){
+  const d=new Date(),p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+/* 心跳：写进实时状态通道 hb:班级:姓名（ttl 90 秒），不再往记录表堆心跳 */
+let hbAt=0, hbCount=0;
+async function postHeartbeat(force){
+  if(!state.student || document.hidden) return;
+  const now=Date.now();
+  if(!force && now-hbAt<10000) return;      // 同一台设备 10 秒内只写一次
+  hbAt=now;
+  const key=state.klass+":"+state.student;
+  await putState("hb:"+key,{route:state.route||"map",avatar:state.avatar,at:localNow()},TTL_HB);
+  // 登录标记（4 小时）：每 10 分钟补写一次，教师端据此区分“登录了但暂时离线”
+  if(hbCount++ % 20 === 0) await putState("login:"+key,{avatar:state.avatar,at:localNow()},TTL_LOGIN);
+}
+/* 实时得分：教师端能看到“正在答题”的分数（键 10 分钟自动过期） */
+let scoreAt=0;
+function pushLiveScore(force){
+  if(!state.student || document.hidden) return;
+  const now=Date.now();
+  if(!force && now-scoreAt<2000) return;    // 最多 2 秒写一次，避免连续点击刷屏
+  scoreAt=now;
+  putState("score:"+state.klass+":"+state.student,
+    {score:state.cls.score, right:Math.round(state.cls.score/10), placed:state.cls.placed, total:ITEMS.length, at:localNow()},
+    TTL_SCORE);
+}
+/* 心跳 30 秒一次；页面切到后台就不发，省下持续写入的压力 */
+setInterval(()=>{ if(state.student && !document.hidden) postHeartbeat(); },30000);
+function updateProgress(){
+  const total=Object.keys(state.done).length;
+  const done=Object.values(state.done).filter(Boolean).length;
+  document.getElementById("pfill").style.width=(done/total*100)+"%";
+  document.getElementById("plabel").textContent=`${done} / ${total} 关`;
+}
+
+/* 登录 */
+const AVATARS=["🦊","🐼","🐯","🐸","🦁","🐰","🦄","🐨","🦉","🐳","🦋","🐞"];
+const KLASS_LABEL={"41":"四(1)班","410":"四(10)班","测试班":"测试班"};
+const ROSTER={"41":["欧嘉豪","古伊霖","王思思","贺煜涵","施佳羽","骆高嘉","何康铄","王莫森","吴妍倪","刘皖婷","吴宇航","陈江浩","陈洛禧","左家悦","李圆圆","周嘉凯","唐骁宇","赵思鹏","刘若乔","盛子珊","廖睿","兰淼城","唐龙昊","王逸凡","杨必博","李翰宸","项钰祺","谭志铭","雷子欣","邓星皓","陈治廷","戴淇翊","谢博睿","黄茗俞","许婧雅","熊希颖","李咏轩","区杰智","雷浩琳","陈悦滢","林美含","林美成","李梓赫","王思睿"],"410":["李睿珩","李雨珂","黄芊晴","黄子瑜","刘思妍","陈卓谦","熊梓茵","林秀函","刘夜","陈俊熹","崔雅婧","贺雨辰","叶奕晨","张奕心","王灿灿","李淑昀","莫雄宇","陈梓睿","曾梓霖","王嘉乐","郭奕尊","黄子灏","黄乔羽","谢嘉树","徐嘉悦","饶培铮","陈俊亦","古渝鹏","黎文朗","丘雨萌","范诗诗","麦均键","陈希旋","赵思言","郑雨桐","巢弘钰","黄攀义","钟昀译","梁倚衔","李梓瑜","李雨檀","党可瑞","蔡乐琪","谢梓渔","戴博聪","龚梓晴","彭裕源"]};
+function enterMap(){
+  document.getElementById("whoname").textContent=state.student;
+  buildMap();
+  loadTaskControl();
+  go("map");
+}
+document.getElementById("btn-logout").onclick=()=>{
+  if(confirm("确定要清除这台设备上的登录和进度，换一位同学吗？")){
+    clearState();
+    location.reload();
+  }
+};
+/* 班级名单：选班级后从名单里点选自己的名字 */
+function renderRoster(){
+  const klass=document.getElementById("inp-class").value;
+  const box=document.getElementById("roster-pick");
+  const nameInput=document.getElementById("inp-name");
+  box.innerHTML="";
+  if(!klass){
+    box.innerHTML='<div class="roster-tip">请先选择班级</div>';
+    nameInput.style.display="none";
+    state.student="";
+    return;
+  }
+  if(klass==="测试班"){
+    box.innerHTML='<div class="roster-tip">测试班：请在下方输入你的名字</div>';
+    nameInput.style.display="block";
+    state.student=nameInput.value.trim();
+    return;
+  }
+  nameInput.style.display="none";
+  const list=ROSTER[klass]||[];
+  if(!list.length){
+    box.innerHTML='<div class="roster-tip">这个班级的名单还没录入，先联系老师～</div>';
+    state.student="";
+    return;
+  }
+  list.forEach(nm=>{
+    const d=document.createElement("div");
+    d.className="rp"+(nm===state.student?" sel":"");
+    d.textContent=nm;
+    d.onclick=()=>{
+      box.querySelectorAll(".rp").forEach(x=>x.classList.remove("sel"));
+      d.classList.add("sel");
+      state.student=nm;
+    };
+    box.appendChild(d);
+  });
+}
+document.getElementById("inp-class").onchange=()=>{state.student="";renderRoster();};
+(function(){
+  const w=document.getElementById("avatar-pick");
+  if(!AVATARS.includes(state.avatar)) state.avatar=AVATARS[0];
+  AVATARS.forEach((a)=>{
+    const d=document.createElement("div");
+    d.className="av"+(a===state.avatar?" sel":"");d.textContent=a;
+    d.onclick=()=>{w.querySelectorAll(".av").forEach(x=>x.classList.remove("sel"));d.classList.add("sel");state.avatar=a;};
+    w.appendChild(d);
+  });
+  document.getElementById("btn-start").onclick=()=>{
+    const klass=document.getElementById("inp-class").value;
+    if(!klass){toast("请选择班级","bad");return;}
+    if(klass==="测试班"){
+      const name=document.getElementById("inp-name").value.trim();
+      if(!name){toast("请先写上你的名字","bad");return;}
+      state.student=name;
+    }else{
+      if(!state.student){toast("请从名单里点选你的名字","bad");return;}
+    }
+    state.klass=klass;
+    saveState();
+    enterMap();
+  };
+})();
+/* 自动恢复上次登录（放在所有常量/函数定义之后，脚本末尾再调用） */
+function tryAutoLogin(){
+  if(restoreState()){
+    const sel=document.getElementById("inp-class");
+    sel.value=state.klass;
+    // 先回填名字再渲染名单：测试班是从这个输入框读名字的
+    document.getElementById("inp-name").value=state.student;
+    renderRoster();
+    if(!state.student){ return false; }  // 名单里没这个人/名字丢了，回登录页重新选
+    const w=document.getElementById("avatar-pick");
+    w.querySelectorAll(".av").forEach(x=>x.classList.remove("sel"));
+    const idx=AVATARS.indexOf(state.avatar);
+    if(idx>=0 && w.children[idx]) w.children[idx].classList.add("sel");
+    restoreSelfForm();
+    enterMap();
+    return true;
+  }
+  return false;
+}
+
+/* 地图 */
+const STOPS=[
+  {id:"classroom",icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>`,title:"教室里的数据",desc:"看看教室，把真实数据填进去",tag:"学习活动1",theme:"#3B6FF6"},
+  {id:"ledger",icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></svg>`,title:"小管家算账",desc:"算出三笔账后的余额",tag:"生活体验",theme:"#E09400"},
+  {id:"classify",icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,title:"数据分类挑战",desc:"把 9 个数据送回正确的家",tag:"学习活动2",theme:"#22C55E"},
+  {id:"self",icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>`,title:"我的数据名片",desc:"生成专属数据自画像",tag:"学习活动3",theme:"#EC4899"},
+  {id:"guess",icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 5 0c0 1.5-2.5 2-2.5 3.5"/><circle cx="12" cy="17" r="0.5" fill="#fff"/></svg>`,title:"猜猜我是谁",desc:"看名片猜出这位同学",tag:"课堂游戏",theme:"#06B6D4"},
+  {id:"travel",icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-12 4 7 3-4 5 9z"/><circle cx="17" cy="6" r="2"/></svg>`,title:"宝藏旅行地",desc:"用数据推荐一个你喜欢的地方",tag:"拓展提升",theme:"#8B5CF6"},
+  {id:"quiz",icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,title:"课堂小测",desc:"4道题，检验今天的收获",tag:"课后练习",theme:"#F97316"}
+];
+const LOCK_ICON=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+function buildMap(){
+  const m=document.getElementById("map");m.innerHTML="";
+  const done=Object.values(state.done).filter(Boolean).length;
+  document.getElementById("map-done").textContent=done;
+  document.getElementById("map-open").textContent=Object.keys(state.done).length;
+  document.getElementById("map-total").textContent=STOPS.length;
+  document.getElementById("map-who").textContent=state.student||"小探险家";
+  STOPS.forEach((s,i)=>{
+    const opened = state.open[s.id];
+    const isDone = state.done[s.id];
+    const usable = opened || isDone;   // 已完成的任务，即使老师关了开关也允许再看/重做
+    const d=document.createElement("div");
+    d.className="stop"+(isDone?" done":"")+(usable?"":" locked");
+    const badge = isDone
+      ? `<div class="num">✓</div>`
+      : (opened ? `<div class="num">${i+1}</div>` : `<div class="lock-icon">${LOCK_ICON}</div>`);
+    const tagBg = isDone ? "#E3F9EC" : (opened ? "#EEF3FF" : "#F1F5F9");
+    const tagColor = isDone ? "#15803D" : (opened ? "#3B6FF6" : "#94A3B8");
+    const tagText = isDone ? "已完成" : (opened ? s.tag : "未开放");
+    d.innerHTML=`
+      <div class="top-strip" style="background:${s.theme}"></div>
+      <div class="body">
+        ${badge}
+        <div class="icon-wrap" style="background:linear-gradient(135deg,${s.theme},${s.theme}CC)">${s.icon}</div>
+        <h3>${s.title}</h3>
+        <p>${s.id==="classify"?`把 ${ITEMS.length} 个数据送回正确的家`:s.desc}</p>
+        <span class="tag" style="background:${tagBg};color:${tagColor}">${tagText}</span>
+      </div>`;
+    d.onclick=()=>{
+      if(!usable){ toast("老师还没开放这个任务，等等哦～","bad"); return; }
+      go(s.id);
+    };
+    m.appendChild(d);
+  });
+}
+/* ===== 实时状态通道 /state =====
+   心跳、登录、任务开关、猜人轮次、实时得分都走这里：写新值盖旧值 + ttl 自动过期，不占记录表。
+   记录表只留给“要留痕的提交”。仍然保留抖动 + 出错退避 + 后台停摆。 */
+const STATE_URL = API + "/state";
+const TTL_HB = 90;        // 心跳：90 秒没再写就自动消失
+const TTL_LOGIN = 14400;  // 登录标记：4 小时
+const TTL_SCORE = 600;    // 实时得分：10 分钟
+const JITTER = 1 + Math.random()*0.3;   // 每个客户端启动时随机一次，避免全班齐步走
+let stPenalty=0, stBlockUntil=0;
+/* 出错退避：间隔按 2^penalty 拉长，但最多放大 8 倍，避免断网久了恢复太慢 */
+function stGap(base){ return Math.round(base*Math.min(Math.pow(2,stPenalty),8)*JITTER); }
+async function stFail(r){
+  if(r && r.status===429){
+    let wait=10;
+    try{ const j=await r.json(); if(j&&j.retry_after) wait=Number(j.retry_after)||10; }catch(e){}
+    stBlockUntil=Date.now()+wait*1000;
+  }
+  stPenalty=Math.min(stPenalty+1,6);
+  return null;
+}
+function stUrl(name,ttl){
+  return STATE_URL+"/"+encodeURIComponent(name)+(ttl?("?ttl="+ttl):"");
+}
+/* 服务器时间 "2026-09-21 09:57:15" → 时间戳 */
+function stTime(t){
+  const d=new Date(String(t||"").replace(" ","T"));
+  return isNaN(d.getTime())?0:d.getTime();
+}
+function isToday(t){
+  const d=new Date(stTime(t)), n=new Date();
+  return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();
+}
+async function putState(name,value,ttl){
+  if(Date.now()<stBlockUntil) return false;
+  try{
+    const r=await fetch(stUrl(name,ttl),{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(value)});
+    if(!r.ok){ stFail(r); return false; }
+    stPenalty=0;
+    return true;
+  }catch(e){ stFail(); return false; }
+}
+async function getState(name){
+  /* 返回 {key,value,updated_at,expires_at}；不存在或出错返回 null */
+  if(Date.now()<stBlockUntil) return null;
+  try{
+    const r=await fetch(stUrl(name),{cache:"no-cache"});
+    if(r.status===404){ stPenalty=0; return null; }
+    if(!r.ok){ stFail(r); return null; }
+    stPenalty=0;
+    const j=await r.json();
+    return (j&&j.exists)?j.state:null;
+  }catch(e){ stFail(); return null; }
+}
+/* 任务开关：老师点“全部”时会同时给每个班各写一份，所以这里只读自己班的键 */
+const TASK_DEFAULTS={classroom:false,ledger:false,classify:false,self:false,guess:false,travel:false,quiz:false};
+async function loadTaskControl(){
+  if(document.hidden || !state.student) return;   // 没登录就不发请求
+  const st=await getState("tc:"+state.klass);
+  const v=st&&st.value;
+  // 只认“今天”写下的开关（键本身 24 小时过期，双保险：第二天上课默认全关）
+  state.open=(v&&v.open&&isToday(st.updated_at))?{...TASK_DEFAULTS,...v.open}:{...TASK_DEFAULTS};
+  buildMap();
+}
+async function loopTaskControl(){
+  await loadTaskControl();
+  setTimeout(loopTaskControl, stGap(15000));      // 15 秒问一次（+抖动/退避）
+}
+setTimeout(loopTaskControl, 8000+Math.random()*4000);
+/* 切回前台立刻同步一次并补一次心跳；后台时不发任何请求 */
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden) return;
+  if(state.student) postHeartbeat();
+  loadTaskControl();
+  if(state.route==="guess") loadGuessRound();
+});
+
+/* ===== 关卡1：教室寻宝（填数据） ===== */
+/* 宝藏点位置：教室图片（16:9）里的物体中心，写成百分比，跟图片等比缩放 */
+const SPOT_POS={clock:{left:"23%",top:"10%"},thermo:{left:"41.3%",top:"37%"},calendar:{left:"46%",top:"34%"},weather:{left:"84%",top:"15%"},seat:{left:"55%",top:"71%"}};
+const SPOT_META={
+  clock:{name:"时钟",icon:`<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>`},
+  thermo:{name:"温度计",icon:`<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>`},
+  seat:{name:"座位号",icon:`<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 4h16v4H4z"/><path d="M6 8v12M18 8v12M10 8v12M14 8v12"/></svg>`},
+  calendar:{name:"日历",icon:`<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`},
+  weather:{name:"天气",icon:`<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`}
+};
+let currentSpot=null;
+document.querySelectorAll(".spot").forEach(sp=>{
+  const p=SPOT_POS[sp.dataset.id];
+  // 让 40px 的圆圈中心正好落在物体上
+  sp.style.left=`calc(${p.left} - 20px)`;sp.style.top=`calc(${p.top} - 20px)`;
+  sp.onclick=()=>openSpot(sp);
+});
+/* 刷新后按已保存的记录把“已找到”状态补回来 */
+function syncClassroomUI(){
+  document.querySelectorAll(".spot").forEach(sp=>{
+    if(state.found[sp.dataset.k]!==undefined) sp.classList.add("found");
+  });
+  const n=Object.keys(state.found).length;
+  document.getElementById("found-n").textContent=n;
+  const btn=document.getElementById("btn-save-find");
+  btn.disabled = n<5;
+}
+const SPOT_QUESTIONS={
+  clock:"现在时钟上显示的时间：",
+  thermo:"教室里现在的温度：",
+  seat:"你的座位号是（我们班座位号像 A1、D4 这样）：",
+  calendar:"今天的日期是：",
+  weather:"今天外面的天气怎么样？"
+};
+function openSpot(sp){
+  if(sp.classList.contains("found")){toast("这个已经填过啦","good");return;}
+  currentSpot=sp;
+  document.getElementById("m-title").textContent=SPOT_META[sp.dataset.id].name;
+  document.getElementById("m-desc").textContent=SPOT_QUESTIONS[sp.dataset.id];
+  const body=document.getElementById("m-body");
+  const t=sp.dataset.type;
+  if(t==="clock"){
+    body.innerHTML=`<div class="hrow">
+      <input id="m-h" type="number" min="0" max="23" placeholder="时" style="flex:1;text-align:center">
+      <span style="font-size:20px;font-weight:700">:</span>
+      <input id="m-m" type="number" min="0" max="59" placeholder="分" style="flex:1;text-align:center">
+    </div>`;
+  }else if(t==="date"){
+    body.innerHTML=`<div class="hrow">
+      <input id="m-y" type="number" placeholder="年" style="flex:1;text-align:center">
+      <span style="font-weight:700">年</span>
+      <input id="m-mo" type="number" min="1" max="12" placeholder="月" style="flex:1;text-align:center">
+      <span style="font-weight:700">月</span>
+      <input id="m-d" type="number" min="1" max="31" placeholder="日" style="flex:1;text-align:center">
+      <span style="font-weight:700">日</span>
+    </div>`;
+  }else if(t==="seat"){
+    body.innerHTML=`<input id="m-input" type="text" placeholder="例如 A1 或 D4" style="text-transform:uppercase">`;
+  }else if(t==="temp"){
+    body.innerHTML=`<div class="hrow">
+      <input id="m-input" type="number" step="0.1" placeholder="例如 26" style="flex:1;text-align:center">
+      <span style="font-size:20px;font-weight:700">℃</span>
+    </div>`;
+  }else if(t==="weather"){
+    body.innerHTML=`<div class="weather-opts">
+      <div class="wopt" data-v="晴">晴</div>
+      <div class="wopt" data-v="多云">多云</div>
+      <div class="wopt" data-v="阴">阴</div>
+      <div class="wopt" data-v="雨">雨</div>
+    </div>`;
+    body.querySelectorAll(".wopt").forEach(o=>o.onclick=()=>{
+      body.querySelectorAll(".wopt").forEach(x=>x.classList.remove("sel"));
+      o.classList.add("sel");
+    });
+  }
+  document.getElementById("modal").classList.add("show");
+}
+document.getElementById("m-cancel").onclick=()=>document.getElementById("modal").classList.remove("show");
+document.getElementById("m-ok").onclick=()=>{
+  if(!currentSpot) return;
+  let val="";
+  const t=currentSpot.dataset.type;
+  if(t==="clock"){
+    const h=document.getElementById("m-h").value.trim();
+    const m=document.getElementById("m-m").value.trim();
+    if(h===""||m===""){toast("时和分都要填","bad");return;}
+    const hn=Number(h), mn=Number(m);
+    if(!(hn>=0&&hn<=23)||!(mn>=0&&mn<=59)){toast("小时填 0-23，分钟填 0-59","bad");return;}
+    val=hn+"时"+mn+"分";
+  }else if(t==="date"){
+    const y=document.getElementById("m-y").value.trim();
+    const mo=document.getElementById("m-mo").value.trim();
+    const d=document.getElementById("m-d").value.trim();
+    if(y===""||mo===""||d===""){toast("年月日都要填","bad");return;}
+    const yn=Number(y), mon=Number(mo), dn=Number(d);
+    if(!(yn>=2000&&yn<=2100)||!(mon>=1&&mon<=12)||!(dn>=1&&dn<=31)){toast("日期好像不对，再看看","bad");return;}
+    val=yn+"年"+mon+"月"+dn+"日";
+  }else if(t==="weather"){
+    const sel=document.querySelector(".wopt.sel");
+    if(!sel){toast("选一个天气吧","bad");return;}
+    val=sel.dataset.v;
+  }else if(t==="temp"){
+    val=document.getElementById("m-input").value.trim();
+    if(val===""){toast("先填一下数据哦","bad");return;}
+    const n=Number(val);
+    if(isNaN(n)||n<-20||n>60){toast("温度填 -20~60 之间","bad");return;}
+  }else{
+    val=document.getElementById("m-input").value.trim();
+    if(!val){toast("先填一下数据哦","bad");return;}
+  }
+  state.found[currentSpot.dataset.k]=val;
+  currentSpot.classList.add("found");
+  document.getElementById("found-n").textContent=Object.keys(state.found).length;
+  saveState();
+  document.getElementById("modal").classList.remove("show");
+  toast("已记录："+val,"good");
+  if(Object.keys(state.found).length===5){
+    document.getElementById("btn-save-find").disabled=false;
+    toast("5 个数据都记好啦！点击上交","good");
+  }
+};
+document.getElementById("btn-save-find").onclick=async function(){
+  this.disabled=true;this.textContent="提交中…";
+  const r=await postData({type:"classroom_search",student:state.student,klass:state.klass,avatar:state.avatar,data:state.found,count:Object.keys(state.found).length});
+  this.textContent="上交我记录的数据";
+  if(r.ok){state.done.classroom=true;saveState();toast("上交成功！","good");setTimeout(()=>go("map"),800);}
+  else{toast("网络问题，再点一次","bad");this.disabled=false;}
+};
+
+/* ===== 关卡2：小管家算账 ===== */
+const LEDGER_TASKS=[
+  {date:"9月1日",event:"妈妈给的开学零花钱",type:"start",amount:0},
+  {date:"9月5日",event:"买矿泉水",type:"expense",amount:2},
+  {date:"9月12日",event:"卖废纸箱",type:"income",amount:12},
+  {date:"9月18日",event:"买笔和本子",type:"expense",amount:15}
+];
+function renderLedger(){
+  const tb=document.getElementById("ledger-body");tb.innerHTML="";
+  let bal=50;
+  LEDGER_TASKS.forEach((row,i)=>{
+    if(row.type!=="start"){
+      bal=row.type==="income"?bal+row.amount:bal-row.amount;
+    }
+    const tr=document.createElement("tr");
+    tr.className=row.type;
+    if(row.type==="start"){
+      tr.innerHTML=`<td>${row.date}</td><td>${row.event}</td><td class="num">—</td><td class="num" style="color:var(--ink)">${bal.toFixed(2)}</td>`;
+    }else{
+      tr.innerHTML=`<td>${row.date}</td><td>${row.event}</td>
+        <td class="num">${row.type==="income"?"+":"-"}${row.amount.toFixed(2)}</td>
+        <td><input class="ans" data-idx="${i-1}" type="number" step="0.1" placeholder="?"></td>`;
+    }
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll("input.ans").forEach(inp=>{
+    inp.oninput=()=>{inp.classList.remove("right","wrong");};
+  });
+}
+renderLedger();
+document.getElementById("btn-check-ledger").onclick=()=>{
+  const answers=[48,60,45];
+  let allRight=true;
+  document.querySelectorAll("input.ans").forEach((inp,i)=>{
+    const v=parseFloat(inp.value);
+    if(v===answers[i]){inp.classList.add("right");}
+    else{inp.classList.add("wrong");allRight=false;}
+  });
+  if(allRight){
+    toast("全对！你是合格的小管家！","good");
+    document.getElementById("btn-save-ledger").disabled=false;
+  }else{
+    toast("有算错的，红色的改一改","bad");
+  }
+};
+document.getElementById("btn-save-ledger").onclick=async function(){
+  this.disabled=true;
+  const answers=[48,60,45];
+  const userAns=[...document.querySelectorAll("input.ans")].map(i=>parseFloat(i.value));
+  const right=userAns.filter((v,i)=>v===answers[i]).length;
+  const finalBalance=userAns[2];
+  const r=await postData({type:"account_book",student:state.student,klass:state.klass,avatar:state.avatar,
+    answers:userAns,correct_count:right,total:3,final_balance:finalBalance});
+  if(r.ok){state.done.ledger=true;saveState();toast("账本上交成功！","good");setTimeout(()=>go("map"),800);}
+  else{this.disabled=false;toast("再试一次","bad");}
+};
+
+/* ===== 关卡3：分类挑战 ===== */
+const BINS=[
+  {id:"number",name:"数字",cls:"bin-number",icon:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 9h16M4 15h16M10 3L8 21M16 3l-2 18"/></svg>`},
+  {id:"hanzi",name:"汉字",cls:"bin-hanzi",icon:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>`},
+  {id:"letter",name:"字母",cls:"bin-letter",icon:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 20l6-14 6 14M6.5 15h7"/></svg>`},
+  {id:"symbol",name:"符号",cls:"bin-symbol",icon:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>`},
+  {id:"image",name:"图片",cls:"bin-image",icon:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="1.5"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg>`}
+];
+const ITEMS=[
+  {text:"8848.86",cat:"number"},{text:"星期五",cat:"hanzi"},{text:"CCTV",cat:"letter"},
+  {img:"https://aka.doubaocdn.com/s/CiaBSDvQhi",cat:"image",alt:"同学头像"},
+  {text:"35",cat:"number"},{text:"星期一",cat:"hanzi"},{text:"CHN",cat:"letter"},
+  {text:"☀",cat:"symbol"},{img:"https://aka.doubaocdn.com/s/rfPzMW4huX",cat:"image",alt:"校园照片"}
+];
+let selectedChip=null;
+function updateClsUI(){
+  document.getElementById("cls-done").textContent=state.cls.placed;
+  document.getElementById("cls-total").textContent=ITEMS.length;
+  document.getElementById("cls-score").textContent=state.cls.score;
+  // 只有 11 个数据块全部分类完，才能上交
+  document.getElementById("btn-save-cls").disabled = state.cls.placed<ITEMS.length;
+  pushLiveScore();      // 分数实时写进状态通道，老师大屏能看到
+}
+(function(){
+  const binsEl=document.getElementById("bins");
+  BINS.forEach(b=>{
+    const d=document.createElement("div");
+    d.className="bin "+b.cls;d.dataset.cat=b.id;
+    d.innerHTML=`<div class="bin-head"><div class="bin-icon" style="background:linear-gradient(135deg,var(--blue),var(--cyan))">${b.icon}</div><h4>${b.name}</h4></div><div class="chips"></div>`;
+    // 用对应颜色的渐变
+    const grads={number:"linear-gradient(135deg,#3B6FF6,#6B9BFF)",hanzi:"linear-gradient(135deg,#22C55E,#5BE08A)",letter:"linear-gradient(135deg,#FF5C5C,#FF8A8A)",symbol:"linear-gradient(135deg,#FFB020,#FFCB6B)",image:"linear-gradient(135deg,#8B5CF6,#B49CFF)",code:"linear-gradient(135deg,#06B6D4,#5EE3F8)"};
+    d.querySelector(".bin-icon").style.background=grads[b.id];
+    d.onclick=()=>{if(selectedChip)place(selectedChip,b.id);};
+    d.ondragover=e=>{e.preventDefault();d.classList.add("over");};
+    d.ondragleave=()=>d.classList.remove("over");
+    d.ondrop=e=>{e.preventDefault();d.classList.remove("over");const id=e.dataTransfer.getData("text/plain");const c=document.getElementById(id);if(c)place(c,b.id);};
+    binsEl.appendChild(d);
+  });
+  const pool=document.getElementById("pool-chips");
+  ITEMS.forEach((it,i)=>{
+    const c=document.createElement("div");
+    c.className="chip";c.id="chip-"+i;c.dataset.cat=it.cat;c.draggable=true;
+    if(it.img){
+      c.innerHTML=`<img src="${it.img}" alt="${it.alt||""}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;display:block">`;
+      c.style.padding="4px";
+    }else{
+      c.textContent=it.text;
+    }
+    c.ondragstart=e=>e.dataTransfer.setData("text/plain",c.id);
+    c.onclick=()=>{
+      if(c.classList.contains("placed")){
+        // 已放进分类框：点一下回到池子里，可以重新选（并撤销加分）
+        if(c.classList.contains("right")) state.cls.score-=10;
+        c.classList.remove("placed","right","wrong");
+        c.style.outline="";
+        pool.appendChild(c);
+        state.cls.placed--;
+        updateClsUI();
+        return;
+      }
+      document.querySelectorAll(".chip").forEach(x=>x.style.outline="");
+      if(selectedChip===c){selectedChip=null;return;}
+      selectedChip=c;c.style.outline="3px solid #FFB020";
+    };
+    pool.appendChild(c);
+  });
+})();
+function place(chip,cat){
+  // 若这个数据块已在某个分类框里：先撤掉旧状态与旧分数，以最后一次放置为准
+  const prevPlaced=chip.classList.contains("placed");
+  if(prevPlaced){
+    if(chip.parentNode) chip.parentNode.removeChild(chip);
+    if(chip.classList.contains("right")) state.cls.score-=10;
+  }
+  chip.classList.remove("wrong","right");
+  const right=chip.dataset.cat===cat;
+  if(right){chip.classList.add("right");state.cls.score+=10;toast("对啦！+10","good");}
+  else{chip.classList.add("wrong");toast("再想一想哦","bad");}
+  if(!prevPlaced) state.cls.placed++;
+  chip.classList.add("placed");selectedChip=null;
+  document.querySelector(`.bin[data-cat="${cat}"] .chips`).appendChild(chip);
+  updateClsUI();
+  if(state.cls.placed===ITEMS.length){
+    toast("全部分类完成！","good");
+  }
+}
+updateClsUI();
+document.getElementById("btn-save-cls").onclick=async function(){
+  if(state.cls.placed<ITEMS.length){toast("还有数据块没有分类哦","bad");return;}
+  this.disabled=true;
+  const r=await postData({type:"classify_game",student:state.student,klass:state.klass,avatar:state.avatar,
+    score:state.cls.score,right:state.cls.score/10,total:ITEMS.length});
+  if(r.ok){
+    state.done.classify=true;state.clsFinal=state.cls.score;saveState();
+    pushLiveScore(true);
+    toast("成绩已上交！","good");setTimeout(()=>go("map"),800);
+  }
+  else{this.disabled=false;toast("再试一次","bad");}
+};
+
+/* ===== 关卡4：自画像 + 名片 ===== */
+const COLORS=[
+  {name:"红色",c:"#EF4444"},{name:"橙色",c:"#F97316"},{name:"黄色",c:"#EAB308"},
+  {name:"绿色",c:"#22C55E"},{name:"蓝色",c:"#3B6FF6"},{name:"紫色",c:"#8B5CF6"},
+  {name:"粉色",c:"#EC4899"},{name:"黑色",c:"#1E293B"}
+];
+const SUBJECTS=["语文","数学","英语","信息科技","科学","音乐","美术","体育"];
+const ANIMALS=["小狗","小猫","熊猫","老虎","兔子","海豚","长颈鹿","企鹅"];
+const FRUITS=["苹果","香蕉","橘子","葡萄","西瓜","草莓","芒果","桃子","梨","蓝莓"];
+const HOBBIES=["画画","看书","踢足球","打篮球","跳绳","跑步","游泳","下棋","唱歌","跳舞","做手工","搭乐高","编程","拼图","骑自行车","听音乐"];
+const DIETS=["爱吃水果","爱吃蔬菜","爱吃肉","爱吃鱼","爱吃鸡蛋","爱喝牛奶","爱喝白开水","爱喝汤","爱吃甜食","喜欢清淡","喜欢吃辣","不吃香菜","吃饭比较慢","不挑食"];
+function buildPickers(){
+  const cr=document.getElementById("color-row");
+  COLORS.forEach(c=>{
+    const d=document.createElement("div");d.className="color-opt";d.style.background=c.c;d.title=c.name;
+    d.onclick=()=>{cr.querySelectorAll(".color-opt").forEach(x=>x.classList.remove("sel"));d.classList.add("sel");state.self.fav_color=c.name;};
+    cr.appendChild(d);
+  });
+  const sr=document.getElementById("subject-row");
+  SUBJECTS.forEach(s=>{
+    const d=document.createElement("div");d.className="emoji-opt";d.textContent=s;
+    d.onclick=()=>{sr.querySelectorAll(".emoji-opt").forEach(x=>x.classList.remove("sel"));d.classList.add("sel");state.self.fav_subject=s;};
+    sr.appendChild(d);
+  });
+  const ar=document.getElementById("animal-row");
+  ANIMALS.forEach(a=>{
+    const d=document.createElement("div");d.className="emoji-opt";d.textContent=a;
+    d.onclick=()=>{ar.querySelectorAll(".emoji-opt").forEach(x=>x.classList.remove("sel"));d.classList.add("sel");state.self.fav_animal=a;};
+    ar.appendChild(d);
+  });
+  // 水果：单选
+  const fr=document.getElementById("fruit-row");
+  FRUITS.forEach(f=>{
+    const d=document.createElement("div");d.className="emoji-opt";d.textContent=f;
+    if(state.self.fav_fruit===f) d.classList.add("sel");
+    d.onclick=()=>{fr.querySelectorAll(".emoji-opt").forEach(x=>x.classList.remove("sel"));d.classList.add("sel");state.self.fav_fruit=f;};
+    fr.appendChild(d);
+  });
+  // 爱好、饮食习惯：多选
+  [["hobby-row",HOBBIES,"hobby"],["diet-row",DIETS,"diet"]].forEach(function(pair){
+    const row=document.getElementById(pair[0]);
+    pair[1].forEach(t=>{
+      const d=document.createElement("div");d.className="emoji-opt";d.textContent=t;
+      if((state.self[pair[2]]||[]).includes(t)) d.classList.add("sel");
+      d.onclick=()=>{
+        const cur=state.self[pair[2]]||(state.self[pair[2]]=[]);
+        const i=cur.indexOf(t);
+        if(i>=0){cur.splice(i,1);d.classList.remove("sel");}
+        else{cur.push(t);d.classList.add("sel");}
+      };
+      row.appendChild(d);
+    });
+  });
+  // 月份下拉
+  const ms=document.getElementById("f-birth-m");
+  for(let m=1;m<=12;m++){const o=document.createElement("option");o.value=m;o.textContent=m;ms.appendChild(o);}
+  const ds=document.getElementById("f-birth-d");
+  for(let d=1;d<=31;d++){const o=document.createElement("option");o.value=d;o.textContent=d;ds.appendChild(o);}
+  ms.onchange=()=>{state.self.birth=(ms.value||"")+"-"+(ds.value||"");};
+  ds.onchange=()=>{state.self.birth=(ms.value||"")+"-"+(ds.value||"");};
+}
+buildPickers();
+/* 把 state.self 里的选择反映到各个选择器上（刷新后回填用） */
+function applySelfSelections(){
+  const d=state.self||{};
+  const mark=(rowId,text)=>{
+    document.querySelectorAll("#"+rowId+" .emoji-opt").forEach(x=>{ x.classList.toggle("sel", !!text && x.textContent===text); });
+  };
+  mark("subject-row",d.fav_subject);
+  mark("animal-row",d.fav_animal);
+  mark("fruit-row",d.fav_fruit);
+  document.querySelectorAll("#color-row .color-opt").forEach(x=>{ x.classList.toggle("sel", x.title===d.fav_color); });
+  const multi=(rowId,arr)=>{
+    const list=Array.isArray(arr)?arr:[];
+    document.querySelectorAll("#"+rowId+" .emoji-opt").forEach(x=>{ x.classList.toggle("sel", list.includes(x.textContent)); });
+  };
+  multi("hobby-row",d.hobby);
+  multi("diet-row",d.diet);
+}
+/* 刷新后把上次填的自画像表单回填 */
+function restoreSelfForm(){
+  const d=state.self||{};
+  const setV=(id,v)=>{const el=document.getElementById(id);if(el&&v!==undefined&&v!==null&&v!=="")el.value=v;};
+  setV("f-nick",d.nickname); setV("f-age",d.age); setV("f-height",d.height); setV("f-weight",d.weight);
+  if(d.birth){
+    const p=String(d.birth).split("-");
+    if(p[0]) setV("f-birth-m",p[0]);
+    if(p[1]) setV("f-birth-d",p[1]);
+  }
+  applySelfSelections();
+}
+function colorHex(name){const c=COLORS.find(x=>x.name===name);return c?c.c:"#3B6FF6";}
+function buildCard(data,masked){
+  const hex=colorHex(data.fav_color);
+  const displayName=masked?"神秘同学":(state.student||data.student||"我");
+  const rawKlass=state.klass||data.klass||"";
+  const klass=KLASS_LABEL[rawKlass]||rawKlass;
+  const animalMap={"小狗":"🐶","小猫":"🐱","熊猫":"🐼","老虎":"🐯","兔子":"🐰","海豚":"🐬","长颈鹿":"🦒","企鹅":"🐧"};
+  const animalEmoji=animalMap[data.fav_animal]||"🐾";
+  const hobbyText = Array.isArray(data.hobby) ? data.hobby.join("、") : (data.hobby||"");
+  const dietText = Array.isArray(data.diet) ? data.diet.join("、") : (data.diet||"");
+  return `<div class="idcard" style="background:linear-gradient(135deg,${hex},#8B5CF6);position:relative;overflow:hidden">
+    <div style="position:absolute;right:-20px;bottom:-30px;font-size:180px;opacity:.15;line-height:1;pointer-events:none;transform:rotate(-15deg)">${animalEmoji}</div>
+    <div class="top">
+      <div class="avatar">${esc(data.avatar||"🧑")}</div>
+      <div class="name">${esc(displayName)}</div>
+      <div class="klass">${esc(klass)} · 数据探险家</div>
+    </div>
+    <div class="data" style="position:relative;z-index:1">
+      ${masked?"":`<div class="cell"><div class="v">${esc(data.nickname||"?")}</div><div class="k">小名</div></div>`}
+      <div class="cell"><div class="v">${esc(data.age||"?")}</div><div class="k">年龄</div></div>
+      <div class="cell"><div class="v">${esc(data.height||"?")} cm</div><div class="k">身高</div></div>
+      <div class="cell"><div class="v">${esc(data.weight||"?")} 斤</div><div class="k">体重</div></div>
+      <div class="cell"><div class="v">${esc(data.birth||"?")}</div><div class="k">生日(月-日)</div></div>
+      <div class="cell"><div class="v">${esc(data.fav_subject||"?")}</div><div class="k">喜欢科目</div></div>
+      <div class="cell"><div class="v">${esc(data.fav_animal||"?")}</div><div class="k">喜欢动物</div></div>
+      <div class="cell"><div class="v">${esc(data.fav_fruit||"?")}</div><div class="k">喜欢水果</div></div>
+      <div class="cell"><div class="v">${esc(data.fav_color||"?")}</div><div class="k">喜欢的颜色</div></div>
+    </div>
+    <div class="footer" style="position:relative;z-index:1">爱好：${esc(hobbyText||"—")} · 饮食习惯：${esc(dietText||"—")}</div>
+  </div>`;
+}
+document.getElementById("btn-make-card").onclick=()=>{
+  const bm=document.getElementById("f-birth-m").value, bd=document.getElementById("f-birth-d").value;
+  const data={
+    nickname:document.getElementById("f-nick").value.trim(),
+    age:document.getElementById("f-age").value,
+    height:document.getElementById("f-height").value,
+    weight:document.getElementById("f-weight").value,
+    birth:(bm&&bd)?(bm+"-"+bd):"",
+    hobby:state.self.hobby||[],
+    diet:state.self.diet||[],
+    fav_fruit:state.self.fav_fruit||"",
+    fav_color:state.self.fav_color||"蓝色",
+    fav_subject:state.self.fav_subject||"",
+    fav_animal:state.self.fav_animal||""
+  };
+  // 选填项也要在合理范围里
+  const rangeOk=(v,min,max,label)=>{
+    if(v===""||v==null) return true;
+    const n=Number(v);
+    if(isNaN(n)){toast(label+"要填数字","bad");return false;}
+    if(n<min||n>max){toast(label+"填 "+min+"~"+max,"bad");return false;}
+    return true;
+  };
+  if(!rangeOk(data.age,8,12,"年龄"))return;
+  if(!rangeOk(data.height,120,170,"身高"))return;
+  if(!rangeOk(data.weight,40,160,"体重"))return;
+  if(!data.hobby.length){toast("请至少选一个爱好","bad");return;}
+  state.self=data;
+  document.getElementById("card-preview").innerHTML=buildCard({...data,avatar:state.avatar},false);
+  document.getElementById("card-preview").style.display="block";
+  document.getElementById("card-actions").style.display="flex";
+  window.scrollTo({top:100000,behavior:"smooth"});
+};
+document.getElementById("btn-edit-card").onclick=()=>{
+  document.getElementById("card-preview").style.display="none";
+  document.getElementById("card-actions").style.display="none";
+};
+document.getElementById("btn-save-self").onclick=async function(){
+  this.disabled=true;
+  const r=await postData({type:"self_portrait",student:state.student,klass:state.klass,avatar:state.avatar,...state.self});
+  if(r.ok){state.done.self=true;saveState();toast("名片上交成功！","good");setTimeout(()=>go("map"),800);}
+  else{this.disabled=false;toast("再试一次","bad");}
+};
+
+/* ===== 关卡5：猜猜我是谁 ===== */
+let guessRoundId=null;
+let guessCorrectName="";   // 本轮正确答案
+let guessWrongCount=0;     // 本轮错误次数
+async function loadGuessRound(){
+  if(document.hidden || !state.student) return;
+  const st=await getState("round:"+state.klass);
+  applyGuessRound(st);
+}
+function applyGuessRound(st){
+  try{
+    const round=st&&st.value;
+    const gw=document.getElementById("guess-wait");
+    const ga=document.getElementById("guess-active");
+    if(!round || !round.target_name){      // 没有轮次 / 已经过期（ttl 10 分钟）
+      gw.style.display="block";ga.style.display="none";
+      document.getElementById("btn-save-guess").disabled=true;
+      guessRoundId=null;
+      return;
+    }
+    const rid=round.at||st.updated_at||String(round.target_id||"");
+    // 同一轮就不刷新，避免清掉学生已经选的答案
+    if(rid===guessRoundId) return;
+    guessRoundId=rid;
+    guessCorrectName=round.target_name||"";
+    guessWrongCount=0;
+    gw.style.display="none";ga.style.display="block";
+    document.getElementById("guess-card").innerHTML=buildCard(round,true);
+    const sel=document.getElementById("g-answer");
+    const names=Array.isArray(round.names)?round.names:[];
+    sel.innerHTML='<option value="">—— 选择同学的名字 ——</option>'+names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
+    if(!names.length) loadNamesFallback(sel);   // 老师端版本较旧时兜底
+    document.getElementById("guess-feedback").textContent="";
+    document.getElementById("guess-tries").textContent="";
+    document.getElementById("btn-save-guess").disabled=false;
+  }catch(e){ /* 网络出问题时静默退避，不往控制台打错误（课堂页控制台要干净） */ }
+}
+/* 兜底：轮次里没带名单时，偶尔拉一次全量补名单（最多 1 分钟一次） */
+let namesFallbackAt=0;
+async function loadNamesFallback(sel){
+  if(Date.now()-namesFallbackAt<60000) return;
+  namesFallbackAt=Date.now();
+  try{
+    const r=await fetch(API+"/all",{cache:"no-cache"});
+    if(!r.ok) return;
+    const j=await r.json();
+    const names=[...new Set(((j&&j.submissions)||[])
+      .filter(s=>s.type==="self_portrait"&&s.student&&s.klass===state.klass).map(s=>s.student))];
+    if(!names.length) return;
+    sel.innerHTML='<option value="">—— 选择同学的名字 ——</option>'+names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
+  }catch(e){}
+}
+/* 猜人环节：5 秒问一次状态；离开这一关就停 */
+let guessLoopOn=false;
+async function loopGuess(){
+  if(!guessLoopOn) return;
+  await loadGuessRound();
+  if(!guessLoopOn) return;
+  setTimeout(loopGuess, stGap(5000));
+}
+function startGuessLoop(){ if(guessLoopOn) return; guessLoopOn=true; loopGuess(); }
+function stopGuessLoop(){ guessLoopOn=false; }
+document.getElementById("g-answer").addEventListener("change",e=>{
+  document.getElementById("btn-save-guess").disabled=!e.target.value;
+});
+document.getElementById("btn-save-guess").onclick=async function(){
+  const ans=document.getElementById("g-answer").value;
+  if(!ans){toast("先选一个名字","bad");return;}
+  const fb=document.getElementById("guess-feedback");
+  const tries=document.getElementById("guess-tries");
+  // 本地判断对错
+  if(guessCorrectName && ans!==guessCorrectName){
+    guessWrongCount++;
+    fb.textContent="✗ 猜错啦，再仔细看看名片上的数据，换一个同学试试！";
+    fb.style.color="var(--red)";
+    tries.textContent=`已经猜错 ${guessWrongCount} 次，别灰心，继续猜！`;
+    // 重置下拉，允许继续选
+    document.getElementById("g-answer").value="";
+    this.disabled=true;
+    toast("猜错了，再试试","bad");
+    return;
+  }
+  // 猜对了才提交
+  this.disabled=true;
+  fb.textContent="✓ 猜对啦！就是 "+(guessCorrectName||ans)+"！";
+  fb.style.color="var(--green)";
+  const r=await postData({
+    type:"guess_submit",student:state.student,klass:state.klass,avatar:state.avatar,
+    round_id:guessRoundId,guess_answer:ans,
+    correct:true,wrong_count:guessWrongCount
+  });
+  if(r.ok){state.done.guess=true;saveState();toast(`猜对了！你一共猜了${guessWrongCount+1}次`,"good");setTimeout(()=>go("map"),1000);}
+  else{this.disabled=false;toast("网络问题，再点一次","bad");}
+};
+
+/* ===== 关卡6：旅行地 ===== */
+const TRAVEL=[
+  {name:"深圳世界之窗",fact:"占地 48 万平方米，缩微了 130 个世界景点",img:"https://aka.doubaocdn.com/s/vopmUIGK8F"},
+  {name:"北京长城",fact:"全长超 2 万公里，1987 年入选世界遗产",img:"https://aka.doubaocdn.com/s/oGyHWlYR53"},
+  {name:"杭州西湖",fact:"6 平方公里水面，三潭印月就在湖心",img:"https://aka.doubaocdn.com/s/Y3dIdR61qk"},
+  {name:"安徽黄山",fact:"最高峰海拔 1864 米，全年约 200 天有云海",img:"https://aka.doubaocdn.com/s/AK6FXUUkbx"},
+  {name:"四川九寨沟",fact:"海拔 2000-3100 米，有 108 个彩色湖泊",img:"https://aka.doubaocdn.com/s/UubhtMfyq4"},
+  {name:"西安兵马俑",fact:"三个坑共埋了 8000 多个陶俑",img:"https://aka.doubaocdn.com/s/Z3mQbEUr1F"},
+  {name:"上海迪士尼",fact:"城堡高 60 米，晚上有烟花秀",img:"https://aka.doubaocdn.com/s/gnht56osVk"},
+  {name:"厦门鼓浪屿",fact:"1.88 平方公里小岛，没有汽车",img:"https://aka.doubaocdn.com/s/UjWdWimKIb"}
+];
+/* 右侧“景点小百科”：文案按小学生口吻写，四个数据正好对应左边的四个填空 */
+const WIKI={
+  "深圳世界之窗":{
+    emoji:"🏰", sub:"广东省深圳市 · 南山区华侨城", tags:["主题公园","一天看世界","就在深圳"],
+    intro:"想一天之内走遍全世界吗？这片占地 48 万平方米的园区，把埃菲尔铁塔、金字塔、比萨斜塔……全都“搬”到了深圳！它们大多是按比例缩小的模型，站在旁边就像自己偷偷变小了一样。",
+    facts:[
+      "🗼 埃菲尔铁塔模型高 108 米，是园区里最高的一座；深圳地势很平，这里的海拔只有大约 5 米，跟海平面差不多高。",
+      "🗺️ 园里一共有 130 多个世界著名景观，分成亚洲区、欧洲区、美洲区等好几个大区。",
+      "🌡️ 深圳全年都很暖和，年平均气温大约 23℃，冬天来玩也不用穿棉袄。"
+    ],
+    tip:"这一站不用出远门——它就在深圳南山区华侨城，距离深圳 0 公里，坐地铁就能到。晚上有灯光秀和烟花，铁塔会变成彩色的。",
+    ask:"如果每个景观平均看 3 分钟，把 130 个全看完要花多长时间？"
+  },
+  "北京长城":{
+    emoji:"🧱", sub:"北京市 · 延庆区八达岭等", tags:["世界遗产","古代军事","登高"],
+    intro:"长城像一条趴在群山上的巨龙，从东到西爬过沙漠、草原和高山。中国历代长城加起来超过 2 万公里，比从北京到深圳再走回来还要远好几倍。",
+    facts:[
+      "🔥 烽火台就是古代的“手机”：士兵白天烧烟、晚上点火，一个接一个把消息传出去。",
+      "🧱 八达岭长城建在海拔大约 1000 米的山脊上，台阶又高又窄，爬上去很考验腿力。",
+      "🌡️ 北京四季分明，全年平均气温只有约 12℃，冬天城墙上会挂满白霜，风像小刀子。"
+    ],
+    tip:"从深圳过去大约 2000 公里，坐飞机三个多小时到北京，再坐车一小时才到山脚。山上风很大，秋天去也要带件外套，鞋要防滑。",
+    ask:"把 2 万公里换成 400 米一圈的操场跑道，要跑多少圈？"
+  },
+  "杭州西湖":{
+    emoji:"🌸", sub:"浙江省杭州市 · 西湖区", tags:["世界遗产","湖光山色","诗词"],
+    intro:"西湖像一面会变魔术的镜子：春天柳树发芽，夏天荷花满塘，秋天桂花飘香，冬天还能看到断桥残雪。它的水面大约 6.38 平方公里，苏东坡、白居易都在这里“写过作业”，留下上千首赞美西湖的诗。",
+    facts:[
+      "🌉 苏堤全长约 2.8 公里，是苏东坡带人用挖湖挖出来的泥堆成的。",
+      "🌕 三潭印月的小石塔点上灯，水面加上倒影，能“变”出好多个月亮。",
+      "🌡️ 杭州全年平均气温约 17℃，不冷不热，春天看桃花、秋天闻桂花都很舒服。"
+    ],
+    tip:"西湖湖面的海拔只有大约 7 米，比海平面只高一点点；从深圳过去大约 1100 公里，坐高铁五个多小时。清晨和傍晚的西湖最上镜，人也没那么多。",
+    ask:"6.38 平方公里大约相当于 900 个足球场，湖里为什么能装下这么多水？"
+  },
+  "安徽黄山":{
+    emoji:"⛰️", sub:"安徽省黄山市 · 黄山区", tags:["世界遗产","云海","奇松怪石"],
+    intro:"黄山的石头会“变身”：有的像猴子看海，有的像仙人指路。爬上最高峰莲花峰，你就站在 1864 米的高度上，清晨云海从脚边翻涌上来，就像一脚踩在棉花糖上。",
+    facts:[
+      "🌲 迎客松已经活了上千年，伸出的那根枝条，像在跟游客打招呼。",
+      "☁️ 一年里大概有 200 天能看到云海，运气好的话还能碰上“佛光”。",
+      "🪨 有名有姓的怪石有 120 多处，最有名的“飞来石”高约 12 米。"
+    ],
+    tip:"黄山山顶全年平均气温只有约 8℃，比山下低 10℃ 左右——山下穿短袖，山顶可能要穿外套。从深圳过去大约 900 公里，高铁半天，再转车上山。",
+    ask:"山顶比山下冷，说明气温和什么有关系？"
+  },
+  "四川九寨沟":{
+    emoji:"💧", sub:"四川省阿坝州 · 九寨沟县", tags:["世界自然遗产","彩色的湖","瀑布"],
+    intro:"九寨沟的湖水像打翻的调色盘：一会儿蓝、一会儿绿、一会儿鹅黄，还清澈得能看见湖底的老树枝。整条沟的海拔从 2000 米一直升到 3100 米，走着走着就像从山脚爬进了云里。",
+    facts:[
+      "💦 沟里有 108 个“海子”（当地话，就是湖泊），最大的长海长约 4.4 公里。",
+      "🌈 湖水颜色不一样，是因为水底的石头、水草和阳光角度的不同。",
+      "🎇 诺日朗瀑布宽约 320 米，是老版《西游记》片尾的取景地。"
+    ],
+    tip:"这里全年平均气温只有约 10℃，早晚和白天差很多，一年四季都要带件厚外套；从深圳过去大约 1500 公里。海拔高，走路慢一点、多喝水。",
+    ask:"同一片湖水，为什么看起来会有好几种颜色？"
+  },
+  "西安兵马俑":{
+    emoji:"🐴", sub:"陕西省西安市 · 临潼区", tags:["世界遗产","考古","秦朝"],
+    intro:"1974 年，一位农民打井时挖出几块陶片，结果挖出了“世界第八大奇迹”——一支在地下睡了两千多年的陶土军队，一共有 8000 多个陶俑。",
+    facts:[
+      "🪖 每个陶俑的脸型、发型和表情都不一样，就像真的站着 8000 多个不同的士兵。",
+      "📏 一号坑长约 230 米、宽约 62 米，比 2 个足球场加起来还大；这里地处关中平原，海拔大约 500 米。",
+      "🎨 陶俑刚出土时其实是彩色的，碰到空气以后颜色才慢慢褪掉。"
+    ],
+    tip:"西安全年平均气温约 14℃，比深圳凉快不少，夏天来也要带件薄外套；离深圳大约 1400 公里，坐飞机三个多小时。参观时记住：不看太久、不伸手摸、不开闪光灯。",
+    ask:"8000 个陶俑，如果排成 40 人一列，会排出多少列？"
+  },
+  "上海迪士尼":{
+    emoji:"🎠", sub:"上海市 · 浦东新区", tags:["主题乐园","童话","亲子"],
+    intro:"走进大门就像翻进一本童话书：米奇在街上招手，乐园中央的奇幻童话城堡高约 60 米，是迪士尼乐园里最高最大的一座，晚上还会亮成彩色的。",
+    facts:[
+      "🎆 闭园前的夜光幻影秀，烟花要跟着音乐一起“跳舞”。",
+      "🎢 “创极速光轮”最快能到约 80 公里/小时，比汽车在市区里开还快。",
+      "🌡️ 上海全年平均气温约 17℃，四季分明，春天和秋天去最舒服。"
+    ],
+    tip:"乐园建在长江入海口，海拔只有大约 4 米，几乎和海平面一样高；从深圳过去大约 1200 公里，高铁七小时、飞机两小时多。用官方 App 看排队时间，能省很多功夫。",
+    ask:"如果每个项目排队 40 分钟，玩 8 个项目要等多久？"
+  },
+  "厦门鼓浪屿":{
+    emoji:"🎹", sub:"福建省厦门市 · 思明区", tags:["世界遗产","海岛","钢琴之岛"],
+    intro:"鼓浪屿是一座“不准开私家车”的小岛，只能走路或坐电瓶车。全岛只有 1.88 平方公里，绕一圈用不了半天，岛上到处飘着钢琴声，连时间都走得慢悠悠的。",
+    facts:[
+      "🎹 岛上每平方公里拥有的钢琴数量全国第一，所以叫“钢琴之岛”。",
+      "🚗 岛上没有一辆私家车，最大的声音是海浪和鸟叫。",
+      "🪨 岛上最高点是日光岩，海拔 92.68 米，爬上去能看到整个厦门港。"
+    ],
+    tip:"厦门全年平均气温约 21℃，冬天也暖暖的，像候鸟过冬的地方；离深圳大约 450 公里，高铁三个多小时。轮渡票要提前订，岛上走路多，穿舒服的鞋。",
+    ask:"小岛只有 1.88 平方公里，为什么每天还要限制上岛人数？"
+  }
+};
+(function(){
+  const wrap=document.getElementById("travel-cards");
+  TRAVEL.forEach(t=>{
+    const d=document.createElement("div");
+    d.className="travel-card";
+    d.innerHTML=`<img src="${t.img}" alt="${t.name}"><div class="body"><h4>${t.name}</h4><p>${t.fact}</p></div>`;
+    d.onclick=()=>{
+      wrap.querySelectorAll(".travel-card").forEach(x=>x.classList.remove("sel"));
+      d.classList.add("sel");
+      document.getElementById("t-name").value=t.name;
+      renderTravelWiki(t.name);
+    };
+    wrap.appendChild(d);
+  });
+})();
+/* 右侧百科：name 为空显示引导，能对上就显示该景点资料，对不上就显示“自己写的地点”模板 */
+function renderTravelWiki(name){
+  const box=document.getElementById("travel-wiki");
+  const w=name?WIKI[name]:null;
+  if(!w){
+    box.innerHTML=`
+      <div class="wiki-head">
+        <div class="wiki-emoji">🧭</div>
+        <div><div class="wiki-title">${name?esc(name):"景点小百科"}</div>
+          <div class="wiki-sub">${name?"你自己选的地点":"点左边的景点卡片，这里会亮出它的资料"}</div></div>
+      </div>
+      <div class="wiki-intro">${name
+        ? `百科里暂时没有「${esc(name)}」的资料，那就换你来当小记者吧！先写清楚它在哪个省、有什么好玩的，再把左边的三个数据补上——海拔、气温、距离深圳，最后用一句话把它推荐给同学。`
+        : "左边是 8 个宝藏景点，每一个都配了一张小百科：位置、好玩的故事、三个真实数据，还有一个“想一想”。点一个看看，你就知道怎么写推荐啦！"}</div>
+      <ul class="wiki-facts">
+        <li>📏 海拔 / 高度：越高越冷，空气也越稀薄</li>
+        <li>🌡️ 全年平均气温：把一年 12 个月的气温加起来再平均</li>
+        <li>📍 距离深圳：在地图上量一量直线距离</li>
+        <li>✨ 一句话数据：只挑一个最让人吃惊的数字</li>
+      </ul>
+      <div class="wiki-tip">💡 小提示：介绍一个地方，别只说“很大、很远”，要说出数字。点左边的卡片，右边的小百科里就藏着它的真实数据，读一读再填。</div>`;
+    return;
+  }
+  box.innerHTML=`
+    <div class="wiki-head">
+      <div class="wiki-emoji">${w.emoji}</div>
+      <div><div class="wiki-title">${esc(name)}</div><div class="wiki-sub">${w.sub}</div></div>
+    </div>
+    <div class="wiki-tags">${w.tags.map(t=>`<span class="wiki-tag">${t}</span>`).join("")}</div>
+    <div class="wiki-hunt">🔍 小侦探任务：下面的介绍里藏着它的<b>海拔/高度</b>、<b>全年平均气温</b>和<b>距离深圳</b>，仔细读一读，把它们找出来填到左边。</div>
+    <div class="wiki-intro">${w.intro}</div>
+    <ul class="wiki-facts">${w.facts.map(f=>`<li>${f}</li>`).join("")}</ul>
+    <div class="wiki-tip">💡 ${w.tip}</div>
+    <div class="wiki-ask">🤔 想一想：${w.ask}</div>`;
+}
+/* 手动输入地点名时，右边同步切换（停顿一下再切，避免边打字边跳） */
+let wikiTimer=null;
+document.getElementById("t-name").addEventListener("input",e=>{
+  const v=e.target.value.trim();
+  clearTimeout(wikiTimer);
+  wikiTimer=setTimeout(()=>renderTravelWiki(v),250);
+});
+renderTravelWiki("");
+document.getElementById("btn-save-travel").onclick=async function(){
+  const data={
+    name:document.getElementById("t-name").value.trim(),
+    alt:document.getElementById("t-alt").value,
+    temp:document.getElementById("t-temp").value,
+    dist:document.getElementById("t-dist").value,
+    fact:document.getElementById("t-fact").value.trim()
+  };
+  if(!data.name){toast("选一个或写一个地点吧","bad");return;}
+  this.disabled=true;
+  const r=await postData({type:"travel_recommend",student:state.student,klass:state.klass,avatar:state.avatar,...data});
+  if(r.ok){state.done.travel=true;state.travel=data;saveState();buildSummary();go("done");}
+  else{this.disabled=false;toast("再试一次","bad");}
+};
+
+/* ===== 关卡7：课堂小测 ===== */
+const QUIZ=[
+  {q:"我们的教室里有很多数据。下面哪个是数据？",opts:["时钟上显示的时间","教室的墙壁","一张课桌","一扇窗户"],ans:0,why:"时钟显示的时间是用数字记录下来的，这就是数据！"},
+  {q:"数据可以有很多种表示形式。下面哪个不属于数据的表示形式？",opts:["数字（比如 123）","文字（比如你好）","图片（比如一张照片）","教室里的空气"],ans:3,why:"空气我们感觉得到，但它不是记录下来的数据形式。"},
+  {q:"小明有 50 元零花钱，买矿泉水花了 2 元，后来卖废品得到 12 元。现在小明有多少钱？",opts:["60 元","48 元","62 元","50 元"],ans:0,why:"50 - 2 + 12 = 60 元。"},
+  {q:"下面哪个属于“图片”形式的数据？",opts:["一个笑脸 emoji","一张同学的照片","字母 A、B、C","数字 1、2、3"],ans:1,why:"照片是真实图片；emoji 是符号，字母和数字是文字/数字形式。"}
+];
+const quizAns=new Array(QUIZ.length).fill(-1);
+function buildQuiz(){
+  const w=document.getElementById("quiz-wrap");
+  w.innerHTML="";
+  QUIZ.forEach((item,qi)=>{
+    const q=document.createElement("div");
+    q.className="quiz-q";
+    q.innerHTML=`<div class="qtitle"><span class="qn">第${qi+1}题</span>${item.q}</div>`;
+    const opts=document.createElement("div");
+    opts.className="quiz-opts";
+    item.opts.forEach((o,oi)=>{
+      const od=document.createElement("div");
+      od.className="quiz-opt";
+      od.innerHTML=`<span class="letter">${"ABCD"[oi]}</span><span>${o}</span>`;
+      od.onclick=()=>{
+        if(quizAns[qi]!==-1) return; // 已经答过
+        quizAns[qi]=oi;
+        // 标记选项
+        [...opts.children].forEach((c,ci)=>{
+          c.classList.remove("sel");
+          c.style.pointerEvents="none";
+          if(ci===item.ans) c.classList.add("right");
+          else if(ci===oi) c.classList.add("wrong");
+        });
+        const fb=document.createElement("div");
+        fb.className="quiz-feedback";
+        fb.style.color = oi===item.ans ? "var(--green)" : "var(--red)";
+        fb.textContent = (oi===item.ans ? "✓ 答对了！" : "✗ 正确答案是 "+"ABCD"[item.ans]) + "  "+item.why;
+        q.appendChild(fb);
+        // 检查是否全部答完
+        if(quizAns.every(a=>a!==-1)){
+          document.getElementById("btn-quiz-submit").disabled=false;
+        }
+      };
+      opts.appendChild(od);
+    });
+    q.appendChild(opts);
+    w.appendChild(q);
+  });
+}
+buildQuiz();
+document.getElementById("btn-quiz-submit").onclick=async function(){
+  const score = quizAns.filter((a,i)=>a===QUIZ[i].ans).length;
+  this.disabled=true;
+  const r=await postData({
+    type:"quiz_result",student:state.student,klass:state.klass,avatar:state.avatar,
+    answers:quizAns,score:score,total:QUIZ.length
+  });
+  if(r.ok){
+    state.done.quiz=true;
+    saveState();
+    toast(`交卷成功！你答对了 ${score}/${QUIZ.length} 题！`,"good");
+    setTimeout(()=>go("map"),1000);
+  } else {
+    this.disabled=false;
+    toast("再试一次","bad");
+  }
+};
+
+/* ===== 完成页 ===== */
+function buildSummary(){
+  const s=document.getElementById("summary");
+  const items=[
+    {k:"教室记录数据",v:Object.keys(state.found).length+" 个"},
+    {k:"小管家算账",v:state.done.ledger?"完成":"—"},
+    {k:"分类得分",v:state.done.classify?(state.clsFinal+" 分"):"—"},
+    {k:"我的身高",v:(state.self.height?esc(state.self.height):"?")+" cm"},
+    {k:"推荐地点",v:state.travel.name?esc(state.travel.name):"—"}
+  ];
+  s.innerHTML=items.map(i=>`<div class="sum-item"><div class="v">${i.v}</div><div class="k">${i.k}</div></div>`).join("");
+}
+go("login");
+tryAutoLogin();
+</script>
+</body>
+</html>

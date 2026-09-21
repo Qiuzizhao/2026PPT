@@ -1,0 +1,6 @@
+# 课件自检临时产物（AGENTS.md：跑完删掉，不要提交）
+_oldsim/
+.qa-out/
+.qa-shots/
+.qa-old/
+.qa-check/

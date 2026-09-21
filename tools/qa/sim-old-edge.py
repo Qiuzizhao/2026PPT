@@ -12,6 +12,8 @@ FILES = [
     "鼠标3D探索馆.html",
     "鼠标反应力实验室.html",
     "鼠标练习营.html",
+    "4-1数据宝藏在身旁.html",
+    "4-1教师端.html",
 ]
 OUT = "_oldsim"
 DROP_PROPS = ("aspect-ratio", "backdrop-filter", "accent-color")

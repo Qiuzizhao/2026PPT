@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数据课堂实时大屏 · 第1课 数据宝藏在身边</title>
+<!-- 优先用同目录 assets/echarts.min.js（教室断网也能用），没有才回退到 CDN -->
+<script src="assets/echarts.min.js"></script>
+<script>if(typeof echarts==="undefined"){document.write('<script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"><\/script>');}</script>
+<style>
+  :root{
+    --bg:#F2F6FC;
+    --panel:#FFFFFF;
+    --panel2:#F8FAFF;
+    --line:#DDE5F0;
+    --ink:#1E2A3D;
+    --ink-soft:#5B6B84;
+    --blue:#3B6FF6;
+    --cyan:#0891B2;
+    --yellow:#F59E0B;
+    --green:#16A34A;
+    --red:#DC2626;
+    --purple:#7C3AED;
+    --pink:#DB2777;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  /* 通用横向行：老内核的 flex 不支持 gap，用 margin 兜底 */
+  .hrow{display:flex;align-items:center;gap:8px}
+  html.no-flexgap .hrow > *:not(:last-child){margin-right:8px}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#E3EDFF 0%,var(--bg) 60%);
+    color:var(--ink);
+    min-height:100vh;
+    padding:16px 20px 24px;
+  }
+  /* 顶栏 */
+  .hd{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:8px 4px 16px;flex-wrap:wrap;gap:10px;
+  }
+  html.no-flexgap .hd > *:not(:last-child){margin-right:10px}
+  .hd h1{font-size:26px;font-weight:900;letter-spacing:1px;display:flex;align-items:center;gap:10px}
+  html.no-flexgap .hd h1 > *:not(:last-child){margin-right:10px}
+  .hd h1 .dot{width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);animation:blink 1.4s infinite}
+  @keyframes blink{50%{opacity:.4}}
+  .hd .meta{font-size:13px;color:var(--ink-soft);text-align:right;line-height:1.5}
+  .hd .meta b{color:var(--cyan);font-size:18px;font-variant-numeric:tabular-nums}
+
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:14px}
+  .kpi{
+    background:linear-gradient(160deg,var(--panel) 0%,var(--panel2) 100%);
+    border:1px solid var(--line);border-radius:14px;padding:14px 16px;
+    position:relative;overflow:hidden;
+  }
+  .kpi::after{content:"";position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:var(--glow,rgba(79,139,255,.15))}
+  .kpi .v{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
+  .kpi .k{font-size:12px;color:var(--ink-soft);margin-top:4px}
+  .kpi.c1{--glow:rgba(79,139,255,.2)} .kpi.c1 .v{color:var(--blue)}
+  .kpi.c2{--glow:rgba(34,211,238,.2)} .kpi.c2 .v{color:var(--cyan)}
+  .kpi.c3{--glow:rgba(255,176,32,.2)} .kpi.c3 .v{color:var(--yellow)}
+  .kpi.c4{--glow:rgba(34,197,94,.2)} .kpi.c4 .v{color:var(--green)}
+  .kpi.c5{--glow:rgba(167,139,250,.2)} .kpi.c5 .v{color:var(--purple)}
+  .kpi.c6{--glow:rgba(15,118,110,.18)} .kpi.c6 .v{color:#0F766E}
+
+  /* 登录情况 */
+  .login-cols{display:grid;grid-template-columns:1.15fr 1fr;gap:14px}
+  .login-col-h{font-size:13px;color:var(--ink-soft);font-weight:700;margin-bottom:8px}
+  .login-col-h b{font-size:19px;font-variant-numeric:tabular-nums}
+  .login-col-h b.ok{color:var(--green)}
+  .login-col-h b.no{color:var(--red)}
+  .name-chips{display:flex;flex-wrap:wrap;gap:6px;max-height:190px;overflow:auto}
+  html.no-flexgap .name-chips > *:not(:last-child){margin-right:6px}
+  .nchip{padding:4px 10px;border-radius:99px;font-size:13px;font-weight:700;white-space:nowrap}
+  .nchip.on{background:#DCFCE7;color:#15803D}
+  .nchip.in{background:#EEF3FF;color:#2B56C9}
+  .nchip.off{background:#F1F5F9;color:#9AA6B8}
+  .nchip.other{background:#FEF3C7;color:#B45309}
+  .nchip .tm{font-weight:400;font-size:11px;opacity:.75;margin-left:4px}
+  .login-legend{font-size:12px;color:var(--ink-soft);margin-top:10px}
+
+  /* 主体三栏 */
+  .grid{display:grid;grid-template-columns:1.1fr 1.4fr 1.1fr;gap:14px}
+  .panel{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px;display:flex;flex-direction:column;min-height:0;
+  }
+  .panel h3{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;color:var(--ink)}
+  html.no-flexgap .panel h3 > *:not(:last-child){margin-right:8px}
+  .panel h3 .bar{width:4px;height:14px;background:var(--blue);border-radius:2px}
+  .chart{width:100%;min-height:260px}
+
+  /* 实时流 */
+  .feed{flex:1;overflow:auto;max-height:420px;padding-right:4px}
+  .feed-item{
+    padding:8px 10px;border-left:3px solid var(--blue);
+    background:#F6F9FF;border-radius:6px;margin-bottom:6px;
+    font-size:13px;line-height:1.5;animation:slide .4s ease;
+  }
+  @keyframes slide{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+  .feed-item .who{font-weight:700;color:var(--cyan)}
+  .feed-item .type{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;margin-right:6px}
+  .feed-item .t{color:var(--ink-soft);font-size:11px;margin-left:6px}
+  .type-classroom_search{background:#E3ECFF;color:#1D4ED8}
+  .type-account_book{background:#FEF3C7;color:#B45309}
+  .type-classify_game{background:#DCFCE7;color:#15803D}
+  .type-self_portrait{background:#FCE7F3;color:#BE185D}
+  .type-travel_recommend{background:#EDE9FE;color:#6D28D9}
+  .type-guess_round{background:#CFFAFE;color:#0E7490}
+  .type-guess_submit{background:#FEF3C7;color:#B45309}
+
+  /* 班级选择 */
+  .cls-btn{
+    padding:8px 18px;border-radius:99px;border:2px solid var(--line);
+    background:#FFFFFF;color:var(--ink);font-size:14px;font-weight:700;cursor:pointer;
+    transition:all .15s;
+  }
+  .cls-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .cls-btn.on{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 12px rgba(59,111,246,.35)}
+
+  /* 小测统计 */
+  .quiz-row{display:grid;grid-template-columns:30px 1fr 180px 80px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+  .quiz-row:last-child{border-bottom:none}
+  .quiz-row .qn{font-weight:800;color:var(--yellow);text-align:center}
+  .quiz-row .qtext{font-size:14px}
+  .quiz-bar{height:10px;background:#E2E8F0;border-radius:99px;overflow:hidden}
+  .quiz-bar .fill{height:100%;background:linear-gradient(90deg,#16A34A,#4ADE80);border-radius:99px;transition:width .5s}
+  .quiz-row .qstat{font-size:13px;text-align:right;font-weight:700}
+
+  /* 任务开关 */
+  .tc-item{
+    background:#F8FAFF;border:2px solid var(--line);border-radius:12px;
+    padding:10px 8px;text-align:center;cursor:pointer;transition:all .2s;
+  }
+  .tc-item:hover{border-color:var(--blue)}
+  .tc-item .tc-name{font-size:13px;font-weight:700;margin-bottom:6px}
+  .tc-item .tc-state{
+    display:inline-block;padding:3px 12px;border-radius:99px;font-size:12px;font-weight:800;
+    background:#E2E8F0;color:#475569;
+  }
+  .tc-item.on{border-color:var(--green);background:rgba(22,163,74,.1)}
+  .tc-item.on .tc-state{background:var(--green);color:#FFFFFF}
+
+  /* 猜猜我是谁 */
+  .guess{
+    text-align:center;padding:10px;
+  }
+  .guess .avatar{font-size:60px;margin:6px 0}
+  .guess .name{font-size:18px;font-weight:800;color:var(--yellow)}
+  .guess .card-mini{
+    background:linear-gradient(135deg,#3B6FF6,#8B5CF6);
+    border-radius:16px;padding:14px;color:#fff;text-align:center;
+  }
+  .guess .card-mini .avatar{font-size:44px;line-height:1}
+  .guess .card-mini .name{font-size:16px;font-weight:800;margin-top:4px}
+  .guess .card-mini .grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+  .guess .card-mini .cell{background:rgba(0,0,0,.2);padding:6px;border-radius:6px;font-size:11px}
+  .guess .card-mini .cell b{display:block;font-size:13px;margin-top:1px}
+  .guess button{
+    margin-top:12px;padding:10px 18px;border-radius:99px;border:none;
+    background:var(--yellow);color:#1E2A4A;font-weight:800;cursor:pointer;
+  }
+
+  /* 底部三图 */
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+
+  .empty{color:var(--ink-soft);font-size:13px;text-align:center;padding:30px 10px}
+
+  @media (max-width:1280px){
+    .grid{grid-template-columns:1fr 1fr}
+    .row3{grid-template-columns:1fr}
+  }
+  @media (max-width:768px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .grid{grid-template-columns:1fr}
+    .login-cols{grid-template-columns:1fr}
+  }
+</style>
+<script>
+/* ===== 防误触兜底 =====
+   1) 右键菜单：学生鼠标不熟练，乱按时很容易弹出系统右键菜单挡住画面。
+      这里全局取消默认菜单，但只调 preventDefault、绝不 stopPropagation，
+      页内自己监听 contextmenu 的功能照常收到事件。输入框除外，要用右键粘贴。
+   2) 拖拽：防止图片/文字被拖出页面。拖拽练习走 pointer 事件，不受影响。
+   3) 防误退：Edge 的鼠标手势（右键按住向左拖动）和误按后退键都会触发浏览器
+      后退，把学生从练习页带走。压两层 history 哨兵，任何后退/前进都只会落回
+      本页，popstate 一响立刻再压一层，页面始终留在原地。
+   本页不使用 hash / history 导航，以上都不影响页内功能。 */
+(function () {
+  /* 输入框里保留原生右键菜单，方便右键粘贴 */
+  function keepNative(el) {
+    return !!(el && el.closest &&
+      el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'));
+  }
+  document.addEventListener('contextmenu', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();                    /* 只取消默认菜单，不阻断页内逻辑 */
+  }, true);
+  document.addEventListener('dragstart', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();
+  }, true);
+
+  /* 防误退 */
+  if (location.protocol === 'file:') return;      /* file:// 下浏览器禁止 pushState */
+  function guard() {
+    try { history.pushState({ mtSentinel: 1 }, '', location.href); } catch (e) {}
+  }
+  try {
+    guard(); guard();
+    window.addEventListener('popstate', guard);
+  } catch (e) {}
+})();
+</script>
+<script>
+/* ===== 兼容层 A：flex gap 能力探测 =====
+   老内核（Edge 84 以前、EdgeHTML）的 flex 布局不支持 gap，间距会全部塌掉。
+   这里用真实布局量一次宽度来判断，支持就用原样，不支持就给 <html> 挂上
+   no-flexgap，样式表里预置的 margin 规则接管间距。
+   不用 CSS.supports('gap') 判断：gap 在 Chrome 66 起就作为 grid-gap 的别名存在，
+   老版本会误报"支持"。 */
+(function () {
+  try {
+    var box = document.createElement('div');
+    box.style.cssText = 'position:absolute;top:-9999px;left:-9999px;display:flex;gap:10px;width:auto;height:1px';
+    var a = document.createElement('i');
+    var b = document.createElement('i');
+    a.style.cssText = b.style.cssText = 'display:block;width:10px;height:1px';
+    box.appendChild(a); box.appendChild(b);
+    document.documentElement.appendChild(box);
+    var w = box.getBoundingClientRect().width || box.scrollWidth;
+    document.documentElement.removeChild(box);
+    if (!(w >= 30)) document.documentElement.className += ' no-flexgap';
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+
+<div class="hd">
+  <h1><span class="dot"></span>数据课堂实时大屏 · 数据宝藏在身边</h1>
+  <div class="meta">
+    <div id="clock">--:--:--</div>
+    <div>每 <b>3</b> 秒自动刷新 · 第1课 四年级信息科技</div>
+  </div>
+</div>
+
+<!-- 班级选择 -->
+<div id="class-bar" class="hrow" style="margin-bottom:14px;flex-wrap:wrap">
+  <span style="color:var(--ink-soft);font-size:14px;font-weight:700;margin-right:4px">当前上课班级：</span>
+</div>
+
+<div class="kpis">
+  <div class="kpi c1"><div class="v" id="k-online">0</div><div class="k">当前在线</div></div>
+  <div class="kpi c2"><div class="v" id="k-students">0</div><div class="k">参与学生（有提交）</div></div>
+  <div class="kpi c3"><div class="v" id="k-classify">0</div><div class="k">分类挑战已交</div></div>
+  <div class="kpi c4"><div class="v" id="k-self">0</div><div class="k">自画像已交</div></div>
+  <div class="kpi c5"><div class="v" id="k-travel">0</div><div class="k">旅行推荐已交</div></div>
+  <div class="kpi c6"><div class="v" id="k-login">0/0</div><div class="k">已登录（名单）</div></div>
+</div>
+
+<!-- 学生登录情况 -->
+<div class="panel" style="margin-bottom:14px">
+  <h3><span class="bar"></span>学生登录情况 <span id="login-sum" style="font-weight:400;font-size:13px;color:var(--ink-soft);margin-left:6px"></span></h3>
+  <div id="login-board"></div>
+</div>
+
+<!-- 任务开放控制 -->
+<div class="panel" style="margin-bottom:14px">
+  <h3><span class="bar"></span>任务开放控制（点开关，学生端同步生效）</h3>
+  <div id="task-controls" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px"></div>
+</div>
+
+<!-- 课堂小测统计 -->
+<div class="panel" style="margin-bottom:14px">
+  <h3><span class="bar"></span>课堂小测 · 实时统计</h3>
+  <div id="quiz-stats"><div style="color:var(--ink-soft);font-size:14px">等同学交卷后自动显示…</div></div>
+</div>
+
+<div class="grid">
+  <div class="panel">
+    <h3><span class="bar"></span>实时在线同学</h3>
+    <div class="feed" id="feed"><div class="empty">等待同学进入课堂…</div></div>
+  </div>
+
+  <div class="panel">
+    <h3><span class="bar"></span>各任务参与人数</h3>
+    <div class="chart" id="chart-tasks"></div>
+  </div>
+
+  <div class="panel">
+    <h3><span class="bar"></span>猜猜我是谁 · 课堂游戏控制台</h3>
+    <div class="guess" id="guess">
+      <div class="empty">等同学提交自画像后，点下面按钮开始一轮游戏，全班平板同步看到这位同学的数据。</div>
+    </div>
+    <div id="guess-stats" style="display:none;margin-top:10px;padding:10px;background:rgba(245,158,11,.1);border-radius:10px;font-size:13px"></div>
+    <div class="hrow" style="justify-content:center;margin-top:10px">
+      <button id="btn-guess" style="padding:10px 18px;border-radius:99px;border:none;background:var(--yellow);color:#1E2A4A;font-weight:800;cursor:pointer;display:none">换一位同学</button>
+      <button id="btn-broadcast" style="padding:10px 18px;border-radius:99px;border:none;background:var(--cyan);color:#FFFFFF;font-weight:800;cursor:pointer">广播给全班猜</button>
+      <button id="btn-reveal" title="默认不显示答案，需要时点这里" style="padding:10px 18px;border-radius:99px;border:none;background:#94A3B8;color:#FFFFFF;font-weight:800;cursor:pointer;display:none">👁 揭晓答案</button>
+    </div>
+  </div>
+</div>
+
+<div class="row3">
+  <div class="panel">
+    <h3><span class="bar"></span>同学身高分布（厘米）</h3>
+    <div class="chart" id="chart-height"></div>
+  </div>
+  <div class="panel">
+    <h3><span class="bar"></span>最喜欢的科目</h3>
+    <div class="chart" id="chart-subject"></div>
+  </div>
+  <div class="panel">
+    <h3><span class="bar"></span>分类挑战得分分布</h3>
+    <div class="chart" id="chart-score"></div>
+  </div>
+</div>
+
+<script>
+const API = "https://qiuform.qiuzizhao.com/api/m3d4ntcuu14s";
+const API_ALL = "https://qiuform.qiuzizhao.com/api/m3d4ntcuu14s/all";
+const TASK_NAMES = {
+  classroom_search:"教室寻宝",
+  account_book:"记账本",
+  classify_game:"分类挑战",
+  self_portrait:"数据自画像",
+  travel_recommend:"旅行推荐",
+  guess_round:"开始猜人",
+  guess_submit:"学生猜测",
+  quiz_result:"课堂小测"
+};
+const QUIZ_ANS = [0,3,0,1];
+
+/* 服务器时间解析 + 数据新鲜度：上一节课的开关/猜人名不要带到下一节课 */
+function atTime(s){
+  const t=s&&s._at?String(s._at):"";
+  const d=new Date(t.replace(" ","T"));
+  return isNaN(d.getTime())?0:d.getTime();
+}
+function timeTxt(t){
+  if(!t) return "";
+  const d=new Date(t);
+  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+const TASK_TTL  = 12*3600*1000;  // 任务开关 12 小时内有效
+const ROUND_TTL = 3*3600*1000;   // 猜人名轮次 3 小时内有效
+/* 同一个学生多次提交只算最后一次（刷新后重交、改答案都不重复计数） */
+function latestPerStudent(subs,type){
+  const m=new Map();
+  subs.forEach(s=>{ if(s.type===type) m.set((s.student||"")+"|"+(s.klass||""),s); });
+  return [...m.values()];
+}
+
+/* 学生名单：用来比对“谁登录了、谁还没登录”，和学生端保持一致 */
+const ROSTER={
+  "41":["欧嘉豪","古伊霖","王思思","贺煜涵","施佳羽","骆高嘉","何康铄","王莫森","吴妍倪","刘皖婷","吴宇航","陈江浩","陈洛禧","左家悦","李圆圆","周嘉凯","唐骁宇","赵思鹏","刘若乔","盛子珊","廖睿","兰淼城","唐龙昊","王逸凡","杨必博","李翰宸","项钰祺","谭志铭","雷子欣","邓星皓","陈治廷","戴淇翊","谢博睿","黄茗俞","许婧雅","熊希颖","李咏轩","区杰智","雷浩琳","陈悦滢","林美含","林美成","李梓赫","王思睿"],
+  "410":["李睿珩","李雨珂","黄芊晴","黄子瑜","刘思妍","陈卓谦","熊梓茵","林秀函","刘夜","陈俊熹","崔雅婧","贺雨辰","叶奕晨","张奕心","王灿灿","李淑昀","莫雄宇","陈梓睿","曾梓霖","王嘉乐","郭奕尊","黄子灏","黄乔羽","谢嘉树","徐嘉悦","饶培铮","陈俊亦","古渝鹏","黎文朗","丘雨萌","范诗诗","麦均键","陈希旋","赵思言","郑雨桐","巢弘钰","黄攀义","钟昀译","梁倚衔","李梓瑜","李雨檀","党可瑞","蔡乐琪","谢梓渔","戴博聪","龚梓晴","彭裕源"]
+};
+
+const charts = {};
+function initChart(id){
+  const el = document.getElementById(id);
+  if(!el || typeof echarts === "undefined") return null;   // 图表库没加载出来也不影响其它功能
+  const c = echarts.init(el);
+  charts[id] = c;
+  new ResizeObserver(()=>c.resize()).observe(el);
+  return c;
+}
+["chart-tasks","chart-height","chart-subject","chart-score"].forEach(initChart);
+function setOpt(id,opt){ if(charts[id]) charts[id].setOption(opt); }
+
+/* 时钟 */
+setInterval(()=>{
+  const d = new Date();
+  document.getElementById("clock").textContent = d.toLocaleTimeString("zh-CN",{hour12:false});
+},1000);
+
+/* 拉取数据 */
+let lastCount = -1;
+let guessPool = [];
+let guessIdx = -1;
+
+/* ===== 任务开放控制 ===== */
+const TASK_LIST = [
+  {id:"classroom", name:"教室寻宝"},
+  {id:"ledger", name:"小管家算账"},
+  {id:"classify", name:"分类挑战"},
+  {id:"self", name:"数据名片"},
+  {id:"guess", name:"猜猜我是谁"},
+  {id:"travel", name:"宝藏旅行地"},
+  {id:"quiz", name:"课堂小测"}
+];
+let taskOpen = {classroom:false, ledger:false, classify:false, self:false, guess:false, travel:false, quiz:false};
+let localTcUntil = 0;
+function renderTaskControls(){
+  const wrap = document.getElementById("task-controls");
+  wrap.innerHTML = "";
+  TASK_LIST.forEach(t=>{
+    const on = taskOpen[t.id];
+    const d = document.createElement("div");
+    d.className = "tc-item" + (on?" on":"");
+    d.innerHTML = `<div class="tc-name">${t.name}</div><div class="tc-state">${on?"已开放":"已关闭"}</div>`;
+    d.onclick = async ()=>{
+      taskOpen[t.id] = !taskOpen[t.id];
+      renderTaskControls();
+      localTcUntil = Date.now()+6000; // 6 秒内不让轮询覆盖本地刚点的状态
+      const open = {...taskOpen};
+      /* 主通道：写实时状态。选“全部”时给每个班各写一份，学生端只读自己班的键 */
+      const targets = selectedClass==="__all__" ? CLASSES : [selectedClass];
+      let ok = false;
+      for(const c of targets){
+        if(await putState("tc:"+c, {open, at:localNow()}, TTL_TC)) ok = true;
+      }
+      /* 记录表里留一条痕（数量极少，不影响负载；也兼容还没升级的学生端） */
+      fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({type:"task_control",klass:selectedClass,open})}).catch(()=>{});
+      if(ok){
+        stateMap["tc:"+selectedClass]={value:{open},updated_at:localNow(),expires_at:null};
+        toastMsg((taskOpen[t.id]?"已开放":"已关闭")+(selectedClass==="__all__"?"全部班级":selectedClass)+" · "+t.name);
+      }else{
+        toastMsg("开关同步失败，请检查网络后重点一次");
+        taskOpen[t.id] = !taskOpen[t.id];
+        renderTaskControls();
+      }
+    };
+    wrap.appendChild(d);
+  });
+}
+renderTaskControls();
+
+/* ===== 班级筛选 ===== */
+const CLASSES = ["41","410","测试班"];
+const CLASS_LABEL={"41":"四(1)班","410":"四(10)班","测试班":"测试班"};
+let selectedClass = localStorage.getItem("selectedClass") || "41";
+if(!CLASSES.includes(selectedClass) && selectedClass!=="__all__") selectedClass="41";
+function renderClassBar(){
+  const bar = document.getElementById("class-bar");
+  // keep the label
+  bar.innerHTML = '<span style="color:var(--ink-soft);font-size:14px;font-weight:700;margin-right:4px">当前上课班级：</span>';
+  CLASSES.forEach(c=>{
+    const b = document.createElement("button");
+    b.className = "cls-btn" + (selectedClass===c?" on":"");
+    b.textContent = CLASS_LABEL[c]||c;
+    b.onclick = ()=>{
+      selectedClass = c;
+      localStorage.setItem("selectedClass", c);
+      localTcUntil = 0;
+      renderClassBar();
+      load();
+    };
+    bar.appendChild(b);
+  });
+  // 全部按钮
+  const ball = document.createElement("button");
+  ball.className = "cls-btn" + (selectedClass==="__all__"?" on":"");
+  ball.textContent = "全部";
+  ball.onclick = ()=>{
+    selectedClass = "__all__";
+    localStorage.setItem("selectedClass", "__all__");
+    localTcUntil = 0;
+    renderClassBar();
+    load();
+  };
+  bar.appendChild(ball);
+}
+renderClassBar();
+
+function filterSubs(subs){
+  if(selectedClass === "__all__") return subs;
+  if(selectedClass === "测试班"){
+    // 测试班 = 之前没填班级的历史数据 + 显式选了测试班的 + 全局广播
+    return subs.filter(s => !s.klass || s.klass === "测试班" || s.klass === "测试" || s.klass === "__all__");
+  }
+  // 具体班级：只保留本班 + 全局广播，别班的数据不再混进来
+  return subs.filter(s => s.klass === selectedClass || s.klass === "__all__");
+}
+
+/* ===== 实时状态通道 /state：心跳、登录、任务开关、猜人轮次、实时得分 =====
+   写新值盖旧值 + ttl 自动过期，不占记录表；教师端每 10 秒读一次全量状态 */
+const STATE_URL = API + "/state";
+const STATE_BASE = 10000;   // 状态轮询 10 秒
+const TTL_TC = 86400;       // 任务开关：24 小时（学生端只认“今天”写的，第二天自动全关）
+const TTL_ROUND = 600;      // 猜人轮次：10 分钟
+let stateMap = {};          // {key:{value,updated_at,expires_at}}
+let stPenalty=0, stBlockUntil=0;
+function stGap(base){ return Math.round(base*Math.min(Math.pow(2,stPenalty),8)*JITTER); }
+async function stFail(r){
+  if(r && r.status===429){
+    let wait=10;
+    try{ const j=await r.json(); if(j&&j.retry_after) wait=Number(j.retry_after)||10; }catch(e){}
+    stBlockUntil=Date.now()+wait*1000;
+  }
+  stPenalty=Math.min(stPenalty+1,6);
+  return false;
+}
+function stUrl(name,ttl){ return STATE_URL+"/"+encodeURIComponent(name)+(ttl?("?ttl="+ttl):""); }
+function localNow(){
+  const d=new Date(),p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+/* 状态里的服务器时间 "2026-09-21 09:57:15" → 时间戳 */
+function stTime(t){
+  const d=new Date(String(t||"").replace(" ","T"));
+  return isNaN(d.getTime())?0:d.getTime();
+}
+async function putState(name,value,ttl){
+  if(Date.now()<stBlockUntil) return false;
+  try{
+    const r=await fetch(stUrl(name,ttl),{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(value)});
+    if(!r.ok) return stFail(r);
+    stPenalty=0;
+    return true;
+  }catch(e){ return stFail(); }
+}
+async function getAllStates(){
+  if(Date.now()<stBlockUntil) return false;
+  try{
+    const r=await fetch(STATE_URL,{cache:"no-cache"});
+    if(!r.ok) return stFail(r);
+    stPenalty=0;
+    const j=await r.json();
+    stateMap=(j&&j.states)||{};
+    return true;
+  }catch(e){ return stFail(); }
+}
+/* 从状态里取某个前缀的条目：返回 [{name,klass,value,updated_at,ms}] */
+function statesWithPrefix(prefix){
+  const out=[];
+  Object.keys(stateMap).forEach(k=>{
+    if(k.indexOf(prefix)!==0) return;
+    const rest=k.slice(prefix.length);
+    const i=rest.indexOf(":");
+    const klass=i<0?rest:rest.slice(0,i);
+    const name=i<0?"":rest.slice(i+1);
+    out.push({name:name||klass, klass:i<0?"":klass, value:stateMap[k].value, updated_at:stateMap[k].updated_at, ms:stTime(stateMap[k].updated_at)});
+  });
+  return out;
+}
+
+/* ===== 网络层：先问 /count（带 ETag，没变化就是 304、零传输），有新数据才拉 /all =====
+   这一段只管“记录表”（提交留痕）；实时状态走下面的 /state 通道。
+   全量最小间隔 20 秒 + 启动抖动 + 出错退避 + 后台停摆；渲染照旧，只是数据来自缓存 */
+const COUNT_URL = API + "/count";
+const COUNT_BASE = 3000;      // 计数轮询 3 秒
+const FULL_GAP   = 20000;     // 全量最小间隔 20 秒（保证“连续有新数据”时也 ≤3 次/分钟）
+/* /count 只发普通 GET、不带自定义头：实测（Chrome，本地页面）只要带 If-None-Match，
+   每个请求都会先发一次 OPTIONS 预检，等于请求数翻倍；而 304 只省 294 字节。
+   后端卡的是连接数/线程数，所以这里选择“省请求数”。哪天接口把预检缓存修好，改成 true 即可。 */
+const USE_ETAG = false;
+const JITTER = 1 + Math.random()*0.3;   // 每个客户端启动时随机一次，避免齐步走
+let pollEtag=null, pollLastId=null, pollLastFull=0, pollPenalty=0, pollBlockUntil=0;
+let dataCache={subs:[],at:0};
+/* 出错退避：间隔按 2^penalty 拉长，但最多放大 8 倍，避免断网久了恢复太慢 */
+function pollGap(base){ return Math.round(base*Math.min(Math.pow(2,pollPenalty),8)*JITTER); }
+async function pollFail(r){
+  if(r && r.status===429){
+    let wait=10;
+    try{ const j=await r.json(); if(j&&j.retry_after) wait=Number(j.retry_after)||10; }catch(e){}
+    pollBlockUntil=Date.now()+wait*1000;
+  }
+  pollPenalty=Math.min(pollPenalty+1,6);
+  return false;
+}
+async function checkCount(){
+  /* true = 有新数据；false = 没变化 / 出错 / 正在退避 */
+  if(Date.now()<pollBlockUntil) return false;
+  let r;
+  try{
+    r=await fetch(COUNT_URL,{cache:"no-cache",headers:(USE_ETAG&&pollEtag)?{"If-None-Match":pollEtag}:{}});
+  }catch(e){ return pollFail(); }
+  if(r.status===304){ pollPenalty=0; return false; }
+  if(!r.ok) return pollFail(r);
+  const et=r.headers.get("ETag");
+  if(et) pollEtag=et;
+  pollPenalty=0;
+  let c=null;
+  try{ c=await r.json(); }catch(e){ return pollFail(); }
+  const id=(c&&c.latest_id!=null)?Number(c.latest_id):null;
+  if(id==null) return true;
+  return id!==pollLastId;
+}
+async function loadAll(gap){
+  if(dataCache.at && Date.now()-pollLastFull<gap) return false;
+  let r;
+  try{ r=await fetch(API_ALL,{cache:"no-cache"}); }catch(e){ return pollFail(); }
+  if(!r.ok) return pollFail(r);
+  let j=null;
+  try{ j=await r.json(); }catch(e){ return pollFail(); }
+  pollPenalty=0;
+  const subs=((j&&j.submissions)||[]).slice().sort((a,b)=>(a._id||0)-(b._id||0));
+  pollLastFull=Date.now();
+  pollLastId=subs.length?Number(subs[subs.length-1]._id):(pollLastId||0);
+  dataCache={subs:subs,at:Date.now()};
+  return true;
+}
+function renderAll(){
+  const allSubs = dataCache.subs;
+  {
+    /* 任务开关：本班 + 全局广播里“最后点的那一次”生效（和学生端保持同一口径） */
+    if(Date.now() > localTcUntil){
+      taskOpen = readSwitchState(allSubs);
+      renderTaskControls();
+    }
+    const subs = filterSubs(allSubs);
+    render(subs);
+  }
+}
+const TASK_DEFAULTS = {classroom:false,ledger:false,classify:false,self:false,guess:false,travel:false,quiz:false};
+/* 任务开关：优先读 /state 里的 tc:<班级>；没有状态键时回退到老的 task_control 记录 */
+function readSwitchState(allSubs){
+  const st = stateMap["tc:"+selectedClass];
+  const v = st && st.value;
+  if(v && v.open) return {...TASK_DEFAULTS, ...v.open};
+  const nowTc = Date.now();
+  const tc = allSubs.filter(s=>s.type==="task_control"
+    && (s.klass===selectedClass || s.klass==="__all__")
+    && nowTc-atTime(s)<TASK_TTL);
+  if(tc.length && tc[tc.length-1].open) return {...TASK_DEFAULTS, ...tc[tc.length-1].open};
+  return {...TASK_DEFAULTS};
+}
+async function load(){
+  /* 兼容原来的调用点（切班级、点“揭晓答案”等）：必要时取一次数据，然后渲染 */
+  try{
+    if(!dataCache.at){ await loadAll(0); }
+    else if(await checkCount()){ await loadAll(FULL_GAP); }
+    renderAll();
+  }catch(e){ /* 网络出问题时静默退避，不往控制台打错误（课堂页控制台要干净） */ }
+}
+async function loop(){
+  await load();
+  setTimeout(loop, pollGap(COUNT_BASE));   // 计数轮询 3 秒（+抖动/退避）
+}
+setTimeout(loop, 800);
+/* 实时状态：单独一条 10 秒的轮询（心跳/开关/轮次/实时得分都在里面） */
+async function loopStates(){
+  if(!document.hidden){
+    const got = await getAllStates();
+    if(got) renderAll();
+  }
+  setTimeout(loopStates, stGap(STATE_BASE));
+}
+setTimeout(loopStates, 500);
+/* 切回前台立刻同步一次；后台不轮询 */
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ load(); loopStatesOnce(); } });
+async function loopStatesOnce(){
+  if(await getAllStates()) renderAll();
+}
+
+function render(subs){
+  /* KPI */
+  const students = new Set();
+  const taskCount = {};
+  Object.keys(TASK_NAMES).forEach(k=>taskCount[k]=0);
+  const selfSubs=[], clsSubs=[], travelSubs=[], quizSubsAll=[], classSubs=[], ledgerSubs=[], guessSubs=[];
+
+  subs.forEach(s=>{
+    if(s.student) students.add(s.student+"|"+(s.klass||""));
+    if(s.type==="self_portrait") selfSubs.push(s);
+    else if(s.type==="classify_game") clsSubs.push(s);
+    else if(s.type==="travel_recommend") travelSubs.push(s);
+    else if(s.type==="quiz_result") quizSubsAll.push(s);
+    else if(s.type==="classroom_search") classSubs.push(s);
+    else if(s.type==="account_book") ledgerSubs.push(s);
+    else if(s.type==="guess_submit") guessSubs.push(s);
+    else if(s.type==="guess_round") taskCount.guess_round++;
+  });
+
+  /* 各类任务人数：按学生去重，取最后一次提交 */
+  const selfList    = latestPerStudent(selfSubs,"self_portrait");
+  const clsLatest   = latestPerStudent(clsSubs,"classify_game");
+  taskCount.classroom_search  = latestPerStudent(classSubs,"classroom_search").length;
+  taskCount.account_book      = latestPerStudent(ledgerSubs,"account_book").length;
+  taskCount.classify_game     = clsLatest.length;
+  taskCount.self_portrait     = selfList.length;
+  taskCount.travel_recommend  = latestPerStudent(travelSubs,"travel_recommend").length;
+  taskCount.guess_submit      = latestPerStudent(guessSubs,"guess_submit").length;
+  taskCount.quiz_result       = latestPerStudent(quizSubsAll,"quiz_result").length;
+
+  const heights = [];
+  const subjects = {};
+  selfList.forEach(s=>{
+    const h=Number(s.height);
+    if(s.height && !isNaN(h)) heights.push(h);
+    if(s.fav_subject) subjects[s.fav_subject] = (subjects[s.fav_subject]||0)+1;
+  });
+  const scores = clsLatest.filter(s=>s.score!==undefined&&!isNaN(Number(s.score))).map(s=>Number(s.score));
+
+  document.getElementById("k-students").textContent = students.size;
+  document.getElementById("k-classify").textContent = taskCount.classify_game;
+  document.getElementById("k-self").textContent = taskCount.self_portrait;
+  document.getElementById("k-travel").textContent = taskCount.travel_recommend;
+
+  /* 实时在线同学：读状态通道的 hb:<班级>:<姓名>（学生每 30 秒写一次，ttl 90 秒自动消失） */
+  const now = Date.now();
+  const ROUTE_NAMES = {map:"探险地图",classroom:"教室寻宝",ledger:"小管家",classify:"分类挑战",self:"数据名片",guess:"猜我是谁",travel:"旅行地",quiz:"小测"};
+  const lastSub = {};
+  subs.forEach(s=>{
+    if(!s.student || s.type==="task_control" || s.type==="heartbeat") return;
+    {
+      const t = atTime(s);
+      if(!lastSub[s.student] || t > lastSub[s.student].t) lastSub[s.student] = {t, type:s.type, row:s};
+    }
+  });
+  const liveScore = {};
+  statesWithPrefix("score:").forEach(x=>{ liveScore[x.name] = x.value; });
+  const online = statesWithPrefix("hb:")
+    .filter(h=> selectedClass==="__all__" ? true : h.klass===selectedClass)
+    .sort((a,b)=> b.ms - a.ms);
+  document.getElementById("k-online").textContent = online.length;
+  const feed = document.getElementById("feed");
+  if(online.length === 0){
+    feed.innerHTML = `<div class="empty">最近 90 秒没有同学在线…<br><span style="font-size:12px">（在线状态来自 /state 的 hb:班级:姓名，学生端每 30 秒写一次）</span></div>`;
+  } else {
+    feed.innerHTML = online.map(h=>{
+      const n = h.name;
+      const ago = Math.max(0, Math.round((now-h.ms)/1000));
+      const agoTxt = ago<5? "刚刚" : ago+" 秒前";
+      const ls = lastSub[n];
+      const subTxt = ls
+        ? `<div style="margin-top:4px;font-size:12px;color:var(--ink-soft)">最近提交：<b style="color:var(--cyan)">${TASK_NAMES[ls.type]||ls.type}</b> ${escapeHtml(describeSub(ls.row))} <span class="t">${timeTxt(ls.t)}</span></div>`
+        : "";
+      const sc = liveScore[n];
+      const scoreTxt = sc
+        ? `<span class="nchip on" style="font-size:11px;padding:2px 8px;margin-left:6px">分类挑战 ${sc.score} 分${sc.total?`（${sc.placed}/${sc.total}）`:""}</span>`
+        : "";
+      return `<div class="feed-item">
+        <div style="display:flex;align-items:center">
+          <span style="font-size:22px">${escapeHtml((h.value&&h.value.avatar)||"🐱")}</span>
+          <span class="who" style="min-width:90px">${escapeHtml(n)}</span>
+          <span class="type" style="background:#CFFAFE;color:#0E7490">${ROUTE_NAMES[(h.value&&h.value.route)]||"在线"}</span>
+          <span class="t">${agoTxt}</span>
+          ${scoreTxt}
+        </div>
+        ${subTxt}
+      </div>`;
+    }).join("");
+  }
+
+  /* 学生登录情况（按名单比对） */
+  renderLoginBoard(subs);
+
+  /* 小测统计 */
+  const quizSubs = latestPerStudent(quizSubsAll,"quiz_result").filter(s=>Array.isArray(s.answers));
+  const QN = [
+    "教室里哪个是数据？",
+    "哪个不是数据的表示形式？",
+    "50-2+12=？",
+    "哪个是图片形式的数据？"
+  ];
+  const quizWrap = document.getElementById("quiz-stats");
+  if(quizSubs.length === 0){
+    quizWrap.innerHTML = `<div style="color:var(--ink-soft);font-size:14px">已交卷 0 人，等同学交卷后自动显示…</div>`;
+  } else {
+    const n = quizSubs.length;
+    // 每题答对人数
+    const right = [0,0,0,0];
+    quizSubs.forEach(s=>{
+      (s.answers||[]).forEach((a,i)=>{ if(i<4 && a===QUIZ_ANS[i]) right[i]++; });
+    });
+    const totalScore = quizSubs.reduce((sum,s)=>sum+(Number(s.score)||0),0);
+    quizWrap.innerHTML = `
+      <div style="margin-bottom:10px;font-size:14px">已交卷 <b style="color:var(--yellow);font-size:18px">${n}</b> 人 · 班级平均分 <b style="color:var(--green);font-size:18px">${(totalScore/n).toFixed(1)}</b> / 4</div>
+      ${QN.map((q,i)=>{
+        const pct = n? Math.round(right[i]/n*100):0;
+        return `<div class="quiz-row">
+          <div class="qn">${i+1}</div>
+          <div class="qtext">${q}</div>
+          <div class="quiz-bar"><div class="fill" style="width:${pct}%"></div></div>
+          <div class="qstat" style="color:${pct>=80?'var(--green)':pct>=60?'var(--yellow)':'var(--red)'}">${right[i]}/${n} · ${pct}%</div>
+        </div>`;
+      }).join("")}
+    `;
+  }
+
+  /* 各任务参与人柱状图 */
+  setOpt("chart-tasks",{
+    grid:{left:60,right:20,top:20,bottom:30},
+    tooltip:{trigger:"axis", axisPointer:{type:"shadow"}},
+    xAxis:{type:"category", data:Object.values(TASK_NAMES),
+      axisLabel:{color:"#5B6B84", fontSize:12, interval:0, rotate:0},
+      axisLine:{lineStyle:{color:"#DDE5F0"}}},
+    yAxis:{type:"value", splitLine:{lineStyle:{color:"#DDE5F0"}},
+      axisLabel:{color:"#5B6B84"}},
+    series:[{
+      type:"bar", data:Object.keys(TASK_NAMES).map(k=>taskCount[k]),
+      itemStyle:{color:"#3B6FF6", borderRadius:[6,6,0,0]},
+      barWidth:"45%",
+      label:{show:true, position:"top", color:"#334155", fontWeight:700}
+    }]
+  });
+
+  /* 身高分布 */
+  if(heights.length){
+    const bins = {};
+    heights.forEach(h=>{
+      const b = Math.floor(h/5)*5;
+      bins[b] = (bins[b]||0)+1;
+    });
+    const keys = Object.keys(bins).sort((a,b)=>a-b);
+    setOpt("chart-height",{
+      grid:{left:40,right:20,top:20,bottom:30},
+      tooltip:{trigger:"axis", axisPointer:{type:"shadow"}},
+      xAxis:{type:"category", data:keys.map(k=>k+"cm"),
+        axisLabel:{color:"#5B6B84"}, axisLine:{lineStyle:{color:"#DDE5F0"}}},
+      yAxis:{type:"value", splitLine:{lineStyle:{color:"#DDE5F0"}},
+        axisLabel:{color:"#5B6B84"}},
+      series:[{type:"bar", data:keys.map(k=>bins[k]),
+        itemStyle:{color:"#0891B2", borderRadius:[6,6,0,0]},
+        barWidth:"50%",
+        label:{show:true, position:"top", color:"#334155"}}]
+    });
+  }else{
+    setOpt("chart-height",{
+      title:{text:"暂无数据", left:"center", top:"center",
+        textStyle:{color:"#5B6B84", fontSize:14, fontWeight:400}}
+    });
+  }
+
+  /* 最喜欢科目 */
+  const subjKeys = Object.keys(subjects);
+  if(subjKeys.length){
+    const colors = ["#3B6FF6","#0891B2","#16A34A","#F59E0B","#DB2777","#7C3AED","#DC2626","#94A3B8"];
+    setOpt("chart-subject",{
+      tooltip:{trigger:"item"},
+      legend:{bottom:0, textStyle:{color:"#5B6B84", fontSize:11}, type:"scroll"},
+      series:[{
+        type:"pie", radius:["40%","65%"], center:["50%","45%"],
+        data: subjKeys.map((k,i)=>({name:k, value:subjects[k], itemStyle:{color:colors[i%colors.length]}})),
+        label:{show:true, formatter:(p)=>p.name+" "+p.value+"人", color:"#334155", fontSize:12}
+      }]
+    });
+  }else{
+    setOpt("chart-subject",{
+      title:{text:"暂无数据", left:"center", top:"center",
+        textStyle:{color:"#5B6B84", fontSize:14, fontWeight:400}}
+    });
+  }
+
+  /* 分类得分分布 */
+  if(scores.length){
+    // 按“得分率”分档，题目数量以后增减都不用改这里
+    const scoreBins = {"0-59%":0,"60-79%":0,"80-99%":0,"满分":0};
+    clsLatest.forEach(s=>{
+      const total = Number(s.total)||11;           // 老数据没有 total 时按 11 题算
+      const max = total*10;
+      const pct = max ? Math.round(Number(s.score)/max*100) : 0;
+      if(pct<60) scoreBins["0-59%"]++;
+      else if(pct<80) scoreBins["60-79%"]++;
+      else if(pct<100) scoreBins["80-99%"]++;
+      else scoreBins["满分"]++;
+    });
+    setOpt("chart-score",{
+      grid:{left:40,right:20,top:20,bottom:30},
+      tooltip:{trigger:"axis"},
+      xAxis:{type:"category", data:Object.keys(scoreBins),
+        axisLabel:{color:"#5B6B84"}, axisLine:{lineStyle:{color:"#DDE5F0"}}},
+      yAxis:{type:"value", splitLine:{lineStyle:{color:"#DDE5F0"}},
+        axisLabel:{color:"#5B6B84"}},
+      series:[{type:"bar", data:Object.values(scoreBins),
+        itemStyle:{color:"#F59E0B", borderRadius:[6,6,0,0]},
+        barWidth:"45%",
+        label:{show:true, position:"top", color:"#334155"}}]
+    });
+  }else{
+    setOpt("chart-score",{
+      title:{text:"暂无数据", left:"center", top:"center",
+        textStyle:{color:"#5B6B84", fontSize:14, fontWeight:400}}
+    });
+  }
+
+  /* 猜猜我是谁：自画像池 */
+  guessPool = selfList;
+  if(guessIdx < 0 || guessIdx >= guessPool.length){
+    pickGuess();
+  }
+
+  /* 本轮猜测统计 */
+  const statsEl = document.getElementById("guess-stats");
+  /* 当前这一轮优先读状态通道 round:<班级>；没有状态时回退到记录表里的最后一轮 */
+  const stRound = (stateMap["round:"+selectedClass]||{}).value || null;
+  const rounds = subs.filter(s=>s.type==="guess_round" && (Date.now()-atTime(s))<ROUND_TTL);
+  const lastRound = stRound ? null : (rounds.length?rounds[rounds.length-1]:null);
+  if(stRound || lastRound){
+    const targetName = stRound ? stRound.target_name : lastRound.target_name;
+    const myGuesses = subs.filter(s=>{
+      if(s.type!=="guess_submit") return false;
+      return stRound ? String(s.round_id)===String(stRound.at) : s.round_id===lastRound._id;
+    });
+    // 学生只有猜对才提交，所以提交数=猜对人数；wrong_count 累加得到全班错误总次数
+    const guessed = myGuesses.length;
+    const totalWrong = myGuesses.reduce((sum,g)=>sum+(Number(g.wrong_count)||0),0);
+    const avgTry = guessed? ((totalWrong+guessed)/guessed).toFixed(1) : "0";
+    statsEl.style.display = "block";
+    // 答案默认打码，点“揭晓答案”才显示（避免投影时剧透）
+    statsEl.innerHTML = `本轮：神秘同学 <b style="color:var(--cyan)">${answerRevealed?escapeHtml(targetName||"?"):"？？？"}</b>
+      · 已猜对 <b style="color:var(--green)">${guessed}</b> 人
+      · 全班猜错 <b style="color:var(--red)">${totalWrong}</b> 次
+      · 平均每人猜 <b style="color:var(--yellow)">${avgTry}</b> 次`;
+  }else{
+    statsEl.style.display = "none";
+  }
+}
+
+/* ===== 学生登录情况：拿名单和本堂课的记录比对 ===== */
+function renderLoginBoard(subs){
+  const board  = document.getElementById("login-board");
+  const sumEl  = document.getElementById("login-sum");
+  const kEl    = document.getElementById("k-login");
+  const now    = Date.now();
+  const ONLINE = 90*1000;                 // 90 秒内有心跳 = 当前在线
+  /* 数据来源：实时状态通道（hb:班级:姓名 = 在线；login:班级:姓名 = 已登录） */
+  const last = {};
+  const put = (name,t)=>{ if(!name) return; if(!last[name] || t > last[name].t) last[name] = {t}; };
+  const wantClass = c => selectedClass==="__all__" ? true : c===selectedClass;
+  statesWithPrefix("hb:").forEach(x=>{ if(wantClass(x.klass)) put(x.name, x.ms); });
+  statesWithPrefix("login:").forEach(x=>{ if(wantClass(x.klass)) put(x.name, x.ms); });
+  if(!Object.keys(last).length){          // 兜底：学生端还没升级（不写状态）时，用记录表判断
+    subs.forEach(s=>{
+      if(!s.student || s.type==="task_control") return;
+      put(s.student, atTime(s));
+    });
+  }
+  const fresh = t => t && (now - t) < TASK_TTL;   // 本堂课（12 小时内）才算登录过
+  const fmt = t => {
+    const m = Math.round((now-t)/60000);
+    if(m < 1) return "刚刚";
+    if(m < 60) return m+" 分钟前";
+    return Math.round(m/60)+" 小时前";
+  };
+  const chip = (name,cls,extra) => `<span class="nchip ${cls}">${escapeHtml(name)}${extra?`<span class="tm">${extra}</span>`:""}</span>`;
+  const legend = `<div class="login-legend">🟢 当前在线（90 秒内有心跳）　🔵 已登录、暂时离线　⚪ 还没登录　🟡 不在名单里（测试班同学或名字写错了）</div>`;
+
+  /* 选了“全部”：按班汇总 */
+  if(selectedClass === "__all__"){
+    let loggedSum = 0, totalSum = 0;
+    const rows = CLASSES.map(c=>{
+      const list = ROSTER[c];
+      if(!list || !list.length) return chip(CLASS_LABEL[c]||c,"in","没有名单");
+      const logged = list.filter(n=>last[n]&&fresh(last[n].t)).length;
+      loggedSum += logged; totalSum += list.length;
+      return chip(CLASS_LABEL[c]||c, logged===list.length?"on":(logged?"in":"off"), logged+"/"+list.length);
+    }).join("");
+    kEl.textContent = totalSum ? (loggedSum+"/"+totalSum) : "—";
+    sumEl.textContent = "全部班级汇总（只算本堂课有记录的）";
+    board.innerHTML = `<div class="name-chips">${rows}</div>${legend}`;
+    return;
+  }
+
+  const list = ROSTER[selectedClass];
+  /* 测试班没有固定名单：只列出登录过的人 */
+  if(!list){
+    const names = Object.keys(last).filter(n=>fresh(last[n].t));
+    kEl.textContent = names.length+" 人";
+    sumEl.textContent = "测试班没有固定名单，下面是本堂课登录过的同学";
+    board.innerHTML = names.length
+      ? `<div class="name-chips">${names.map(n=>chip(n,(now-last[n].t<ONLINE)?"on":"in",fmt(last[n].t))).join("")}</div>`
+      : `<div class="empty">还没有同学登录。让同学们打开网页、选班级、填名字。</div>`;
+    return;
+  }
+
+  const online=[], offline=[], absent=[];
+  list.forEach(n=>{
+    const a = last[n];
+    if(a && fresh(a.t)) (now-a.t < ONLINE ? online : offline).push(n);
+    else absent.push(n);
+  });
+  const extra = Object.keys(last).filter(n=>!list.includes(n) && fresh(last[n].t));
+  const loggedCount = online.length + offline.length;
+  kEl.textContent = loggedCount+"/"+list.length;
+  sumEl.textContent = `本堂课已登录 ${loggedCount} 人 · 未登录 ${absent.length} 人（名单共 ${list.length} 人）`;
+  const loggedChips = [
+    ...online.map(n=>chip(n,"on",fmt(last[n].t))),
+    ...offline.map(n=>chip(n,"in",fmt(last[n].t))),
+    ...extra.map(n=>chip(n,"other","不在名单"))
+  ].join("");
+  board.innerHTML = `
+    <div class="login-cols">
+      <div>
+        <div class="login-col-h">已登录 <b class="ok">${loggedCount}</b> / ${list.length}</div>
+        <div class="name-chips">${loggedChips || `<span class="empty" style="padding:8px 0">还没有人登录</span>`}</div>
+      </div>
+      <div>
+        <div class="login-col-h">未登录 <b class="no">${absent.length}</b></div>
+        <div class="name-chips">${absent.length ? absent.map(n=>chip(n,"off")).join("") : `<span class="empty" style="padding:8px 0">全班都登录啦 🎉</span>`}</div>
+      </div>
+    </div>${legend}`;
+}
+
+/* 猜猜我是谁 */
+let currentRoundTarget = null;
+let answerRevealed = false;   // 大屏默认不显示答案，避免投影剧透
+
+function pickGuess(){
+  const g = document.getElementById("guess");
+  if(!guessPool.length){
+    g.innerHTML = `<div class="empty">等同学提交自画像后，这里会随机展示一位同学的数据，让全班猜！</div>`;
+    document.getElementById("btn-guess").style.display = "none";
+    document.getElementById("btn-broadcast").style.display = "none";
+    document.getElementById("btn-reveal").style.display = "none";
+    return;
+  }
+  guessIdx = Math.floor(Math.random()*guessPool.length);
+  answerRevealed = false;
+  renderGuessCard();
+  document.getElementById("btn-guess").style.display = "inline-block";
+  document.getElementById("btn-broadcast").style.display = "inline-block";
+  document.getElementById("btn-reveal").style.display = "inline-block";
+  document.getElementById("btn-reveal").textContent = "👁 揭晓答案";
+}
+function renderGuessCard(showAnswer){
+  const g = document.getElementById("guess");
+  const s = guessPool[guessIdx];
+  if(!s) return;
+  const show = (showAnswer===undefined) ? answerRevealed : showAnswer;
+  const hexMap={"红色":"#EF4444","橙色":"#F97316","黄色":"#EAB308","绿色":"#22C55E","蓝色":"#3B6FF6","紫色":"#8B5CF6","粉色":"#EC4899","黑色":"#1E293B"};
+  const animalMap={"小狗":"🐶","小猫":"🐱","熊猫":"🐼","老虎":"🐯","兔子":"🐰","海豚":"🐬","长颈鹿":"🦒","企鹅":"🐧"};
+  const hex=hexMap[s.fav_color]||"#3B6FF6";
+  const animalEmoji=animalMap[s.fav_animal]||"🐾";
+  const answerHtml = show
+    ? `<div style="margin-top:8px;font-size:18px;font-weight:900;color:var(--yellow)">答案：${escapeHtml(s.student||"")}（${escapeHtml(CLASS_LABEL[s.klass]||s.klass||"")}）</div>`
+    : "";
+  g.innerHTML = `
+    <div class="card-mini" style="background:linear-gradient(135deg,${hex},#8B5CF6);position:relative;overflow:hidden">
+      <div style="position:absolute;right:-10px;bottom:-10px;font-size:100px;opacity:.15;line-height:1;transform:rotate(-15deg)">${animalEmoji}</div>
+      <div class="avatar">${escapeHtml(s.avatar || "🧑")}</div>
+      <div class="name">${show ? escapeHtml(s.student||"神秘同学") : "神秘同学"}</div>
+      <div class="grid2" style="position:relative;z-index:1">
+        <div class="cell">年龄<b>${escapeHtml(s.age || "?")}岁</b></div>
+        <div class="cell">身高<b>${escapeHtml(s.height || "?")}cm</b></div>
+        <div class="cell">体重<b>${escapeHtml(s.weight || "?")}斤</b></div>
+        <div class="cell">生日<b>${escapeHtml(s.birth || "?")}</b></div>
+        <div class="cell">喜欢<b>${escapeHtml(s.fav_color || "?")}</b></div>
+        <div class="cell">科目<b>${escapeHtml(s.fav_subject || "?")}</b></div>
+      </div>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:var(--ink-soft)">爱好：${escapeHtml(s.hobby || "—")} · 动物：${escapeHtml(s.fav_animal || "?")}</div>
+    ${answerHtml}
+  `;
+}
+document.getElementById("btn-guess").onclick = pickGuess;
+document.getElementById("btn-reveal").onclick = function(){
+  answerRevealed = !answerRevealed;
+  this.textContent = answerRevealed ? "🙈 收起答案" : "👁 揭晓答案";
+  renderGuessCard();
+  load();   // 让下面的统计行同步（那里也默认打码）
+};
+document.getElementById("btn-broadcast").onclick = async function(){
+  const s = guessPool[guessIdx];
+  if(!s) return;
+  currentRoundTarget = s;
+  this.disabled = true; this.textContent = "广播中…";
+  const round = {
+    at: localNow(), target_id: s._id, target_name: s.student,
+    avatar: s.avatar, age:s.age, height:s.height, weight:s.weight, birth:s.birth,
+    fav_color:s.fav_color, fav_subject:s.fav_subject,
+    fav_animal:s.fav_animal, fav_fruit:s.fav_fruit, hobby:s.hobby, diet:s.diet,
+    /* 把候选名单一起带上，学生端就不用为了“猜谁”去拉全量了 */
+    names: guessPool.map(x=>x.student).filter(Boolean)
+  };
+  /* 主通道：写实时状态（选“全部”时给每个班各写一份） */
+  let ok = false;
+  const targets = selectedClass==="__all__" ? CLASSES : [selectedClass];
+  for(const c of targets){
+    if(await putState("round:"+c, round, TTL_ROUND)) ok = true;
+  }
+  /* 记录表留痕（同时也兼容还没升级的学生端） */
+  fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({type:"guess_round", klass:selectedClass, ...round})}).catch(()=>{});
+  this.disabled = false; this.textContent = "广播给全班猜";
+  if(ok){
+    toastMsg("已广播！学生平板会自动加载（答案已隐藏，要看得点“揭晓答案”）");
+    renderGuessCard();   // 保持“神秘同学”，不剧透
+  }else{
+    toastMsg("广播失败，请检查网络后再点一次");
+  }
+};
+function toastMsg(m){
+  let t = document.getElementById("_toast");
+  if(!t){ t = document.createElement("div"); t.id="_toast";
+    t.style.cssText="position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#1E2A4A;color:#fff;padding:10px 20px;border-radius:99px;z-index:99;transition:opacity .3s";
+    document.body.appendChild(t);
+  }
+  t.textContent = m; t.style.opacity = "1";
+  clearTimeout(t._h); t._h = setTimeout(()=>t.style.opacity="0", 2000);
+}
+
+function describeSub(s){
+  if(s.type==="classroom_search"){const d=s.data||{};return `时间${d.time||"?"} · ${d.temp||"?"}℃ · ${d.weather||"?"}`;}
+  if(s.type==="account_book") return `小管家算账：答对 ${s.correct_count||0}/${s.total||3}，余额 ¥${s.final_balance||"?"}`;
+  if(s.type==="classify_game") return `得分 ${s.score}，答对 ${s.right||0}/${s.total}`;
+  if(s.type==="self_portrait") return `${s.age}岁 · ${s.height}cm · 喜欢${s.fav_color||""}${s.fav_subject||""}`;
+  if(s.type==="travel_recommend") return `推荐：${s.name||""}`;
+  if(s.type==="guess_round") return `本轮神秘同学是 ${s.target_name||"?"}`;
+  if(s.type==="guess_submit") return `猜对啦！之前猜错 ${s.wrong_count||0} 次，共猜 ${(s.wrong_count||0)+1} 次`;
+  return "";
+}
+function escapeHtml(str){
+  return String(str||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+</script>
+</body>
+</html>
