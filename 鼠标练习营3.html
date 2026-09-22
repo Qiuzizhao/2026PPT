@@ -157,50 +157,62 @@
     height:470px;height:clamp(330px,56vh,470px);
     padding:12px 12px 20px;margin:0 auto 76px;
     background:
-      linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,0) 34%),
-      linear-gradient(180deg,#f8fbff 0%,#e8eef6 100%);
-    border:1px solid #d6e0ec;border-radius:18px;
-    box-shadow:0 16px 34px rgba(15,42,80,.1),inset 0 1px 0 #ffffff;
+      linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 34%),
+      linear-gradient(180deg,#303b4b 0%,#151d2a 62%,#0b1220 100%);
+    border:2px solid #080d16;border-radius:18px;
+    box-shadow:0 16px 34px rgba(15,23,42,.24),inset 0 1px 0 rgba(255,255,255,.14);
   }
   .monitor::before{
     content:"";position:absolute;left:50%;bottom:-44px;
     width:58px;height:46px;transform:translateX(-50%);
-    background:linear-gradient(180deg,#dfe7f1,#c5d1df);
+    background:linear-gradient(180deg,#263244,#0b1220);
     clip-path:polygon(38% 0,62% 0,100% 100%,0 100%);
-    box-shadow:inset 0 1px 0 #ffffff;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.14);
   }
   .monitor::after{
     content:"";position:absolute;left:50%;bottom:-58px;
     width:230px;height:15px;transform:translateX(-50%);
-    background:linear-gradient(180deg,#e4ebf4,#c2cedc);
+    background:linear-gradient(180deg,#2b374a,#0b1220);
     border-radius:999px;
-    box-shadow:0 8px 16px rgba(15,42,80,.12),inset 0 1px 0 #ffffff;
+    box-shadow:0 8px 16px rgba(15,23,42,.25),inset 0 1px 0 rgba(255,255,255,.13);
   }
 
   /* ===== 练习区（显示器里的屏幕） ===== */
   .play{
     position:relative;height:100%;
     background:#edf4fc;border-radius:10px;overflow:hidden;
-    box-shadow:inset 0 0 0 1px #cdd8e5;
+    box-shadow:inset 0 0 0 1px #0b1220,0 0 0 1px rgba(255,255,255,.08);
   }
   .stage{position:absolute;top:0;right:0;bottom:0;left:0}
+  .slot-grid{position:absolute;top:0;right:0;bottom:0;left:0;display:none;pointer-events:none}
+  .slot-grid.show{display:block}
+  .slot-cell{
+    position:absolute;border:1px dashed rgba(255,255,255,.55);border-radius:10px;
+    transition:background .1s ease,border-color .1s ease;
+  }
+  .slot-cell .slot-coord{
+    position:absolute;left:5px;top:3px;font-size:10px;line-height:1;font-weight:700;
+    color:rgba(255,255,255,.86);text-shadow:0 1px 2px rgba(0,0,0,.45);white-space:nowrap;
+  }
+  .slot-cell.hot{background:rgba(255,255,255,.2);border:2px dashed #ffffff}
+  .slot-cell.hot .slot-coord{color:#ffffff}
   .wallmini{
     position:absolute;top:0;right:0;bottom:0;left:0;
     background:
-      radial-gradient(circle at 78% 18%, rgba(255,255,255,.95) 0 6%, rgba(255,255,255,0) 27%),
-      linear-gradient(160deg,#eaf4ff 0%,#dbeafe 54%,#f4f8ff 100%);
+      radial-gradient(circle at 78% 18%, rgba(255,255,255,.88) 0 6%, rgba(255,255,255,0) 28%),
+      linear-gradient(160deg,#0b5cad 0%,#2f8fd8 52%,#a8d8ff 100%);
     transition:filter .35s ease;
   }
   .wallmini::before{
     content:"";position:absolute;top:0;right:0;bottom:0;left:0;
-    background:linear-gradient(180deg,rgba(255,255,255,.58),rgba(255,255,255,0) 42%);
+    background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0) 45%);
   }
   .wallmini::after{
     content:"";position:absolute;left:-12%;right:-12%;bottom:-16%;height:46%;
     border-radius:50% 50% 0 0;
-    background:linear-gradient(180deg,rgba(191,219,254,.62),rgba(219,234,254,0));
+    background:linear-gradient(180deg,rgba(10,58,104,.5),rgba(10,58,104,0));
   }
-  .stage.lightbg .wallmini{filter:brightness(1.06) saturate(.92)}
+  .stage.lightbg .wallmini{filter:brightness(1.12) saturate(.92)}
 
   /* ===== 开始页：直接铺开关卡 ===== */
   .home-hub{
@@ -235,33 +247,33 @@
   /* 练习区里的小图标 */
   .micons{position:absolute;top:8px;right:0;bottom:6px;left:0}
   .micon{
-    position:absolute;width:92px;height:100px;border-radius:10px;
-    display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 3px 3px;
-    cursor:pointer;border:2px solid transparent;transition:background .12s ease,border-color .12s ease;
+    position:absolute;width:92px;height:100px;border-radius:4px;
+    display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px;
+    cursor:pointer;border:1px solid transparent;transition:background .12s ease,border-color .12s ease;
   }
-  html.no-flexgap .micon > *:not(:last-child){margin-bottom:3px}
+  html.no-flexgap .micon > *:not(:last-child){margin-bottom:2px}
   .micon .face{
-    width:56px;height:56px;border-radius:14px;background:linear-gradient(180deg,#ffffff,#f2f7fd);font-size:32px;
-    display:flex;align-items:center;justify-content:center;color:#1e293b;
-    border:1px solid #dbe4f0;
-    box-shadow:0 10px 20px rgba(15,42,80,.11),inset 0 1px 0 #ffffff;
-    transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;
+    width:64px;height:64px;border-radius:0;background:transparent;font-size:46px;
+    display:flex;align-items:center;justify-content:center;color:#ffffff;
+    border:none;box-shadow:none;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));
+    transition:filter .12s ease;
   }
   .micon .lbl{
-    font-size:13px;font-weight:700;color:#1e293b;text-align:center;line-height:1.2;
-    text-shadow:none;max-width:88px;word-break:break-all;
-    background:rgba(255,255,255,.72);border:1px solid rgba(219,228,240,.9);border-radius:7px;
-    padding:2px 6px;box-shadow:0 2px 6px rgba(15,42,80,.05);transition:background .12s ease,border-color .12s ease,color .12s ease;
+    font-size:13px;font-weight:600;color:#ffffff;text-align:center;line-height:1.2;
+    text-shadow:0 1px 2px rgba(0,0,0,.85),0 0 4px rgba(0,0,0,.5);max-width:88px;word-break:break-all;
+    background:transparent;border:none;border-radius:2px;padding:2px 4px;
+    transition:background .12s ease,border-color .12s ease,color .12s ease;
   }
-  .micon:hover{background:rgba(37,99,235,.06);border-color:rgba(37,99,235,.24)}
-  .micon:hover .face{transform:translateY(-2px);box-shadow:0 12px 24px rgba(37,99,235,.17),inset 0 1px 0 #ffffff}
-  .micon:hover .lbl{background:#ffffff;border-color:#bfdbfe}
-  .micon.sel{background:rgba(37,99,235,.08);border-color:rgba(37,99,235,.4)}
-  .micon.sel .face{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue),0 10px 22px rgba(37,99,235,.18)}
-  .micon.sel .lbl{background:var(--blue);border-color:var(--blue);color:#ffffff}
+  .micon:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.35)}
+  .micon:hover .face{filter:drop-shadow(0 3px 4px rgba(0,0,0,.58))}
+  .micon:hover .lbl{background:transparent;border-color:transparent}
+  .micon.sel{background:rgba(0,120,215,.42);border-color:rgba(180,220,255,.95)}
+  .micon.sel .face{border:none;box-shadow:none}
+  .micon.sel .lbl{background:transparent;border:none;color:#ffffff}
   .micon.dragging{opacity:.62}
-  .micon.folderTarget{border-color:#f59e0b;background:rgba(245,158,11,.12);box-shadow:inset 0 0 0 2px rgba(245,158,11,.3)}
-  .micon.hintring{animation:pulse 1.4s ease-in-out infinite;border-radius:12px}
+  .micon.folderTarget{border-color:#ffd166;background:rgba(255,209,102,.25);box-shadow:inset 0 0 0 2px rgba(255,209,102,.35)}
+  .micon.hintring{animation:pulse 1.4s ease-in-out infinite;border-radius:6px}
   .mhid.found{border-color:var(--green) !important;box-shadow:0 0 0 3px rgba(78,230,168,.28),0 0 24px rgba(78,230,168,.35) !important}
 
   /* 练习区里的小窗口：轻量、清晰的电脑窗口 */
@@ -408,6 +420,7 @@
     padding:8px 14px;font-weight:800;font-size:15px;color:#94a3b8;transition:all .18s ease;
   }
   .step.on{background:#ffffff;color:var(--ink);border-color:var(--blue);transform:translateY(-2px);box-shadow:0 8px 18px rgba(37,99,235,.1)}
+  .step.done{background:#ecfdf5;color:#059669;border-color:#a7f3d0;box-shadow:none}
   .btn{
     border:1px solid transparent;cursor:pointer;border-radius:10px;padding:10px 18px;
     font-family:inherit;font-size:16px;font-weight:800;transition:transform .1s ease,filter .1s ease;
@@ -567,6 +580,70 @@
     .monitor{padding:10px 10px 18px}
     .monitor::after{width:180px}
   }
+  @media(min-width:1500px){
+    body{padding-top:22px}
+    .wrap{max-width:1080px}
+    .mascot{width:86px;height:86px;font-size:50px}
+    .bubble{font-size:26px;height:112px;min-height:112px}
+    nav button{font-size:18px;padding:11px 16px}
+    .stars .star .s-in{font-size:30px}
+    .star-total{font-size:22px;padding:10px 18px}
+    .monitor{height:550px;margin-bottom:88px}
+    .monitor::before{width:66px;height:50px;bottom:-49px}
+    .monitor::after{width:280px;height:18px;bottom:-66px}
+    .home-hub{padding:22px 26px}
+    .home-head b{font-size:22px}
+    .home-grid{gap:14px}
+    .home-card{min-height:130px;padding:16px}
+    .home-card .hc-ico{width:36px;height:36px;border-radius:10px}
+    .home-card .hc-ico svg{width:22px;height:22px}
+    .home-card .hc-name{font-size:18px}
+    .home-card .hc-foot{font-size:15px}
+    .micon{width:105px;height:115px}
+    .micon .face{width:76px;height:76px;font-size:42px}
+    .micon .lbl{font-size:14px}
+    .mtask{height:44px}
+    .mtask .mtbtn{min-height:34px;padding:7px 12px}
+    .mwin .tbar{height:44px}
+    .mwin .tbar .wtxt{font-size:16px}
+    .mwin .wb{width:34px;height:34px;font-size:15px}
+    .mwin .wbody{font-size:16px}
+    .mmenu{min-width:210px}
+    .mmenu .mi{font-size:16px;padding:11px 13px}
+    .mstart{width:300px}
+    .mstart .app{font-size:16px}
+    .mtask .mtbtn{font-size:15px}
+    .minfo{font-size:15px}
+    .slot-cell .slot-coord{font-size:12px}
+    .phase,.step{font-size:16px}
+    .btn{font-size:17px}
+    .cert{padding:24px 30px;max-width:840px}
+    .cert .big{font-size:58px}
+    .cert h2{font-size:34px}
+    .cert p{font-size:17px}
+    .cert .skills span{font-size:15px}
+    .slice-title{font-size:20px}
+    .slice-k{font-size:16px}
+  }
+  @media(min-width:1900px){
+    .wrap{max-width:1200px}
+    .bubble{font-size:28px;height:120px;min-height:120px}
+    .monitor{height:600px}
+    .home-card{min-height:146px;padding:18px}
+    .home-card .hc-name{font-size:20px}
+    .home-card .hc-ico{width:40px;height:40px}
+    .home-card .hc-ico svg{width:24px;height:24px}
+    .micon{width:120px;height:130px}
+    .micon .face{width:86px;height:86px;font-size:48px}
+    .mtask{height:49px}
+    .mtask .mtbtn{min-height:38px;padding:8px 13px}
+    .mwin .tbar{height:49px}
+    .mwin .wb{width:38px;height:38px;font-size:16px}
+    .slot-cell .slot-coord{font-size:13px}
+    .cert{max-width:920px}
+    .cert h2{font-size:38px}
+    .cert .big{font-size:64px}
+  }
 </style>
 <script>
 /* ===== 防误触兜底 =====
@@ -618,6 +695,48 @@
   } catch (e) {}
 })();
 </script>
+<script>
+/* ===== 打开后尽量全屏 =====
+   浏览器只允许在用户操作里进入全屏：打开时先尝试一次；
+   如果被拦下，学生第一次点页面或按键盘时自动进入全屏。 */
+(function () {
+  var gestureDone = false;
+  function removeGesture() {
+    var types = ['pointerdown','mousedown','touchstart','keydown'];
+    for (var i = 0; i < types.length; i++) document.removeEventListener(types[i], onGesture, true);
+  }
+  function requestFs() {
+    if (gestureDone) return;
+    gestureDone = true;
+    try {
+      var el = document.documentElement;
+      var fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+      if (fn) {
+        var p = fn.call(el);
+        if (p && p.catch) p.catch(function () {});
+      }
+    } catch (e) {}
+    removeGesture();
+  }
+  function onGesture() { requestFs(); }
+  function armGesture() {
+    var types = ['pointerdown','mousedown','touchstart','keydown'];
+    for (var i = 0; i < types.length; i++) document.addEventListener(types[i], onGesture, true);
+  }
+  function autoTry() {
+    try {
+      var el = document.documentElement;
+      var fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+      if (fn) {
+        var p = fn.call(el);
+        if (p && p.catch) p.catch(function () {});
+      }
+    } catch (e) {}
+  }
+  armGesture();
+  window.addEventListener('load', autoTry);
+})();
+</script>
 </head>
 <body>
 <div class="bg-bubbles" id="bg"></div>
@@ -639,7 +758,6 @@
   <div class="ctrlrow" id="ctrlrow" style="display:none">
     <span class="phase" id="phase">计星</span>
     <div class="stepbar" id="stepbar"></div>
-    <button class="btn ghost" id="btnDemo">再看一遍 👀</button>
   </div>
 </div>
 
@@ -682,7 +800,7 @@
   "use strict";
   const $ = s=>document.querySelector(s);
   const play=$('#play'), bubble=$('#bubble'), mascot=$('#mascot'), starsEl=$('#stars');
-  const phaseEl=$('#phase'), stepbar=$('#stepbar'), ctrlrow=$('#ctrlrow'), btnDemo=$('#btnDemo');
+  const phaseEl=$('#phase'), stepbar=$('#stepbar'), ctrlrow=$('#ctrlrow');
   const overlay=$('#overlay');
 
   /* ================= 通用小工具 ================= */
@@ -717,6 +835,7 @@
   }
   function rectOf(node){ const r=node.getBoundingClientRect(); return {x:r.left,y:r.top,w:r.width,h:r.height}; }
   function flash(node,cls){ if(!node) return; node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
+  function uiScale(){ return window.innerWidth>=1900?1.3:(window.innerWidth>=1500?1.15:1); }
   function setStars(done,total){
     starsEl.innerHTML='';
     for(let i=0;i<total;i++){
@@ -747,7 +866,9 @@
   function hideModal(){ overlay.classList.remove('show'); }
 
   /* ================= 练习区尺寸 ================= */
-  const PAD=12, CELL_W=100, CELL_H=106, COLS=8, BAR=38;
+  const UI_SCALE=window.innerWidth>=1900?1.3:(window.innerWidth>=1500?1.15:1);
+  const PAD=Math.round(12*UI_SCALE), CELL_W=Math.round(100*UI_SCALE), CELL_H=Math.round(106*UI_SCALE);
+  const COLS=8, ROWS=4, BAR=Math.round(38*UI_SCALE);
   function pW(){ return play.clientWidth; }
   function pH(){ return play.clientHeight; }
   function barOn(){ return !!(S.scene&&S.scene.bar) || S.wins.length>0; }
@@ -795,13 +916,24 @@
     play.innerHTML='';
     S.icons=[]; S.wins=[]; S.sel=null; S.selSeen={}; S.inFolder={}; S.seqStep=0; S.flags={};
     S.zTop=20; S.active=null; S.done=false; S.found=false; S.hid=null; S.menu=null; S.start=null;
-    S.ready=false;
+    S.ready=false; S.grid=null;
     folderSeq=0;                       /* 每一关新建的文件夹都从 1 号开始 */
     const scene=cfg.scene||{};
     S.scene=scene;
     const st=el('div','stage'+(scene.light?' lightbg':''));
     play.appendChild(st); S.stage=st;
     st.appendChild(el('div','wallmini'));
+    const grid=el('div','slot-grid');
+    for(let row=0;row<ROWS;row++){
+      for(let col=0;col<COLS;col++){
+        const cell=el('div','slot-cell','<span class="slot-coord">第'+(col+1)+'列 第'+(row+1)+'行</span>');
+        const p=slotPos(col,row);
+        cell.style.left=p.x+'px'; cell.style.top=p.y+'px';
+        cell.style.width=CELL_W+'px'; cell.style.height=CELL_H+'px';
+        grid.appendChild(cell);
+      }
+    }
+    st.appendChild(grid); S.grid=grid;
     const layer=el('div','micons'); st.appendChild(layer); S.layer=layer;
     const wl=el('div','mwins'); st.appendChild(wl); S.winLayer=wl;
     if(scene.hid){
@@ -837,7 +969,6 @@
         if(S.start.classList.contains('show')) closeStart(); else openStart();
       });
     }
-    addGhost();
     on(play,'click',function(e){
       if(e.target.closest('.micon')||e.target.closest('.mwin')||e.target.closest('.mmenu')
          ||e.target.closest('.mstart')||e.target.closest('.mtask')) return;
@@ -853,8 +984,6 @@
       if(ic){ selectIcon(ic.dataset.id); openMenu(x,y,'icon',ic.dataset.id); }
       else if(!e.target.closest('.mmenu')&&!e.target.closest('.mstart')){ openMenu(x,y,'desk'); }
     });
-    /* 学生自己动手了，就停下演示（演示只在没人动的时候自己放） */
-    on(play,'pointerdown',function(){ if(demoOn){ stopDemo(); S.ready=true; } },true);
     if(scene.start) openStart();
   }
   function clockText(){
@@ -882,7 +1011,8 @@
   /* 给窗口定一个能看见的初始位置（后开的窗口也要有） */
   function placeWindow(w){
     const size=w.spec.size||[520,320];
-    const wide=clamp(size[0],280,pW()-24), high=clamp(size[1],180,workH()-30);
+    const s=uiScale();
+    const wide=clamp(Math.round(size[0]*s),280,pW()-24), high=clamp(Math.round(size[1]*s),180,workH()-30);
     const at=w.spec.at||[0.5,0.4];
     const x=clamp(at[0]*(pW()-wide),10,Math.max(10,pW()-wide-10));
     const y=clamp(at[1]*(workH()-high),8,Math.max(8,workH()-high-8));
@@ -973,6 +1103,10 @@
     const lr=S.layer.getBoundingClientRect();
     const x=e.clientX-iconDrag.dx-lr.left, y=e.clientY-iconDrag.dy-lr.top;
     if(Math.abs(x-parseFloat(iconDrag.node.style.left||0))>3||Math.abs(y-parseFloat(iconDrag.node.style.top||0))>3){
+      if(!iconDrag.moved){
+        clearTag();
+        if(S.grid) S.grid.classList.add('show');
+      }
       iconDrag.moved=true;
       iconDrag.node.classList.add('dragging');
       iconDrag.node.classList.remove('sel');
@@ -980,6 +1114,14 @@
     if(iconDrag.moved) e.preventDefault();
     iconDrag.node.style.left=Math.round(x)+'px';
     iconDrag.node.style.top=Math.round(y)+'px';
+    if(S.grid){
+      const cx=x+iconDrag.node.offsetWidth/2, cy=y+iconDrag.node.offsetHeight/2;
+      const col=clamp(Math.floor((cx-PAD)/CELL_W),0,COLS-1);
+      const row=clamp(Math.floor((cy-PAD)/CELL_H),0,ROWS-1);
+      const cells=S.grid.children;
+      for(let i=0;i<cells.length;i++) cells[i].classList.remove('hot');
+      if(cells[row*COLS+col]) cells[row*COLS+col].classList.add('hot');
+    }
     const f=folderUnder(e.clientX,e.clientY,iconDrag.node);
     S.layer.querySelectorAll('.micon').forEach(function(n){
       n.classList.toggle('folderTarget', !!f && f===n);
@@ -1002,10 +1144,15 @@
     document.removeEventListener('pointermove',iconDragMove);
     document.removeEventListener('pointerup',iconDragEnd);
     document.removeEventListener('pointercancel',iconDragEnd);
+    if(S.grid){
+      S.grid.classList.remove('show');
+      const cells=S.grid.children;
+      for(let i=0;i<cells.length;i++) cells[i].classList.remove('hot');
+    }
     const d=iconDrag; iconDrag=null;
     d.node.classList.remove('dragging');
     S.layer.querySelectorAll('.folderTarget').forEach(function(n){ n.classList.remove('folderTarget'); });
-    if(!d.moved) return;                 /* 没拖动，选中交给 click 事件 */
+    if(!d.moved){ checkGoal(); return; }  /* 没拖动，选中交给 click 事件 */
     const ic=iconById(d.id);
     const f=folderUnder(e.clientX,e.clientY,null);
     if(f){
@@ -1314,9 +1461,13 @@
     let need=false;
     (function walk(g){
       if(!g||need) return;
-      if(g.k==='sel'&&g.id===id) need=true;
+      if((g.k==='sel'||g.k==='seen')&&g.id===id) need=true;
+      if(g.k==='selAll'&&g.ids&&g.ids.indexOf(id)>=0) need=true;
       if(g.k==='folder'&&(g.icon===id||g.folder===id)) need=true;
       if(g.k==='slots') g.list.forEach(function(x){ if(x.id===id) need=true; });
+      if(g.k==='ctx'&&g.on==='icon'&&g.id===id) need=true;
+      if((g.k==='winOpen'||g.k==='winClosed'||g.k==='state'||g.k==='snap'||g.k==='active')
+         && g.id&&g.id.indexOf('win-')===0&&g.id.slice(4)===id) need=true;
       if(g.k==='seq') g.steps.forEach(walk);
     })(r.goal);
     return need;
@@ -1337,7 +1488,7 @@
       });
       list.appendChild(b);
     });
-    on(list,'scroll',function(){ checkGoal(); });
+    if(!list._goalBound){ on(list,'scroll',function(){ checkGoal(); }); list._goalBound=true; }
     closeMenu();
     S.start.classList.add('show');
     checkGoal();
@@ -1393,6 +1544,7 @@
     if(!g) return false;
     switch(g.k){
       case 'sel':     return S.sel===g.id;
+      case 'seen':    return !!S.selSeen[g.id];
       case 'none':    return !S.sel;
       case 'selAll':  return g.ids.every(function(id){ return !!S.selSeen[id]; });
       case 'seq': {
@@ -1430,13 +1582,14 @@
   function checkGoal(){
     if(!S.stage) return;
     tickHid();
-    if(demoOn||S.done) return;
+    if(S.done) return;
     const r=curRound();
     if(!r||!r.goal) return;
-    if(goalMet(r.goal)) roundDone();
+    if(goalMet(r.goal)){ roundDone(); return; }
+    refreshTag();
   }
 
-  /* ================= 演示：幽灵指针走一遍 ================= */
+  /* ================= 演示已取消：以下函数保留但不再调用 ================= */
   let demoOn=false, demoTimers=[];
   function DT(ms,fn){ demoTimers.push(setTimeout(fn,ms)); }
   function ghostTo(x,y,ms){
@@ -1456,14 +1609,6 @@
     while(demoTimers.length) clearTimeout(demoTimers.pop());
     const g=$('#ghost'); if(g){ g.style.opacity='0'; }
     if(was&&curRound()&&curRound().revert) curRound().revert();
-  }
-  function addGhost(){
-    const g=el('div','ghost');
-    g.innerHTML='<span class="rip" id="rip"></span>'
-      +'<svg class="cur" width="34" height="42" viewBox="0 0 36 44">'
-      +'<path d="M3 2 L3 32 L11 24.5 L17 39 L23.5 36 L17.5 22 L29 21 Z" fill="#fff" stroke="#2b2b45" stroke-width="3" stroke-linejoin="round"/>'
-      +'</svg>';
-    play.appendChild(g);
   }
   function runSteps(steps,done){
     let i=0;
@@ -1579,9 +1724,9 @@
         steps:['① 找到图标','② 点一下左键'],
         demo:[{at:'#play .micon',msg:'① 把鼠标移到「我的电脑」上面'},
               {at:'#play .micon',act:'click',msg:'② 点一下左键，图标就变蓝了'}] },
-      { tip:'再点旁边的空白处，取消选中', hint:'点蓝色图标以外的地方。',
-        scene:{i:[['pc',0,0]]}, goal:{k:'seq',steps:[{k:'sel',id:'pc'},{k:'none'}]}, star:true, guided:1,
-        steps:['① 先点图标','② 再点空白处'],
+      { tip:'先单击「我的电脑」，再点空白处取消选中', hint:'选中后图标会变蓝，再点图标外面的地方。',
+        scene:{i:[['pc',0,0]]}, goal:{k:'seq',steps:[{k:'seen',id:'pc'},{k:'none'}]}, star:true, guided:1,
+        steps:['① 点一下图标','② 点空白处取消'],
         demo:[{at:'#play .micon',act:'click',msg:'先点一下图标'},
               {run:function(next){ const pr=play.getBoundingClientRect();
                  const x=pr.left+pW()*0.62, y=pr.top+workH()*0.55;
@@ -1590,10 +1735,10 @@
         scene:{i:[['pc',0,0],['bin',1,0]]}, goal:{k:'sel',id:'bin'}, star:true },
       { tip:'选中「美术作业」', hint:'',
         scene:{i:[['pc',0,0],['bin',1,0],['paint',2,0]]}, goal:{k:'sel',id:'paint'}, star:true },
-      { tip:'先选中「语文作业」，再选中「音乐」', hint:'一个一个来。',
+      { tip:'先选中「语文作业」，再选中「音乐」', hint:'选中第二个的时候，第一个会自动取消。',
         scene:{i:[['pc',0,0],['cn',1,0],['music',2,0]]},
         goal:{k:'seq',steps:[{k:'sel',id:'cn'},{k:'sel',id:'music'}]}, star:true },
-      { tip:'把这三个图标各点一次', hint:'每个都要点到。',
+      { tip:'把这三个图标各点一次', hint:'顺序不限，每个都要点一次。',
         scene:{i:[['pc',0,0],['bin',1,0],['paint',2,0]]},
         goal:{k:'selAll',ids:['pc','bin','paint']}, star:true }
      ] },
@@ -1606,15 +1751,15 @@
         steps:['① 找到图标','② 快速点两下'],
         demo:[{at:'#play .micon',msg:'① 鼠标移到「画图」上'},
               {at:'#play .micon',act:'dblclick',msg:'② 快速点两下，窗口就开了'}] },
-      { tip:'单击「画图」只选中，不要打开', hint:'这次只点一下。',
-        scene:{i:[['draw',0,0]]}, goal:{k:'seq',steps:[{k:'sel',id:'draw'},{k:'none'}]}, star:true, guided:1,
-        steps:['① 点一下左键','② 看它没打开'] },
+      { tip:'单击「画图」选中，再点空白处取消', hint:'只点一下，窗口不会打开。',
+        scene:{i:[['draw',0,0]]}, goal:{k:'seq',steps:[{k:'seen',id:'draw'},{k:'none'},{k:'winClosed',id:'win-draw'}]}, star:true, guided:1,
+        steps:['① 点一下图标','② 点空白处取消'] },
       { tip:'双击打开「照片」', hint:'', scene:{i:[['photo',0,0]]}, goal:{k:'winOpen',id:'win-photo'}, star:true },
       { tip:'双击打开「作文」', hint:'', scene:{i:[['essay',0,0]]}, goal:{k:'winOpen',id:'win-essay'}, star:true },
       { tip:'双击打开「画图」，再点 ✕ 把它关掉', hint:'✕ 在窗口右上角。',
         scene:{i:[['draw',0,0]]},
         goal:{k:'seq',steps:[{k:'winOpen',id:'win-draw'},{k:'winClosed',id:'win-draw'}]}, star:true },
-      { tip:'打开「计算器」，再关上所有窗口', hint:'桌面就干净了。',
+      { tip:'双击打开「计算器」，再关上所有窗口', hint:'双击图标打开，最后点 ✕ 关掉。',
         scene:{i:[['calc',0,0]]},
         goal:{k:'seq',steps:[{k:'winOpen',id:'win-calc'},{k:'allClosed'}]}, star:true }
      ] },
@@ -1622,43 +1767,43 @@
    { id:'l3', name:'右键菜单', emoji:'📋', color:'#6b4fbb',
      line:'右键会弹出菜单，很多事情都在里面。',
      rounds:[
-      { tip:'在空白处点右键，再点「刷新」', hint:'右键就是这个菜单。',
+      { tip:'在空白处点右键，再点「刷新」', hint:'在桌面空白处按鼠标右键，菜单就会弹出来。',
         scene:{i:[]}, goal:{k:'flag',name:'refresh'}, star:true, guided:2,
-        steps:['① 点右键','② 选「刷新」'],
+        steps:['① 在空白处点右键','② 选「刷新」'],
         demo:[{run:function(next){ const pr=play.getBoundingClientRect();
                  const x=pr.left+pW()*0.55, y=pr.top+workH()*0.5;
                  ghostTo(x,y,460); DT(520,function(){ ripAt(x,y);
                    openMenu(pW()*0.55,workH()*0.5,'desk'); say('① 在空白处点右键，菜单就出来了'); DT(760,next); }); }},
               {menuItem:'刷新',msg:'② 点「刷新」'}] },
-      { tip:'用右键菜单新建一个文件夹', hint:'右键 → 新建文件夹。',
+      { tip:'用右键菜单新建一个文件夹', hint:'在空白处右键 → 新建文件夹。',
         scene:{i:[]}, goal:{k:'folders',n:1}, star:true, guided:1,
-        steps:['① 点右键','② 选「新建文件夹」'] },
-      { tip:'在「美术作业」上点右键，选「查看属性」', hint:'先点在图标上。',
+        steps:['① 在空白处点右键','② 选「新建文件夹」'] },
+      { tip:'在「美术作业」上点右键，选「查看属性」', hint:'把鼠标移到「美术作业」上，再按右键。',
         scene:{i:[['paint',0,0]]}, goal:{k:'seq',steps:[{k:'ctx',on:'icon',id:'paint'},{k:'flag',name:'props'}]}, star:true },
-      { tip:'用右键菜单把桌面变亮（显示设置）', hint:'右键 → 显示设置。',
+      { tip:'在空白处按右键，把桌面变亮（显示设置）', hint:'右键 → 显示设置。',
         scene:{i:[]}, goal:{k:'light'}, star:true },
-      { tip:'在「回收站」上右键，选「打开」', hint:'',
+      { tip:'在「回收站」上右键，选「打开」', hint:'右键点图标 → 选「打开」。',
         scene:{i:[['bin',0,0]]}, goal:{k:'winOpen',id:'win-bin'}, star:true },
-      { tip:'用右键菜单新建两个文件夹', hint:'建完一个再来一次。',
+      { tip:'用右键菜单新建两个文件夹', hint:'建完一个，再在空白处右键一次。',
         scene:{i:[]}, goal:{k:'folders',n:2}, star:true }
      ] },
 
    { id:'l4', name:'拖动图标', emoji:'✋', color:'#107c41',
      line:'按住不放，拖过去，再松手。',
      rounds:[
-      { tip:'把「音乐」拖到右边空着的地方', hint:'按住不放，拖过去。',
+      { tip:'把「音乐」拖到右边第二行', hint:'按住不放，拖到第二行再松手。',
         scene:{i:[['music',0,0]]}, goal:{k:'slots',list:[{id:'music',col:4,row:1}]}, star:true, guided:2,
-        steps:['① 按住图标','② 拖过去松手'],
+        steps:['① 按住图标','② 拖到右边第二行再松手'],
         demo:[{at:'#play .micon',msg:'① 按住「音乐」不放'},
               {run:function(next){ demoIconDrag('music',4,1,next); }}] },
       { tip:'把「照片」拖到第一列第二行', hint:'松手会自动对齐格子。',
         scene:{i:[['music',4,0],['photo',5,0]]}, goal:{k:'slots',list:[{id:'photo',col:0,row:1}]}, star:true, guided:1,
-        steps:['① 按住照片','② 拖到左边第二行'] },
-      { tip:'把「美术作业」拖到第一列第三行', hint:'',
+        steps:['① 按住照片','② 拖到第一列第二行'] },
+      { tip:'把「美术作业」拖到第一列第三行', hint:'按住「美术作业」，拖到最左边第三行。',
         scene:{i:[['paint',2,0]]}, goal:{k:'slots',list:[{id:'paint',col:0,row:2}]}, star:true },
       { tip:'把「语文作业」拖进「作业」文件夹', hint:'拖到文件夹上会变亮。',
         scene:{i:[['cn',0,0],['folder',2,0]]}, goal:{k:'folder',icon:'cn',folder:'folder'}, star:true },
-      { tip:'把「音乐」拖到第二列第二行，「照片」拖到第二列第三行', hint:'一次拖一个。',
+      { tip:'把「音乐」拖到第二列第二行，「照片」拖到第二列第三行', hint:'一次拖一个，拖到对应格子再松手。',
         scene:{i:[['music',4,0],['photo',5,0]]},
         goal:{k:'slots',list:[{id:'music',col:1,row:1},{id:'photo',col:1,row:2}]}, star:true },
       { tip:'把三个图标都摆到第一列', hint:'从上往下占第一、二、三行。',
@@ -1669,24 +1814,24 @@
    { id:'l5', name:'开始菜单与滚轮', emoji:'🌀', color:'#0b7285',
      line:'滚轮能翻页，开始菜单里能找到所有软件。',
      rounds:[
-      { tip:'点「开始」，滚一滚，打开「计算器」', hint:'滚轮往下转，列表往下走。',
-        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-calc'}, star:true, guided:2,
-        steps:['① 点开始','② 滚轮找软件'],
+      { tip:'点「开始」，滚一滚，打开「记事本」', hint:'滚轮往下转，列表往下走。',
+        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-note'}, star:true, guided:2,
+        steps:['① 点开始','② 滚到记事本','③ 点一下打开'],
         demo:[{at:'#play .mtbtn.start',act:'click',msg:'① 点左下角的「开始」'},
-              {at:'#play .mstart .app[data-app="calc"]',msg:'② 滚轮往下滚，找到「计算器」'},
-              {at:'#play .mstart .app[data-app="calc"]',act:'click',msg:'③ 点它就打开了'}] },
-      { tip:'从开始菜单里打开「相机」', hint:'它在下面，要滚一滚。',
+              {at:'#play .mstart .app[data-app="note"]',msg:'② 滚轮往下滚，找到「记事本」'},
+              {at:'#play .mstart .app[data-app="note"]',act:'click',msg:'③ 点它就打开了'}] },
+      { tip:'点「开始」，滚到下面，打开「相机」', hint:'相机在下面，要滚一滚。',
         scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-camera'}, star:true, guided:1,
-        steps:['① 点开始','② 滚到「相机」'] },
-      { tip:'滚到最下面，打开「天气」', hint:'列表最底下那个。',
+        steps:['① 点开始','② 滚到相机','③ 点一下打开'] },
+      { tip:'点「开始」，滚到最下面，打开「天气」', hint:'天气是列表最底下那个。',
         scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-weather'}, star:true },
-      { tip:'打开「作文」，用滚轮找到「早上好」那一行', hint:'往下滚一点点。',
+      { tip:'双击打开「作文」，用滚轮找到「早上好」那一行', hint:'往下滚一点点。',
         scene:{i:[['essay',0,0]],bar:true},
         goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-hello'}]}, star:true },
-      { tip:'一直滚到最后一行（2026）', hint:'滚到底。',
+      { tip:'双击打开「作文」，一直滚到最后一行（2026）', hint:'滚到底。',
         scene:{i:[['essay',0,0]],bar:true},
         goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-end'}]}, star:true },
-      { tip:'点任务栏上的「照片」，把它叫到最前面', hint:'窗口叠在一起时，点任务栏就能换。',
+      { tip:'点任务栏上的「照片」，把它叫到最前面', hint:'照片窗口被作文挡住了，点任务栏上的「照片」。',
         scene:{i:[['photo',0,0]],bar:true,
           w:[{id:'win-essay',title:'作文',icon:'📝',essay:true,size:[420,280],at:[0.42,0.34],active:true},
              {id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[360,240],at:[0.14,0.5]}]},
@@ -1710,19 +1855,19 @@
         scene:{w:[{id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[400,260],at:[0.3,0.4],active:true}],bar:true},
         goal:{k:'seq',steps:[{k:'state',id:'win-photo',value:'min'},{k:'active',id:'win-photo'}]}, star:true, guided:1,
         steps:['① 点「—」','② 从任务栏点回来'] },
-      { tip:'把画图窗口放到最大，再点「❐」还原', hint:'□ 是最大化。',
+      { tip:'把画图窗口放到最大，再点「❐」还原', hint:'标题栏右边的 □ 是最大化；放大后会变成 ❐。',
         scene:{w:[{id:'win-draw',title:'画图',icon:'🎨',html:APPS.draw.body,size:[400,260],at:[0.32,0.32],active:true}],bar:true},
         goal:{k:'seq',steps:[{k:'snap',id:'win-draw',zone:'max'},{k:'snap',id:'win-draw',zone:null}]}, star:true },
-      { tip:'点 ✕ 关掉挡住 🎈 的窗口', hint:'先看看哪个窗口压着它。',
+      { tip:'点 ✕ 关掉挡住 🎈 的窗口', hint:'看看哪个窗口盖住了 🎈，点它的 ✕。',
         scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>把挡住东西的窗口关掉吧。</p>',size:[420,270],at:[0.3,0.26],active:true}],
                hid:{emoji:'🎈',at:[0.58,0.5],size:80}},
         goal:{k:'winClosed',id:'win-essay'}, star:true },
-      { tip:'点一下下面那个「照片」窗口，把它叫到前面', hint:'点窗口里面的任何地方。',
+      { tip:'点一下下面那个「照片」窗口，把它叫到前面', hint:'点照片窗口的标题栏或内容区，就能把它叫到前面。',
         scene:{bar:true,
           w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>我在上面。</p>',size:[420,270],at:[0.3,0.28],active:true},
              {id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[380,250],at:[0.14,0.46]}]},
         goal:{k:'active',id:'win-photo'}, star:true },
-      { tip:'把两个窗口都最小化，露出干净的桌面', hint:'一个一个点「—」。',
+      { tip:'把两个窗口都最小化，露出干净的桌面', hint:'把两个窗口的「—」都点一次。',
         scene:{bar:true,
           w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>把我收起来。</p>',size:[400,250],at:[0.2,0.26],active:true},
              {id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[360,230],at:[0.5,0.44]}]},
@@ -1730,7 +1875,7 @@
      ] },
 
    { id:'l7', name:'窗口贴边', emoji:'🧲', color:'#7c3aed',
-     line:'拖到屏幕边上，窗口会自己占半个屏。',
+     line:'拖到屏幕边缘，窗口会自动贴边排布。',
      rounds:[
       { tip:'把窗口拖到左边缘，松手占左半边', hint:'拖到最左边，会先出现一个方框。',
         scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>把我拖到屏幕最左边试试。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
@@ -1738,20 +1883,20 @@
         steps:['① 按住标题栏','② 拖到最左边','③ 松手'],
         demo:[{at:'#play .mwin .tbar',msg:'① 按住标题栏，一直拖到最左边'},
               {run:function(next){ demoWinSnap('win-essay','left',next); }}] },
-      { tip:'再拖到右边缘，占右半边', hint:'先拖回来一点，再往右拖。',
+      { tip:'把窗口拖到右边缘，松手占右半边', hint:'按住标题栏往右拖，贴住右边再松手。',
         scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>这次拖到最右边。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
         goal:{k:'snap',id:'win-essay',zone:'right'}, star:true, guided:1,
         steps:['① 按住标题栏','② 拖到最右边'] },
-      { tip:'拖到左上角，占四分之一', hint:'贴着左上角松手。',
+      { tip:'拖到左上角，占四分之一', hint:'按住标题栏拖到左上角，再松手。',
         scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>试试左上角。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
         goal:{k:'snap',id:'win-essay',zone:'tl'}, star:true },
-      { tip:'拖到右上角', hint:'',
+      { tip:'拖到右上角', hint:'按住标题栏拖到右上角，再松手。',
         scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>这次右上角。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
         goal:{k:'snap',id:'win-essay',zone:'tr'}, star:true },
       { tip:'拖到最上面，让它变大', hint:'贴着顶部松手。',
         scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>拖到顶部会变大。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
         goal:{k:'snap',id:'win-essay',zone:'max'}, star:true },
-      { tip:'先拖到顶部变大，再拖到左下角', hint:'变大以后，从标题栏往下拖一点就能拖动了。',
+      { tip:'先把窗口拖到顶部放大，再把它拖到左下角', hint:'放大以后，从标题栏往下拖到左下角。',
         scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>先变大，再拖到左下角。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
         goal:{k:'seq',steps:[{k:'snap',id:'win-essay',zone:'max'},{k:'snap',id:'win-essay',zone:'bl'}]}, star:true }
      ] },
@@ -1759,26 +1904,26 @@
    { id:'l8', name:'综合小任务', emoji:'🏁', color:'#b45309',
      line:'把学过的连起来，就是平时用电脑做的事。',
      rounds:[
-      { tip:'右键新建一个文件夹，再把「语文作业」拖进去', hint:'两步一起做。',
+      { tip:'在空白处右键新建一个文件夹，再把「语文作业」拖进去', hint:'先建文件夹，再把图标拖到文件夹上。',
         scene:{i:[['cn',0,0]]},
         goal:{k:'seq',steps:[{k:'folders',n:1},{k:'folder',icon:'cn',folder:'newfolder1'}]}, star:true },
-      { tip:'双击打开「美术作业」，再把它贴到左半边', hint:'',
+      { tip:'双击打开「美术作业」，再把它拖到左边缘占左半边', hint:'按住窗口标题栏拖到最左边。',
         scene:{i:[['paint',0,0]]},
         goal:{k:'seq',steps:[{k:'winOpen',id:'win-paint'},{k:'snap',id:'win-paint',zone:'left'}]}, star:true },
-      { tip:'打开「作文」，滚到最后一行，再关掉它', hint:'滚到底再点 ✕。',
+      { tip:'双击打开「作文」，滚到最后一行，再点 ✕ 关掉', hint:'滚到底，再点右上角 ✕。',
         scene:{i:[['essay',0,0]]},
         goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-end'},{k:'winClosed',id:'win-essay'}]}, star:true },
-      { tip:'打开「作文」贴左边，再打开「照片」贴右边', hint:'两个窗口左右各一半。',
+      { tip:'双击打开「作文」拖到左边，再双击打开「照片」拖到右边', hint:'两个窗口各占一半。',
         scene:{i:[['essay',6,0],['photo',7,0]]},   /* 图标放右边，左边贴上窗口后还看得见 */
         goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'snap',id:'win-essay',zone:'left'},
                              {k:'winOpen',id:'win-photo'},{k:'snap',id:'win-photo',zone:'right'}]}, star:true },
-      { tip:'右键打开「音乐」，最小化，再从任务栏点回来', hint:'',
+      { tip:'右键点「音乐」图标，选「打开」，最小化后再从任务栏点回来', hint:'先右键打开，再点「—」，最后点任务栏。',
         scene:{i:[['music',0,0]]},
         goal:{k:'seq',steps:[{k:'winOpen',id:'win-music'},{k:'state',id:'win-music',value:'min'},{k:'active',id:'win-music'}]}, star:true },
-      { tip:'新建文件夹，把两个图标拖进去，再关掉所有窗口', hint:'最后一关啦。',
+      { tip:'在空白处右键新建文件夹，把两个图标拖进去', hint:'整理好桌面就完成。',
         scene:{i:[['cn',0,0],['paint',1,0]]},
         goal:{k:'seq',steps:[{k:'folders',n:1},{k:'folder',icon:'cn',folder:'newfolder1'},
-                             {k:'folder',icon:'paint',folder:'newfolder1'},{k:'allClosed'}]}, star:true }
+                             {k:'folder',icon:'paint',folder:'newfolder1'}]}, star:true }
      ] }
   ];
 
@@ -1805,25 +1950,60 @@
     const r=curRound();
     stepbar.innerHTML='';
     if(!r||!r.steps) return;
-    r.steps.forEach(function(s,i){ stepbar.appendChild(el('span','step'+(i===0?' on':''),s)); });
+    const isSeq=!!(r.goal&&r.goal.k==='seq');
+    const done=isSeq?(S.seqStep||0):-1;
+    r.steps.forEach(function(s,i){
+      stepbar.appendChild(el('span','step'+(isSeq&&i===done?' on':'')+(isSeq&&i<done?' done':''),s));
+    });
   }
   function goalSelector(g){
     if(!g) return null;
     switch(g.k){
       case 'sel': return '#play .micon[data-id="'+g.id+'"]';
+      case 'seen': return '#play .micon[data-id="'+g.id+'"]';
       case 'folder': return '#play .micon[data-id="'+g.icon+'"]';
       case 'slots': return '#play .micon[data-id="'+g.list[0].id+'"]';
       case 'uncover': return '#play .mwin .tbar';
-      case 'winOpen': case 'winClosed': case 'active': case 'state': case 'snap':
+      case 'winClosed': return '#play .mwin[data-win="'+g.id+'"] .wb.cls';
+      case 'winOpen':
         if(g.id.indexOf('win-app-')===0) return '#play .mtbtn.start';
         return '#play .micon[data-id="'+g.id.slice(4)+'"]';
+      case 'state': {
+        const w=winById(g.id);
+        if(w&&g.value==='min') return '#play .mwin[data-win="'+g.id+'"] .wb.min';
+        if(w) return '#play .mwin[data-win="'+g.id+'"] .tbar';
+        return '#play .micon[data-id="'+g.id.slice(4)+'"]';
+      }
+      case 'snap': {
+        const w=winById(g.id);
+        return w?'#play .mwin[data-win="'+g.id+'"] .tbar':'#play .micon[data-id="'+g.id.slice(4)+'"]';
+      }
+      case 'active': {
+        const w=winById(g.id);
+        if(w&&w.state==='min') return '#play .mtask .mtbtn[data-win="'+g.id+'"]';
+        if(w) return '#play .mwin[data-win="'+g.id+'"]';
+        return '#play .micon[data-id="'+g.id.slice(4)+'"]';
+      }
       case 'flag':
-        if(g.name==='refresh') return null;
+        if(g.name==='refresh') return '#play .stage';
+        if(g.name==='hidclick') return '#play .mhid';
         if(g.name.indexOf('move:')===0) return '#play .mwin .tbar';
         return null;
-      case 'seq': return goalSelector(g.steps[0]);
+      case 'folders': return '#play .stage';
+      case 'light': return '#play .stage';
+      case 'allClosed': return S.wins.length?'#play .mwin .wb.cls':null;
+      case 'allMin': return S.wins.length?'#play .mwin .wb.min':null;
+      case 'seq': {
+        const st=Math.min(S.seqStep||0,g.steps.length-1);
+        return goalSelector(g.steps[st]);
+      }
       default: return null;
     }
+  }
+  function tagKey(){
+    const r=curRound();
+    if(!r||!r.goal) return '';
+    return r.goal.k==='seq'?String(S.seqStep||0):'';
   }
   function showTag(r){
     if(!r||!r.guided) return;
@@ -1840,7 +2020,15 @@
     tag.style.top=clamp(below
       ? Math.round(nodeTop+node.getBoundingClientRect().height+10)
       : Math.round(nodeTop-tag.offsetHeight-10),6,workH()-30)+'px';
-    r._tag={node:node,tag:tag};
+    r._tag={node:node,tag:tag,key:tagKey()};
+  }
+  function refreshTag(){
+    const r=curRound();
+    if(!r||!r.guided) return;
+    if(r._tag&&r._tag.key===tagKey()) return;
+    clearTag();
+    showTag(r);
+    updateStepbar();
   }
   function clearTag(){
     const r=curRound();
@@ -1858,30 +2046,10 @@
     ctrlrow.style.display='';
     updatePhase(); updateStepbar();
     say('<b>'+r.tip+'</b>'+(r.hint?('<br><span style="font-size:16px;font-weight:600;color:#8a8aa8">'+r.hint+'</span>'):''));
-    btnDemo.style.display=r.demo?'':'none';
     play.dataset.level=lv.id;
     play.dataset.round=String(RI+1);
-    if(r.demo) T(950,function(){ if(!S.done) playDemo(); });
-    else { S.ready=true; T(300,function(){ showTag(r); }); }
-  }
-  function playDemo(){
-    const r=curRound();
-    if(!r||!r.demo||demoOn) return;
-    stopDemo();
-    demoOn=true;
-    btnDemo.style.display='none';
-    const g=$('#ghost');
-    if(g){ g.style.opacity='1'; g.style.transition='none'; g.style.transform='translate('+(pW()*0.5-3)+'px,'+(workH()-24)+'px)'; }
-    runSteps(r.demo,function(){
-      DT(420,function(){
-        stopDemo();
-        btnDemo.style.display=r.demo?'':'none';
-        buildScene(r);                     /* 演示把画面动过，重新摆一遍 */
-        say('看懂了吗？轮到你啦 👉<br><span style="font-size:16px;font-weight:600;color:#8a8aa8">'+r.tip+'</span>');
-        S.ready=true;
-        T(300,function(){ showTag(r); });
-      });
-    });
+    S.ready=true;
+    T(300,function(){ if(!S.done) showTag(r); });
   }
   function roundDone(){
     if(S.done) return;
@@ -1956,7 +2124,7 @@
     play.innerHTML='';
     S.icons=[]; S.wins=[]; S.sel=null; S.selSeen={}; S.inFolder={}; S.seqStep=0; S.flags={};
     S.zTop=20; S.active=null; S.done=true; S.found=false; S.hid=null; S.menu=null; S.start=null;
-    S.ready=false; S.scene=null; S.layer=null; S.winLayer=null; S.info=null; S.taskbar=null; S.stage=null;
+    S.ready=false; S.scene=null; S.layer=null; S.winLayer=null; S.info=null; S.taskbar=null; S.stage=null; S.grid=null;
     const hub=el('div','home-hub');
     hub.appendChild(el('div','home-head','<b>选择一课开始</b>'));
     const grid=el('div','home-grid');
@@ -2012,6 +2180,11 @@
     orange:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="27" r="15" fill="#fb923c" stroke="#c2410c" stroke-width="2.5"/><path d="M24 12c1-4 4-6 8-6" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/><path d="M18 25c3-3 9-3 12 0" fill="none" stroke="#fed7aa" stroke-width="2.5" stroke-linecap="round"/></svg>',
     lemon:'<svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="26" rx="16" ry="13" fill="#fde047" stroke="#ca8a04" stroke-width="2.5"/><path d="M9 20c4 5 12 8 21 7" fill="none" stroke="#fef9c3" stroke-width="2.5" stroke-linecap="round"/></svg>',
     melon:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 20a18 18 0 0 1 36 0Z" fill="#4ade80" stroke="#15803d" stroke-width="2.5" stroke-linejoin="round"/><path d="M11 20a13 13 0 0 1 26 0Z" fill="#fb7185" stroke="#be123c" stroke-width="2"/><path d="M18 20h.1M24 20h.1M30 20h.1" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    strawberry:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 43C13 35 7 27 9 18c2-8 10-9 15-5 5-4 13-3 15 5 2 9-4 17-15 25Z" fill="#fb7185" stroke="#be123c" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 13c5-4 11-4 16 0" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round"/><path d="M20 20h.1M28 19h.1M18 28h.1M26 30h.1M30 24h.1M22 35h.1" stroke="#fff7ed" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    grape:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 9c-3-5-8-6-12-4 3 2 5 5 5 9" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="20" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><circle cx="24" cy="18" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><circle cx="32" cy="20" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><circle cx="20" cy="28" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><circle cx="28" cy="28" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><circle cx="24" cy="36" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><path d="M24 12c2-4 6-6 10-5" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    banana:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 12c2 17 14 27 31 24-7 9-21 8-29-2C6 27 6 18 10 12Z" fill="#fde047" stroke="#ca8a04" stroke-width="2.5" stroke-linejoin="round"/><path d="M10 12c4 15 14 23 28 22" fill="none" stroke="#fef9c3" stroke-width="2.5" stroke-linecap="round"/><path d="M10 12c-2-3-1-6 2-8M39 35c3 1 5 0 6-2" fill="none" stroke="#92400e" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    peach:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 14c-4-5-12-5-16 1-4 7 0 17 7 22 3 2 6 1 9-1 3 2 6 3 9 1 7-5 11-15 7-22-4-6-12-6-16-1Z" fill="#f9a8d4" stroke="#be185d" stroke-width="2.5" stroke-linejoin="round"/><path d="M24 14c0-4 2-7 5-9" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/><path d="M24 14c-2-3-5-5-8-5" fill="none" stroke="#65a30d" stroke-width="2.5" stroke-linecap="round"/><path d="M18 26c4 3 8 3 12 0" fill="none" stroke="#fce7f3" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    pineapple:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 12c8 0 14 8 14 18s-6 13-14 13-14-3-14-13 6-18 14-18Z" fill="#facc15" stroke="#a16207" stroke-width="2.5"/><path d="M24 12c-2-5-1-8 3-10M24 12c3-4 6-5 9-4M24 12c-4-3-7-3-10 0" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/><path d="M17 22l7 5-7 5M31 22l-7 5 7 5M24 19v17" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round"/></svg>',
     star:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m24 5 5.5 11.2 12.4 1.8-9 8.8 2.1 12.4L24 33.4l-11 5.8 2.1-12.4-9-8.8 12.4-1.8Z" fill="#fbbf24" stroke="#d97706" stroke-width="2.5" stroke-linejoin="round"/><path d="m24 12 3 6.1 6.7 1-4.8 4.7 1.1 6.7-6-3.2-6 3.2 1.1-6.7-4.8-4.7 6.7-1Z" fill="#fde68a"/></svg>'
   };
   function sliceIcon(name){ return SLICE_ICONS[name]||SLICE_ICONS.apple; }
@@ -2030,7 +2203,7 @@
     if(!area) return;
     const scoreEl=$('#sliceScore'), lvEl=$('#sliceLevel'), lvChip=$('#sliceLvChip'), tip=$('#sliceTip');
     const blade=$('#sliceBlade'), bctx=blade?blade.getContext('2d'):null;
-    const FRUITS=['apple','orange','lemon','melon'];
+    const FRUITS=['apple','orange','lemon','melon','strawberry','grape','banana','peach','pineapple'];
     let score=0, level=1, items=[], last=0, nextSpawn=120, raf=0, slicing=false, lastPt=null, tipTimer=0;
     let bladePoints=[], bladeW=0, bladeH=0;
     scoreEl.textContent=score; lvEl.textContent=level;
@@ -2096,7 +2269,8 @@
       const vyBoost=Math.min(1.35,1+(lv-1)*0.045);
       const gBoost=Math.min(1.95,1+(lv-1)*0.095);
       const sizeFactor=Math.max(0.78,1-(lv-1)*0.025);
-      const size=Math.round(Math.max(36,Math.min(68,h*0.15)*sizeFactor));
+      const cap=window.innerWidth>=1900?92:(window.innerWidth>=1500?80:68);
+      const size=Math.round(Math.max(36,Math.min(cap,h*0.15)*sizeFactor));
       const node=document.createElement('div');
       node.className='slice-item'+(gold?' gold':'');
       node.style.width=size+'px'; node.style.height=size+'px';
@@ -2254,12 +2428,11 @@
     });
     navs=[].slice.call(nav.querySelectorAll('button'));
   })();
-  btnDemo.addEventListener('click',function(){ playDemo(); });
   window.addEventListener('resize',function(){ if(S.stage) layout(); });
   window.__mt={ levels:LEVELS, state:S, mode:function(){ return mode; },
                 level:function(){ return L; }, round:function(){ return RI; },
                 stars:function(){ return stars; }, total:function(){ return TOTAL; },
-                ready:function(){ return !!S.ready && !demoOn; },
+                ready:function(){ return !!S.ready; },
                 goalMet:function(g){ return goalMet(g); },
                 sliceStart:function(){ startSliceGame(); },
                 sliceStop:function(){ stopSliceGame(); },

@@ -565,6 +565,48 @@
   } catch (e) {}
 })();
 </script>
+<script>
+/* ===== 打开后尽量全屏 =====
+   浏览器只允许在用户操作里进入全屏：打开时先尝试一次；
+   如果被拦下，学生第一次点页面或按键盘时自动进入全屏。 */
+(function () {
+  var gestureDone = false;
+  function removeGesture() {
+    var types = ['pointerdown','mousedown','touchstart','keydown'];
+    for (var i = 0; i < types.length; i++) document.removeEventListener(types[i], onGesture, true);
+  }
+  function requestFs() {
+    if (gestureDone) return;
+    gestureDone = true;
+    try {
+      var el = document.documentElement;
+      var fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+      if (fn) {
+        var p = fn.call(el);
+        if (p && p.catch) p.catch(function () {});
+      }
+    } catch (e) {}
+    removeGesture();
+  }
+  function onGesture() { requestFs(); }
+  function armGesture() {
+    var types = ['pointerdown','mousedown','touchstart','keydown'];
+    for (var i = 0; i < types.length; i++) document.addEventListener(types[i], onGesture, true);
+  }
+  function autoTry() {
+    try {
+      var el = document.documentElement;
+      var fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+      if (fn) {
+        var p = fn.call(el);
+        if (p && p.catch) p.catch(function () {});
+      }
+    } catch (e) {}
+  }
+  armGesture();
+  window.addEventListener('load', autoTry);
+})();
+</script>
 </head>
 <body>
 <div class="bg-bubbles" id="bg"></div>
