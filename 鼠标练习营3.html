@@ -5,113 +5,232 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🖥️ 鼠标练习营 3 · 电脑小课堂</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230f6cbd'/><rect x='5' y='7' width='22' height='15' rx='2' fill='%23f3f3f3'/><circle cx='16' cy='14' r='3.2' fill='%230f6cbd'/><path d='M11 26h10' stroke='%23f3f3f3' stroke-width='2' stroke-linecap='round'/></svg>">
-<meta name="theme-color" content="#c9ecff">
+<meta name="theme-color" content="#f4f7fb">
 <style>
   :root{
-    --ink:#2b2b45; --muted:#8a8aa8;
-    --blue:#0f6cbd; --blue-dark:#0b5394; --blue-soft:#dceaf7;
-    --orange:#ff9f45; --green:#4ed47e; --cyan:#43d2e8;
-    --purple:#a577ff; --pink:#ff6fa5; --yellow:#ffd23f;
-    --good:#2ec77b; --good-soft:#e4f9ec;
-    --accent:#e8890c;
-    --shadow:0 10px 22px rgba(90,70,160,.18);
+    --ink:#1f2937; --muted:#64748b;
+    --blue:#2563eb; --blue-dark:#1d4ed8; --blue-soft:#eff6ff;
+    --orange:#f59e0b; --green:#10b981; --cyan:#06b6d4;
+    --purple:#7c3aed; --pink:#ec4899; --yellow:#f59e0b;
+    --good:#10b981; --good-soft:#ecfdf5;
+    --accent:#2563eb;
+    --panel:#ffffff; --panel-2:#f8fafc; --line:#dbe4f0;
+    --line-hot:#2563eb;
+    --shadow:0 10px 30px rgba(15,42,80,.09);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{
     font-family:"Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
-    color:var(--ink); min-height:100vh;
-    background:linear-gradient(160deg,#c9ecff,#dcd3ff 55%,#ffe0ea);
+    color:var(--ink); min-height:100vh; overflow-x:hidden;
+    background:
+      radial-gradient(circle at 12% 0%, #eef6ff 0, rgba(238,246,255,0) 34%),
+      radial-gradient(circle at 88% 8%, #f0fdfa 0, rgba(240,253,250,0) 30%),
+      linear-gradient(180deg,#f8fafc 0%,#f4f7fb 100%);
     background-attachment:fixed;
     padding:16px 30px 44px;padding:16px clamp(8px,3vw,30px) 44px;
     user-select:none;
   }
-  .wrap{max-width:900px;margin:0 auto}
+  body::before{
+    content:"";position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:0;opacity:.55;
+    background-image:linear-gradient(#e8eef6 1px, transparent 1px),
+                     linear-gradient(90deg, #e8eef6 1px, transparent 1px);
+    background-size:32px 32px;
+  }
+  .wrap{max-width:900px;margin:0 auto;position:relative;z-index:1}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
   @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
   @keyframes popin{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
   @keyframes burst{40%{transform:scale(1.3)}100%{transform:scale(0);opacity:0}}
   @keyframes floatb{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-40px) scale(1.1)}}
   @keyframes pulse{
-    0%,100%{box-shadow:0 0 0 0 rgba(232,137,12,.7)}
-    50%{box-shadow:0 0 0 16px rgba(232,137,12,0)}
+    0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.4)}
+    50%{box-shadow:0 0 0 14px rgba(37,99,235,0)}
   }
 
   /* ===== 背景小泡泡 ===== */
   .bg-bubbles{position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;overflow:hidden;z-index:0}
-  .bg-bubbles span{position:absolute;border-radius:50%;opacity:.5;animation:floatb 9s ease-in-out infinite}
+  .bg-bubbles span{
+    position:absolute;border-radius:50%;opacity:.2;animation:floatb 9s ease-in-out infinite;
+    border:1px solid rgba(37,99,235,.1);box-shadow:none;
+  }
 
   /* ===== 顶部：小老鼠 + 说话气泡 ===== */
   header{display:flex;align-items:center;gap:14px;margin:0 auto 12px;position:relative;z-index:1}
   html.no-flexgap header > *:not(:last-child){margin-right:14px}
   .mascot{
-    width:80px;height:80px;flex-shrink:0;border-radius:50%;background:#fff;
+    position:relative;width:76px;height:76px;flex-shrink:0;border-radius:18px;
+    background:#ffffff;
     display:flex;align-items:center;justify-content:center;font-size:44px;
-    box-shadow:var(--shadow);border:4px solid #fff;animation:bob 2.6s ease-in-out infinite;
+    border:1px solid var(--line);
+    box-shadow:0 8px 22px rgba(15,42,80,.08);
+    animation:bob 2.6s ease-in-out infinite;overflow:hidden;
+  }
+  .mascot::before{
+    content:"";position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(37,99,235,.05),rgba(37,99,235,0) 52%);
+  }
+  .mascot::after{
+    content:"";position:absolute;left:50%;bottom:8px;width:8px;height:8px;transform:translateX(-50%);
+    border-radius:50%;background:var(--blue);
   }
   .bubble{
-    background:#fff;border-radius:20px 20px 20px 6px;padding:14px 18px;
-    box-shadow:var(--shadow);font-size:24px;font-size:clamp(17px,2.7vw,24px);font-weight:800;line-height:1.5;
-    flex:1;min-height:64px;display:flex;align-items:center;
+    position:relative;background:#ffffff;border-radius:18px;padding:14px 18px;
+    border:1px solid var(--line);box-shadow:0 10px 28px rgba(15,42,80,.07);
+    font-size:24px;font-size:clamp(17px,2.7vw,24px);font-weight:800;line-height:1.5;
+    flex:1;height:102px;min-height:102px;display:flex;align-items:center;
+    color:var(--ink);overflow:hidden;
+  }
+  .bubble .bubble-inner{width:100%}
+  .bubble::before{
+    content:"";position:absolute;left:-11px;top:28px;width:0;height:0;
+    border-top:9px solid transparent;border-bottom:9px solid transparent;border-right:11px solid var(--line);
+  }
+  .bubble::after{
+    content:"";position:absolute;left:-9px;top:30px;width:0;height:0;
+    border-top:7px solid transparent;border-bottom:7px solid transparent;border-right:9px solid #ffffff;
   }
   .bubble b{color:var(--blue)}
+  .bubble .bubble-inner > span{font-size:15px !important;font-weight:600 !important;color:var(--muted) !important}
   .bubble.shake{animation:shake .4s ease}
 
   /* ===== 关卡按钮 ===== */
   nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 auto 12px;position:relative;z-index:1}
   html.no-flexgap nav > *:not(:last-child){margin-right:8px}
   nav button{
-    border:none;cursor:pointer;border-radius:16px;padding:9px 13px;
-    font-family:inherit;font-size:17px;font-size:clamp(14px,2vw,17px);font-weight:800;color:#fff;
-    display:flex;align-items:center;gap:6px;box-shadow:0 5px 0 rgba(0,0,0,.12), var(--shadow);
-    transition:transform .1s ease;justify-content:center;
+    position:relative;overflow:hidden;border:1px solid var(--line);cursor:pointer;border-radius:10px;padding:9px 13px;
+    font-family:inherit;
+    font-size:17px;font-size:clamp(14px,2vw,17px);font-weight:800;color:#1e293b;
+    display:flex;align-items:center;gap:6px;justify-content:center;
+    background-image:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.58)) !important;
+    box-shadow:0 2px 0 #e6edf6,0 4px 12px rgba(15,42,80,.05);
+    text-shadow:none;outline:none !important;
+    transition:transform .1s ease,filter .1s ease;
+  }
+  nav button::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+    background:rgba(255,255,255,.42);pointer-events:none;
   }
   html.no-flexgap nav button > *:not(:last-child){margin-right:6px}
-  nav button:hover{transform:translateY(-3px)}
-  nav button:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.12)}
-  nav button.b-home{background:var(--purple)}
-  nav button span.emo{font-size:19px}
-  nav button.n-done::after{content:" ✓";font-size:.72em;opacity:.95}
+  nav button:hover{transform:translateY(-2px);filter:saturate(1.06);background-image:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.74)) !important}
+  nav button:active{transform:translateY(1px);box-shadow:0 1px 0 #e6edf6,inset 0 2px 4px rgba(15,42,80,.08)}
+  nav button.b-home{background-color:var(--blue-soft) !important;color:var(--blue-dark)}
+  nav button[style*="3px solid"]{outline:2px solid var(--blue) !important;outline-offset:2px}
+  nav button span.emo{
+    width:28px;height:28px;flex-shrink:0;border-radius:9px;
+    display:inline-flex;align-items:center;justify-content:center;
+    color:var(--blue);line-height:1;background:rgba(255,255,255,.78);
+    border:1px solid rgba(255,255,255,.92);box-shadow:0 2px 6px rgba(15,42,80,.06);
+  }
+  nav button span.emo svg{width:18px;height:18px;display:block}
+  nav button[style*="3px solid"] span.emo{background:#ffffff;box-shadow:0 0 0 2px rgba(37,99,235,.12)}
+  nav button.n-done::after{content:" ✓";font-size:.72em;color:var(--green);opacity:1}
 
   /* ===== 星星 ===== */
   .stars{display:flex;gap:7px;justify-content:center;margin:0 auto 10px;flex-wrap:wrap;position:relative;z-index:1;min-height:32px}
   html.no-flexgap .stars > *:not(:last-child){margin-right:7px}
-  .stars .star .s-in{display:inline-block;font-size:26px;filter:grayscale(1);opacity:.4;transition:all .2s ease}
-  .stars .star.pop .s-in{filter:none;opacity:1;transform:scale(1.25)}
-  .stars .big-count{color:#fff;font-weight:900;font-size:18px;text-shadow:0 2px 6px rgba(60,40,120,.3);margin-left:7px}
+  .stars .star .s-in{
+    display:inline-block;font-size:26px;filter:grayscale(1);opacity:.38;
+    transition:filter .2s ease,transform .2s ease,opacity .2s ease;text-shadow:none;
+  }
+  .stars .star.pop .s-in{filter:none;opacity:1;transform:scale(1.15)}
+  .stars .big-count{
+    color:var(--ink);font-family:"Consolas","Microsoft YaHei",monospace;
+    font-weight:900;font-size:18px;text-shadow:none;margin-left:7px;
+  }
 
   .star-total{
     position:fixed;top:12px;right:12px;z-index:2000;
-    background:#fff;border-radius:999px;padding:8px 15px;
+    background:#ffffff;border-radius:12px;padding:8px 15px;
     display:flex;align-items:center;gap:7px;
-    box-shadow:0 8px 18px rgba(60,40,120,.22);border:3px solid #ffe08a;
-    font-weight:900;font-size:20px;color:var(--ink);
+    box-shadow:0 8px 22px rgba(15,42,80,.08);
+    border:1px solid #fde68a;
+    font-family:"Consolas","Microsoft YaHei",monospace;font-weight:900;font-size:20px;color:var(--ink);
   }
   html.no-flexgap .star-total > *:not(:last-child){margin-right:7px}
   .star-total .st-ico{font-size:22px}
   .star-total .st-lbl{font-size:14px;color:var(--muted);font-weight:800}
 
-  /* ===== 练习区 ===== */
+  /* ===== 显示器外壳：把练习区包成一台轻巧的桌面显示器 ===== */
+  .monitor{
+    position:relative;
+    height:470px;height:clamp(330px,56vh,470px);
+    padding:12px 12px 20px;margin:0 auto 76px;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,0) 34%),
+      linear-gradient(180deg,#f8fbff 0%,#e8eef6 100%);
+    border:1px solid #d6e0ec;border-radius:18px;
+    box-shadow:0 16px 34px rgba(15,42,80,.1),inset 0 1px 0 #ffffff;
+  }
+  .monitor::before{
+    content:"";position:absolute;left:50%;bottom:-44px;
+    width:58px;height:46px;transform:translateX(-50%);
+    background:linear-gradient(180deg,#dfe7f1,#c5d1df);
+    clip-path:polygon(38% 0,62% 0,100% 100%,0 100%);
+    box-shadow:inset 0 1px 0 #ffffff;
+  }
+  .monitor::after{
+    content:"";position:absolute;left:50%;bottom:-58px;
+    width:230px;height:15px;transform:translateX(-50%);
+    background:linear-gradient(180deg,#e4ebf4,#c2cedc);
+    border-radius:999px;
+    box-shadow:0 8px 16px rgba(15,42,80,.12),inset 0 1px 0 #ffffff;
+  }
+
+  /* ===== 练习区（显示器里的屏幕） ===== */
   .play{
-    position:relative;background:linear-gradient(180deg,#eaf3ff,#dbe9fb);
-    border-radius:24px;height:470px;height:clamp(330px,56vh,470px);overflow:hidden;
-    box-shadow:var(--shadow);border:4px solid #fff;
+    position:relative;height:100%;
+    background:#edf4fc;border-radius:10px;overflow:hidden;
+    box-shadow:inset 0 0 0 1px #cdd8e5;
   }
   .stage{position:absolute;top:0;right:0;bottom:0;left:0}
   .wallmini{
     position:absolute;top:0;right:0;bottom:0;left:0;
     background:
-      radial-gradient(circle at 76% 20%, #ffe9b0 0 7%, rgba(255,233,176,0) 26%),
-      linear-gradient(180deg,#2f5f9e 0%,#5b9bd5 62%,#a8cdec 100%);
+      radial-gradient(circle at 78% 18%, rgba(255,255,255,.95) 0 6%, rgba(255,255,255,0) 27%),
+      linear-gradient(160deg,#eaf4ff 0%,#dbeafe 54%,#f4f8ff 100%);
     transition:filter .35s ease;
   }
-  .wallmini::after{
-    content:"";position:absolute;left:-8%;right:-8%;bottom:-4%;height:34%;
-    background:
-      radial-gradient(60% 100% at 26% 100%, #2f6b4f 0 60%, rgba(47,107,79,0) 62%),
-      radial-gradient(60% 96% at 74% 104%, #245a43 0 60%, rgba(36,90,67,0) 62%);
+  .wallmini::before{
+    content:"";position:absolute;top:0;right:0;bottom:0;left:0;
+    background:linear-gradient(180deg,rgba(255,255,255,.58),rgba(255,255,255,0) 42%);
   }
-  .stage.lightbg .wallmini{filter:brightness(1.35) saturate(.7)}
+  .wallmini::after{
+    content:"";position:absolute;left:-12%;right:-12%;bottom:-16%;height:46%;
+    border-radius:50% 50% 0 0;
+    background:linear-gradient(180deg,rgba(191,219,254,.62),rgba(219,234,254,0));
+  }
+  .stage.lightbg .wallmini{filter:brightness(1.06) saturate(.92)}
+
+  /* ===== 开始页：直接铺开关卡 ===== */
+  .home-hub{
+    position:absolute;top:0;right:0;bottom:0;left:0;overflow:auto;
+    padding:16px 18px 14px;background:linear-gradient(180deg,#f8fbff,#eef6ff);
+  }
+  .home-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;color:var(--ink)}
+  .home-head b{font-size:18px}
+  .home-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .home-card{
+    position:relative;min-height:104px;border:1px solid var(--line);border-top:4px solid var(--lv,var(--blue));
+    border-radius:14px;background:#ffffff;padding:12px 14px;text-align:left;cursor:pointer;
+    display:flex;flex-direction:column;justify-content:center;gap:10px;color:var(--ink);font-family:inherit;
+    box-shadow:0 8px 20px rgba(15,42,80,.07);
+    transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;
+  }
+  html.no-flexgap .home-card > *:not(:last-child){margin-bottom:6px}
+  .home-card:hover{transform:translateY(-3px);box-shadow:0 14px 28px rgba(15,42,80,.12);border-color:#bfdbfe}
+  .home-card:active{transform:translateY(1px)}
+  .home-card .hc-top{display:flex;align-items:center;gap:8px}
+  html.no-flexgap .home-card .hc-top > *:not(:last-child){margin-right:8px}
+  .home-card .hc-ico{
+    width:30px;height:30px;flex-shrink:0;border-radius:9px;background:var(--blue-soft);color:var(--blue);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .home-card .hc-ico svg{width:18px;height:18px;display:block}
+  .home-card .hc-name{font-size:16px;font-weight:800;line-height:1.3}
+  .home-card .hc-foot{font-size:13px;font-weight:700;color:var(--muted)}
+  .home-card.done{border-top-color:var(--green)}
+  .home-card.done .hc-foot{color:#059669}
 
   /* 练习区里的小图标 */
   .micons{position:absolute;top:8px;right:0;bottom:6px;left:0}
@@ -122,189 +241,331 @@
   }
   html.no-flexgap .micon > *:not(:last-child){margin-bottom:3px}
   .micon .face{
-    width:56px;height:56px;border-radius:11px;background:#fff;font-size:32px;
-    display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px rgba(10,25,50,.22);
+    width:56px;height:56px;border-radius:14px;background:linear-gradient(180deg,#ffffff,#f2f7fd);font-size:32px;
+    display:flex;align-items:center;justify-content:center;color:#1e293b;
+    border:1px solid #dbe4f0;
+    box-shadow:0 10px 20px rgba(15,42,80,.11),inset 0 1px 0 #ffffff;
+    transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;
   }
   .micon .lbl{
-    font-size:13px;font-weight:700;color:#fff;text-align:center;line-height:1.2;
-    text-shadow:0 1px 3px rgba(0,0,0,.55);max-width:88px;word-break:break-all;
+    font-size:13px;font-weight:700;color:#1e293b;text-align:center;line-height:1.2;
+    text-shadow:none;max-width:88px;word-break:break-all;
+    background:rgba(255,255,255,.72);border:1px solid rgba(219,228,240,.9);border-radius:7px;
+    padding:2px 6px;box-shadow:0 2px 6px rgba(15,42,80,.05);transition:background .12s ease,border-color .12s ease,color .12s ease;
   }
-  .micon:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.55)}
-  .micon.sel{background:rgba(96,166,255,.45);border-color:#cfe6ff}
-  .micon.dragging{opacity:.7}
-  .micon.folderTarget{border-color:var(--yellow);background:rgba(255,210,63,.35)}
+  .micon:hover{background:rgba(37,99,235,.06);border-color:rgba(37,99,235,.24)}
+  .micon:hover .face{transform:translateY(-2px);box-shadow:0 12px 24px rgba(37,99,235,.17),inset 0 1px 0 #ffffff}
+  .micon:hover .lbl{background:#ffffff;border-color:#bfdbfe}
+  .micon.sel{background:rgba(37,99,235,.08);border-color:rgba(37,99,235,.4)}
+  .micon.sel .face{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue),0 10px 22px rgba(37,99,235,.18)}
+  .micon.sel .lbl{background:var(--blue);border-color:var(--blue);color:#ffffff}
+  .micon.dragging{opacity:.62}
+  .micon.folderTarget{border-color:#f59e0b;background:rgba(245,158,11,.12);box-shadow:inset 0 0 0 2px rgba(245,158,11,.3)}
   .micon.hintring{animation:pulse 1.4s ease-in-out infinite;border-radius:12px}
+  .mhid.found{border-color:var(--green) !important;box-shadow:0 0 0 3px rgba(78,230,168,.28),0 0 24px rgba(78,230,168,.35) !important}
 
-  /* 练习区里的小窗口（和练习营2的窗口同一套写法，尺寸小一点） */
+  /* 练习区里的小窗口：轻量、清晰的电脑窗口 */
   .mwins{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}
   .mwin{
-    position:absolute;pointer-events:auto;background:#fff;border-radius:9px;overflow:hidden;
-    border:1px solid rgba(0,0,0,.16);box-shadow:0 12px 24px rgba(15,25,45,.28);
+    position:absolute;pointer-events:auto;background:#ffffff;border-radius:10px;overflow:hidden;
+    border:1px solid #dbe4f0;box-shadow:0 14px 32px rgba(15,42,80,.14);
     display:flex;flex-direction:column;transition:opacity .16s ease,transform .16s ease;
   }
-  .mwin.min{opacity:0;transform:scale(.7);pointer-events:none}
+  .mwin.min{opacity:0;transform:scale(.72) translateY(12px);pointer-events:none}
   .mwin .tbar{
-    height:38px;flex-shrink:0;background:#eef1f5;border-bottom:1px solid #d7dbe2;
+    height:38px;flex-shrink:0;background:#f1f5f9;border-bottom:1px solid #e2e8f0;
     display:flex;align-items:center;gap:8px;padding:0 5px 0 10px;cursor:grab;touch-action:none;
+    color:#334155;
   }
   html.no-flexgap .mwin .tbar > *:not(:last-child){margin-right:8px}
   .mwin .tbar.grabbing{cursor:grabbing}
   .mwin .tbar .wico{font-size:17px}
-  .mwin .tbar .wtxt{flex:1;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mwin .wbtns{display:flex;gap:3px}
-  html.no-flexgap .mwin .wbtns > *:not(:last-child){margin-right:3px}
+  .mwin .tbar .wtxt{flex:1;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#334155}
+  .mwin .wbtns{display:flex;gap:4px}
+  html.no-flexgap .mwin .wbtns > *:not(:last-child){margin-right:4px}
   .mwin .wb{
-    width:36px;height:28px;border:none;border-radius:5px;background:transparent;cursor:pointer;
-    font-family:inherit;font-size:14px;font-weight:800;color:#41474f;
+    width:30px;height:30px;border:1px solid #e2e8f0;border-radius:9px;background:#ffffff;cursor:pointer;
+    font-family:inherit;font-size:13px;font-weight:800;color:#64748b;
     display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 5px rgba(15,42,80,.05);
+    transition:transform .1s ease,background .1s ease,border-color .1s ease,color .1s ease;
   }
-  .mwin .wb:hover{background:#dfe4ea}
-  .mwin .wb.cls:hover{background:#e81123;color:#fff}
-  .mwin .wbody{flex:1;overflow:auto;padding:12px 14px;font-size:15px;line-height:1.85;color:#2b3038;background:#fff}
-  .mwin.active{box-shadow:0 14px 30px rgba(15,25,45,.36);border-color:#7fb6ef}
+  .mwin .wb:hover{background:#eff6ff;border-color:#bfdbfe;color:var(--blue)}
+  .mwin .wb:active{transform:scale(.96)}
+  .mwin .wb.cls:hover{background:#fee2e2;border-color:#fecaca;color:#dc2626}
+  .mwin .wbody{flex:1;overflow:auto;padding:12px 14px;font-size:15px;line-height:1.85;color:#334155;background:#ffffff}
+  .mwin.active{border-color:var(--blue);box-shadow:0 16px 34px rgba(37,99,235,.16)}
   .mwin.hintring{animation:pulse 1.4s ease-in-out infinite}
   .mtask.hide{display:none}
 
   /* 练习区里的右键菜单 */
   .mmenu{
-    position:absolute;z-index:60;display:none;min-width:184px;background:#fbfcfe;
-    border-radius:9px;padding:5px;box-shadow:0 12px 26px rgba(10,20,40,.34);
-    border:1px solid rgba(0,0,0,.12);
+    position:absolute;z-index:60;display:none;min-width:184px;background:#ffffff;
+    border-radius:10px;padding:5px;box-shadow:0 14px 32px rgba(15,42,80,.16);
+    border:1px solid var(--line);
   }
   .mmenu.show{display:block;animation:popin .12s ease}
   .mmenu .mi{
     display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:7px;
-    font-size:15px;font-weight:700;cursor:pointer;
+    font-size:15px;font-weight:700;cursor:pointer;color:#334155;
   }
   html.no-flexgap .mmenu .mi > *:not(:last-child){margin-right:9px}
-  .mmenu .mi:hover{background:var(--blue-soft)}
-  .mmenu .mi .ic{font-size:17px;width:20px;text-align:center}
+  .mmenu .mi:hover{background:var(--blue-soft);color:var(--blue-dark)}
+  .mmenu .mi .ic{
+    width:28px;height:28px;flex-shrink:0;border-radius:8px;background:#f1f5f9;
+    display:flex;align-items:center;justify-content:center;font-size:16px;color:#475569;
+    transition:background .12s ease,color .12s ease;
+  }
+  .mmenu .mi:hover .ic{background:#dbeafe;color:var(--blue)}
 
   /* 练习区里的开始菜单 */
   .mstart{
     position:absolute;z-index:55;left:8px;bottom:42px;width:270px;display:none;
-    background:#f7f9fc;border-radius:10px;border:1px solid rgba(0,0,0,.14);
-    box-shadow:0 14px 30px rgba(10,20,40,.34);overflow:hidden;
+    background:#ffffff;border-radius:10px;border:1px solid var(--line);
+    box-shadow:0 16px 34px rgba(15,42,80,.16);overflow:hidden;
   }
   .mstart.show{display:block;animation:popin .14s ease}
-  .mstart .sm-head{padding:9px 13px 6px;font-size:13px;font-weight:800;color:var(--muted)}
+  .mstart .sm-head{padding:9px 13px 7px;font-size:13px;font-weight:800;color:var(--muted);background:#f8fafc;border-bottom:1px solid var(--line)}
   .mstart .sm-list{max-height:196px;overflow:auto;padding:0 5px 8px}
   .mstart .app{
     display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:7px;
-    font-size:15px;font-weight:700;cursor:pointer;
+    font-size:15px;font-weight:700;cursor:pointer;color:#334155;
   }
   html.no-flexgap .mstart .app > *:not(:last-child){margin-right:10px}
-  .mstart .app:hover{background:var(--blue-soft)}
-  .mstart .app .face{font-size:19px;width:22px;text-align:center}
+  .mstart .app:hover{background:var(--blue-soft);color:var(--blue-dark)}
+  .mstart .app .face{
+    width:28px;height:28px;flex-shrink:0;border-radius:8px;background:#f1f5f9;
+    display:flex;align-items:center;justify-content:center;font-size:17px;
+    transition:background .12s ease;
+  }
+  .mstart .app:hover .face{background:#dbeafe}
 
   /* 练习区里的小任务栏 */
   .mtask{
     position:absolute;left:0;right:0;bottom:0;height:38px;z-index:50;
-    background:rgba(28,32,40,.92);display:flex;align-items:center;gap:8px;padding:0 8px;color:#fff;
+    background:rgba(255,255,255,.96);border-top:1px solid var(--line);
+    display:flex;align-items:center;gap:8px;padding:0 8px;color:#334155;
+    box-shadow:0 -4px 14px rgba(15,42,80,.06);
   }
   html.no-flexgap .mtask > *:not(:last-child){margin-right:8px}
   .mtask .mtbtn{
-    border:none;font-family:inherit;cursor:pointer;color:#fff;background:rgba(255,255,255,.14);
-    border-radius:7px;padding:7px 12px;font-size:14px;font-weight:700;
+    border:1px solid #e2e8f0;font-family:inherit;cursor:pointer;color:#475569;background:#ffffff;
+    border-radius:9px;padding:5px 11px;font-size:14px;font-weight:700;
     display:flex;align-items:center;gap:6px;min-height:28px;
+    box-shadow:0 2px 5px rgba(15,42,80,.04);
+    transition:transform .1s ease,background .1s ease,border-color .1s ease,color .1s ease;
   }
   html.no-flexgap .mtask .mtbtn > *:not(:last-child){margin-right:6px}
-  .mtask .mtbtn:hover{background:rgba(255,255,255,.26)}
-  .mtask .mtbtn.on{background:var(--blue-soft);color:#12314f}
-  .mtask .mtbtn.start{background:var(--blue)}
+  .mtask .mtbtn:hover{background:#eff6ff;border-color:#bfdbfe;color:var(--blue);transform:translateY(-1px)}
+  .mtask .mtbtn.on{background:var(--blue-soft);color:var(--blue-dark);border-color:#bfdbfe}
+  .mtask .mtbtn.start{background:var(--blue);border-color:var(--blue);color:#ffffff;box-shadow:0 4px 10px rgba(37,99,235,.2)}
+  .mtask .mtbtn.start:hover{background:var(--blue-dark);border-color:var(--blue-dark);color:#ffffff}
   .mtask .mtlist{display:flex;align-items:center;gap:6px;flex:1;overflow:hidden}
   html.no-flexgap .mtask .mtlist > *:not(:last-child){margin-right:6px}
-  .mtask .mtclock{font-size:13px;font-weight:700;white-space:nowrap;border-left:1px solid rgba(255,255,255,.28);padding-left:8px}
+  .mtask .mtclock{font-size:13px;font-weight:700;white-space:nowrap;color:var(--muted);border-left:1px solid var(--line);padding-left:8px}
 
   /* 练习区里的信息条（选中时出现的那一行） */
   .minfo{
     position:absolute;left:50%;bottom:46px;transform:translateX(-50%);z-index:45;
-    background:rgba(20,26,36,.9);color:#fff;border-radius:9px;padding:8px 16px;
+    background:#ffffff;color:#334155;border-radius:10px;padding:8px 16px;
     font-size:14px;font-weight:700;box-shadow:var(--shadow);display:none;max-width:82%;text-align:center;
-    pointer-events:none;
+    pointer-events:none;border:1px solid var(--line);
   }
   .minfo.show{display:block}
-  .minfo b{color:#ffd76a}
+  .minfo b{color:var(--blue)}
 
   /* 幽灵指针 */
   .ghost{position:absolute;left:0;top:0;z-index:90;pointer-events:none;opacity:0;transition:opacity .2s ease}
-  .ghost .cur{display:block;filter:drop-shadow(0 5px 9px rgba(20,30,70,.4))}
+  .ghost .cur{display:block;filter:drop-shadow(0 5px 9px rgba(15,42,80,.18))}
   .ghost .rip{
     position:absolute;left:0;top:0;width:54px;height:54px;margin:-27px 0 0 -27px;
-    border-radius:50%;border:5px solid rgba(96,166,255,.75);opacity:0;transform:scale(.3);
+    border-radius:50%;border:5px solid rgba(37,99,235,.6);opacity:0;transform:scale(.3);
   }
   .ghost .rip.go{animation:rip .6s ease-out}
   @keyframes rip{0%{opacity:.95;transform:scale(.3)}100%{opacity:0;transform:scale(1.5)}}
 
   /* "点这里"的标签 */
   .tag-here{
-    position:absolute;z-index:70;pointer-events:none;background:var(--accent);color:#231a03;
-    border-radius:999px;padding:6px 14px;font-size:15px;font-weight:800;
-    box-shadow:var(--shadow);white-space:nowrap;animation:bob 1.5s ease-in-out infinite;
+    position:absolute;z-index:70;pointer-events:none;background:var(--blue);color:#ffffff;
+    border-radius:8px;padding:6px 14px;font-size:15px;font-weight:800;
+    box-shadow:0 8px 18px rgba(37,99,235,.24);white-space:nowrap;animation:bob 1.5s ease-in-out infinite;
   }
 
   /* ===== 练习区下面的控制条 ===== */
   .ctrlrow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:12px;position:relative;z-index:1;min-height:44px}
   html.no-flexgap .ctrlrow > *:not(:last-child){margin-right:10px}
-  .phase{background:#fff;border-radius:999px;padding:8px 15px;font-weight:800;font-size:15px;color:var(--muted);box-shadow:var(--shadow)}
-  .phase.practice{background:#fff6da;color:#a97c2f}
-  .phase.star{background:#eaf7ff;color:#2b6ea8}
-  .phase.watch{background:#f2eaff;color:#6a4fb8}
+  .phase{
+    background:#ffffff;border:1px solid var(--line);border-radius:10px;
+    padding:8px 15px;font-weight:800;font-size:15px;color:var(--muted);
+    box-shadow:0 4px 12px rgba(15,42,80,.05);
+  }
+  .phase.star{background:var(--blue-soft);color:var(--blue-dark);border-color:#bfdbfe}
+  .phase.watch{background:#f5f3ff;color:#6d28d9;border-color:#ddd6fe}
   .stepbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   html.no-flexgap .stepbar > *:not(:last-child){margin-right:8px}
-  .step{background:rgba(255,255,255,.68);border-radius:999px;padding:8px 14px;font-weight:800;font-size:15px;color:#a9a9c0;transition:all .18s ease}
-  .step.on{background:#fff;color:var(--ink);transform:translateY(-3px);box-shadow:var(--shadow)}
-  .btn{
-    border:none;cursor:pointer;border-radius:16px;padding:11px 18px;
-    font-family:inherit;font-size:16px;font-weight:800;transition:transform .1s ease;box-shadow:0 5px 0 rgba(0,0,0,.12);
+  .step{
+    background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:10px;
+    padding:8px 14px;font-weight:800;font-size:15px;color:#94a3b8;transition:all .18s ease;
   }
-  .btn:hover{transform:translateY(-2px)}
-  .btn:active{transform:translateY(2px)}
-  .btn.primary{background:var(--green);color:#fff}
-  .btn.ghost{background:#fff;color:var(--ink)}
+  .step.on{background:#ffffff;color:var(--ink);border-color:var(--blue);transform:translateY(-2px);box-shadow:0 8px 18px rgba(37,99,235,.1)}
+  .btn{
+    border:1px solid transparent;cursor:pointer;border-radius:10px;padding:10px 18px;
+    font-family:inherit;font-size:16px;font-weight:800;transition:transform .1s ease,filter .1s ease;
+    box-shadow:0 6px 16px rgba(15,42,80,.08);
+  }
+  .btn:hover{transform:translateY(-2px);filter:brightness(1.06)}
+  .btn:active{transform:translateY(1px);box-shadow:0 2px 6px rgba(15,42,80,.08)}
+  .btn.primary{background:var(--blue);color:#ffffff}
+  .btn.ghost{background:#ffffff;color:#334155;border-color:var(--line)}
 
   /* ===== 弹窗 ===== */
-  .overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(40,30,80,.4);display:none;align-items:center;justify-content:center;z-index:10000;padding:18px}
+  .overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(15,23,42,.28);display:none;align-items:center;justify-content:center;z-index:10000;padding:18px}
   .overlay.show{display:flex}
-  .modal{background:#fff;border-radius:28px;box-shadow:var(--shadow);max-width:440px;width:100%;padding:28px 22px;text-align:center;animation:popin .3s ease}
+  .modal{
+    background:#ffffff;border:1px solid var(--line);border-radius:20px;
+    box-shadow:0 28px 70px rgba(15,42,80,.18);
+    max-width:440px;width:100%;padding:28px 22px;text-align:center;animation:popin .3s ease;color:var(--ink);
+  }
   .modal .moji{font-size:70px;line-height:1}
   .modal h2{margin:10px 0 6px;font-size:30px;font-size:clamp(22px,5vw,30px);color:var(--blue)}
   .modal p{margin:0 0 16px;color:var(--muted);font-size:16px;line-height:1.7}
   .modal .mstars{font-size:24px;letter-spacing:4px;margin-bottom:16px}
 
-  /* ===== 通关证书 ===== */
+  /* ===== 通关页：上半证书，下半鼠标切切乐 ===== */
   .finale{
     position:fixed;top:0;right:0;bottom:0;left:0;z-index:900;display:none;
-    align-items:center;justify-content:center;padding:18px;
-    background:radial-gradient(circle at 50% 30%,#12406f 0%,#0a1b30 60%,#050c16 100%);
+    flex-direction:column;align-items:center;justify-content:center;padding:14px;
+    background:
+      radial-gradient(circle at 50% 28%,rgba(37,99,235,.12) 0%,rgba(37,99,235,0) 34%),
+      radial-gradient(circle at 74% 66%,rgba(16,185,129,.1) 0%,rgba(16,185,129,0) 32%),
+      linear-gradient(180deg,#f8fafc 0%,#eef6ff 100%);
   }
   .finale.show{display:flex}
+  .finale-stack{
+    position:relative;z-index:3;width:100%;max-width:1000px;height:100%;min-height:0;
+    display:flex;flex-direction:column;align-items:center;gap:12px;
+  }
+  html.no-flexgap .finale-stack > *:not(:last-child){margin-bottom:12px}
   .cert{
-    background:#fffdf7;border-radius:16px;padding:28px 32px;max-width:680px;width:100%;
-    text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);border:8px double var(--yellow);
+    flex:0 0 auto;background:#ffffff;border-radius:20px;padding:18px 22px 16px;max-width:760px;width:100%;
+    text-align:center;box-shadow:0 28px 70px rgba(15,42,80,.18);border:1px solid #fde68a;
     animation:popin .5s ease;
   }
-  .cert .big{font-size:68px;line-height:1}
-  .cert h2{margin:10px 0 6px;font-size:34px;font-size:clamp(24px,5vw,34px);color:var(--blue-dark)}
-  .cert p{margin:0 0 14px;font-size:17px;color:var(--muted);line-height:1.8}
-  .cert .skills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px}
-  html.no-flexgap .cert .skills > *:not(:last-child){margin-right:8px}
-  .cert .skills span{background:var(--blue-soft);color:#12314f;border-radius:999px;padding:7px 14px;font-size:15px;font-weight:700}
-  .cert button{font-family:inherit;font-size:18px;font-weight:800;cursor:pointer;border:none;border-radius:10px;padding:13px 24px;background:var(--blue);color:#fff}
-  .cert button:hover{background:#1a7fd0}
-  .cf{position:fixed;top:-20px;width:10px;height:14px;border-radius:3px;z-index:950;pointer-events:none;animation:cfall 2s linear forwards}
+  .cert .big{font-size:48px;line-height:1}
+  .cert h2{margin:6px 0 2px;font-size:28px;font-size:clamp(22px,4vw,28px);color:var(--blue-dark)}
+  .cert p{margin:0 0 10px;font-size:15px;color:var(--muted);line-height:1.6}
+  .cert .skills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px}
+  html.no-flexgap .cert .skills > *:not(:last-child){margin-right:6px}
+  .cert .skills span{background:var(--blue-soft);color:var(--blue-dark);border:1px solid #bfdbfe;border-radius:8px;padding:5px 10px;font-size:13px;font-weight:700}
+  /* ===== 通关页的「鼠标切切乐」：按住左键划过去，切中才算 ===== */
+  .slice{
+    position:relative;z-index:4;flex:1 1 auto;width:100%;max-width:1000px;min-height:0;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  html.no-flexgap .slice > *:not(:last-child){margin-bottom:8px}
+  .slice-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--ink)}
+  html.no-flexgap .slice-head > *:not(:last-child){margin-right:10px}
+  .slice-title{font-size:17px;font-weight:900;color:var(--blue-dark)}
+  .slice-title span{font-size:12px;font-weight:600;color:var(--muted);margin-left:8px}
+  .slice-hud{display:flex;align-items:center;gap:8px}
+  html.no-flexgap .slice-hud > *:not(:last-child){margin-right:8px}
+  .slice-k{
+    display:flex;align-items:center;gap:5px;background:#ffffff;border:1px solid var(--line);
+    border-radius:999px;padding:4px 12px;font-weight:800;font-size:14px;color:var(--muted);
+    box-shadow:0 4px 12px rgba(15,42,80,.05);
+  }
+  html.no-flexgap .slice-k > *:not(:last-child){margin-right:5px}
+  .slice-k b{color:var(--blue);font-size:1.15em;font-variant-numeric:tabular-nums}
+  .slice-lv b{color:#059669}
+  .slice-lv.flash{animation:slice-flash .55s ease}
+  @keyframes slice-flash{
+    0%{transform:scale(1)}
+    45%{transform:scale(1.14);background:#dcfce7}
+    100%{transform:scale(1)}
+  }
+  .slice-area{
+    position:relative;flex:1;min-height:260px;overflow:hidden;cursor:crosshair;
+    border-radius:20px;border:1px solid #dbe4f0;
+    background:linear-gradient(180deg,#ffffff,#eef6ff);
+    box-shadow:inset 0 1px 0 #ffffff,0 10px 30px rgba(15,42,80,.06);
+    touch-action:none;user-select:none;
+  }
+  .slice-area::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:3px;pointer-events:none;
+    background:linear-gradient(90deg,rgba(37,99,235,0),rgba(37,99,235,.25),rgba(37,99,235,0));
+  }
+  .slice-tip{
+    position:absolute;top:50%;right:20px;left:20px;transform:translateY(-50%);z-index:13;
+    text-align:center;color:var(--muted);font-weight:800;pointer-events:none;
+    font-size:16px;font-size:clamp(13px,2.2vw,16px);transition:opacity .5s ease;
+  }
+  .slice-tip.hide{opacity:.25}
+  .slice-item{
+    position:absolute;top:0;left:0;display:flex;align-items:center;justify-content:center;
+    pointer-events:none;will-change:transform;
+  }
+  .slice-item svg{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 10px rgba(15,42,80,.16))}
+  .slice-item.gold svg{filter:drop-shadow(0 0 10px rgba(245,158,11,.45)) drop-shadow(0 6px 10px rgba(15,42,80,.15))}
+  .slice-item.hit{opacity:0;transition:opacity .22s ease,transform .22s ease}
+  .slice-blade{
+    position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;
+    z-index:12;pointer-events:none;
+  }
+  .slice-spark{
+    position:absolute;left:0;top:0;width:6px;height:6px;border-radius:50%;
+    z-index:14;pointer-events:none;background:#60a5fa;
+    box-shadow:0 0 8px rgba(37,99,235,.55);
+    animation:slice-spark .42s ease-out forwards;
+  }
+  .slice-spark.gold{background:#fbbf24;box-shadow:0 0 9px rgba(245,158,11,.65)}
+  @keyframes slice-spark{
+    from{opacity:1;transform:translate(-50%,-50%) scale(1)}
+    to{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.2)}
+  }
+  .slice-cut{
+    position:absolute;height:4px;border-radius:4px;z-index:15;pointer-events:none;
+    background:linear-gradient(90deg,rgba(255,255,255,0),#ffffff,rgba(255,255,255,0));
+    box-shadow:0 0 10px rgba(255,255,255,.8);transform-origin:50% 50%;
+    animation:slice-cut .24s ease-out forwards;
+  }
+  @keyframes slice-cut{
+    from{opacity:1;transform:rotate(var(--rot)) scaleX(.35) scaleY(1.2)}
+    to{opacity:0;transform:rotate(var(--rot)) scaleX(1.2) scaleY(.25)}
+  }
+  .slice-plus{
+    position:absolute;left:0;top:0;transform:translate(-50%,0);pointer-events:none;z-index:14;
+    color:var(--blue);font-weight:900;font-size:18px;text-shadow:0 2px 6px rgba(15,42,80,.15);
+    animation:slice-rise .85s ease forwards;
+  }
+  .slice-plus.big{color:#d97706;font-size:23px}
+  @keyframes slice-rise{
+    from{opacity:1;transform:translate(-50%,0) scale(.9)}
+    to{opacity:0;transform:translate(-50%,-48px) scale(1.15)}
+  }
+  .cf{position:fixed;top:-20px;width:10px;height:14px;border-radius:2px;z-index:950;pointer-events:none;animation:cfall 2s linear forwards}
   @keyframes cfall{to{transform:translateY(110vh) rotate(540deg);opacity:.35}}
 
   @media(max-height:700px){
-    .play{height:390px}
+    .monitor{height:390px}
     .mascot{width:66px;height:66px;font-size:36px}
-    .bubble{font-size:20px;min-height:56px}
+    .bubble{font-size:20px;height:102px;min-height:102px}
+    .cert{padding:14px 18px 12px}
+    .cert .big{font-size:38px}
+    .cert h2{font-size:23px}
+    .cert p{font-size:13px;margin-bottom:8px}
+    .cert .skills{display:none}
+    .slice-area{min-height:180px}
+    .slice-title span{display:none}
   }
   @media(max-width:900px){
     .mascot{width:66px;height:66px;font-size:36px}
     .bubble{font-size:19px}
+    .home-grid{grid-template-columns:repeat(2,1fr)}
+    .home-hub{padding:14px}
     .micon{width:82px;height:92px}
     .micon .face{width:48px;height:48px;font-size:27px}
+    .monitor{padding:10px 10px 18px}
+    .monitor::after{width:180px}
   }
 </style>
 <script>
@@ -373,10 +634,10 @@
 
   <div class="stars" id="stars"></div>
 
-  <div class="play" id="play"></div>
+  <div class="monitor"><div class="play" id="play"></div></div>
 
   <div class="ctrlrow" id="ctrlrow" style="display:none">
-    <span class="phase" id="phase">练习轮</span>
+    <span class="phase" id="phase">计星</span>
     <div class="stepbar" id="stepbar"></div>
     <button class="btn ghost" id="btnDemo">再看一遍 👀</button>
   </div>
@@ -393,12 +654,26 @@
 </div>
 
 <div class="finale" id="finale">
-  <div class="cert">
-    <div class="big">🏆</div>
-    <h2>电脑小达人</h2>
-    <p id="certSub"></p>
-    <div class="skills" id="certSkills"></div>
-    <button id="certOk">再玩一遍</button>
+  <div class="finale-stack">
+    <div class="cert">
+      <div class="big">🏆</div>
+      <h2>电脑小达人</h2>
+      <p id="certSub"></p>
+      <div class="skills" id="certSkills"></div>
+    </div>
+    <div class="slice" id="slice">
+      <div class="slice-head">
+        <div class="slice-title">鼠标切切乐<span>按住左键，划过水果</span></div>
+        <div class="slice-hud">
+          <span class="slice-k">得分 <b id="sliceScore">0</b></span>
+          <span class="slice-k slice-lv" id="sliceLvChip">第 <b id="sliceLevel">1</b> 关</span>
+        </div>
+      </div>
+      <div class="slice-area" id="sliceArea">
+        <canvas class="slice-blade" id="sliceBlade" aria-hidden="true"></canvas>
+        <div class="slice-tip" id="sliceTip">按住左键，划过水果</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -418,7 +693,7 @@
     return e;
   }
   function say(html,shake){
-    bubble.innerHTML=html;
+    bubble.innerHTML='<div class="bubble-inner">'+html+'</div>';
     if(shake){ bubble.classList.remove('shake'); void bubble.offsetWidth; bubble.classList.add('shake'); }
   }
   let sayTimer=null;
@@ -1294,18 +1569,18 @@
     });
   }
 
-  /* ================= 关卡数据（每关 6 次，前 2 次练习不计星） ================= */
+  /* ================= 关卡数据（每关 6 次，全部计星） ================= */
   const LEVELS=[
    { id:'l1', name:'认识图标', emoji:'🖥', color:'#0f6cbd',
      line:'单击图标就是选中它，点空白的地方就取消。',
      rounds:[
       { tip:'单击「我的电脑」，把它选中', hint:'点一下左键，图标会变蓝。',
-        scene:{i:[['pc',0,0]]}, goal:{k:'sel',id:'pc'}, star:false, guided:2,
+        scene:{i:[['pc',0,0]]}, goal:{k:'sel',id:'pc'}, star:true, guided:2,
         steps:['① 找到图标','② 点一下左键'],
         demo:[{at:'#play .micon',msg:'① 把鼠标移到「我的电脑」上面'},
               {at:'#play .micon',act:'click',msg:'② 点一下左键，图标就变蓝了'}] },
       { tip:'再点旁边的空白处，取消选中', hint:'点蓝色图标以外的地方。',
-        scene:{i:[['pc',0,0]]}, goal:{k:'seq',steps:[{k:'sel',id:'pc'},{k:'none'}]}, star:false, guided:1,
+        scene:{i:[['pc',0,0]]}, goal:{k:'seq',steps:[{k:'sel',id:'pc'},{k:'none'}]}, star:true, guided:1,
         steps:['① 先点图标','② 再点空白处'],
         demo:[{at:'#play .micon',act:'click',msg:'先点一下图标'},
               {run:function(next){ const pr=play.getBoundingClientRect();
@@ -1327,12 +1602,12 @@
      line:'单击只是选中，双击才能打开。',
      rounds:[
       { tip:'双击「画图」，把它的窗口打开', hint:'快速点两下左键。',
-        scene:{i:[['draw',0,0]]}, goal:{k:'winOpen',id:'win-draw'}, star:false, guided:2,
+        scene:{i:[['draw',0,0]]}, goal:{k:'winOpen',id:'win-draw'}, star:true, guided:2,
         steps:['① 找到图标','② 快速点两下'],
         demo:[{at:'#play .micon',msg:'① 鼠标移到「画图」上'},
               {at:'#play .micon',act:'dblclick',msg:'② 快速点两下，窗口就开了'}] },
       { tip:'单击「画图」只选中，不要打开', hint:'这次只点一下。',
-        scene:{i:[['draw',0,0]]}, goal:{k:'seq',steps:[{k:'sel',id:'draw'},{k:'none'}]}, star:false, guided:1,
+        scene:{i:[['draw',0,0]]}, goal:{k:'seq',steps:[{k:'sel',id:'draw'},{k:'none'}]}, star:true, guided:1,
         steps:['① 点一下左键','② 看它没打开'] },
       { tip:'双击打开「照片」', hint:'', scene:{i:[['photo',0,0]]}, goal:{k:'winOpen',id:'win-photo'}, star:true },
       { tip:'双击打开「作文」', hint:'', scene:{i:[['essay',0,0]]}, goal:{k:'winOpen',id:'win-essay'}, star:true },
@@ -1348,7 +1623,7 @@
      line:'右键会弹出菜单，很多事情都在里面。',
      rounds:[
       { tip:'在空白处点右键，再点「刷新」', hint:'右键就是这个菜单。',
-        scene:{i:[]}, goal:{k:'flag',name:'refresh'}, star:false, guided:2,
+        scene:{i:[]}, goal:{k:'flag',name:'refresh'}, star:true, guided:2,
         steps:['① 点右键','② 选「刷新」'],
         demo:[{run:function(next){ const pr=play.getBoundingClientRect();
                  const x=pr.left+pW()*0.55, y=pr.top+workH()*0.5;
@@ -1356,7 +1631,7 @@
                    openMenu(pW()*0.55,workH()*0.5,'desk'); say('① 在空白处点右键，菜单就出来了'); DT(760,next); }); }},
               {menuItem:'刷新',msg:'② 点「刷新」'}] },
       { tip:'用右键菜单新建一个文件夹', hint:'右键 → 新建文件夹。',
-        scene:{i:[]}, goal:{k:'folders',n:1}, star:false, guided:1,
+        scene:{i:[]}, goal:{k:'folders',n:1}, star:true, guided:1,
         steps:['① 点右键','② 选「新建文件夹」'] },
       { tip:'在「美术作业」上点右键，选「查看属性」', hint:'先点在图标上。',
         scene:{i:[['paint',0,0]]}, goal:{k:'seq',steps:[{k:'ctx',on:'icon',id:'paint'},{k:'flag',name:'props'}]}, star:true },
@@ -1372,12 +1647,12 @@
      line:'按住不放，拖过去，再松手。',
      rounds:[
       { tip:'把「音乐」拖到右边空着的地方', hint:'按住不放，拖过去。',
-        scene:{i:[['music',0,0]]}, goal:{k:'slots',list:[{id:'music',col:4,row:1}]}, star:false, guided:2,
+        scene:{i:[['music',0,0]]}, goal:{k:'slots',list:[{id:'music',col:4,row:1}]}, star:true, guided:2,
         steps:['① 按住图标','② 拖过去松手'],
         demo:[{at:'#play .micon',msg:'① 按住「音乐」不放'},
               {run:function(next){ demoIconDrag('music',4,1,next); }}] },
       { tip:'把「照片」拖到第一列第二行', hint:'松手会自动对齐格子。',
-        scene:{i:[['music',4,0],['photo',5,0]]}, goal:{k:'slots',list:[{id:'photo',col:0,row:1}]}, star:false, guided:1,
+        scene:{i:[['music',4,0],['photo',5,0]]}, goal:{k:'slots',list:[{id:'photo',col:0,row:1}]}, star:true, guided:1,
         steps:['① 按住照片','② 拖到左边第二行'] },
       { tip:'把「美术作业」拖到第一列第三行', hint:'',
         scene:{i:[['paint',2,0]]}, goal:{k:'slots',list:[{id:'paint',col:0,row:2}]}, star:true },
@@ -1395,13 +1670,13 @@
      line:'滚轮能翻页，开始菜单里能找到所有软件。',
      rounds:[
       { tip:'点「开始」，滚一滚，打开「计算器」', hint:'滚轮往下转，列表往下走。',
-        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-calc'}, star:false, guided:2,
+        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-calc'}, star:true, guided:2,
         steps:['① 点开始','② 滚轮找软件'],
         demo:[{at:'#play .mtbtn.start',act:'click',msg:'① 点左下角的「开始」'},
               {at:'#play .mstart .app[data-app="calc"]',msg:'② 滚轮往下滚，找到「计算器」'},
               {at:'#play .mstart .app[data-app="calc"]',act:'click',msg:'③ 点它就打开了'}] },
       { tip:'从开始菜单里打开「相机」', hint:'它在下面，要滚一滚。',
-        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-camera'}, star:false, guided:1,
+        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-camera'}, star:true, guided:1,
         steps:['① 点开始','② 滚到「相机」'] },
       { tip:'滚到最下面，打开「天气」', hint:'列表最底下那个。',
         scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-weather'}, star:true },
@@ -1424,7 +1699,7 @@
       { tip:'把窗口拖开，露出下面的 🐟，再点它', hint:'按住窗口最上面的标题栏。',
         scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>这个窗口挡住东西了。</p><p>把它拖到一边看看。</p><p>按住最上面的标题栏拖。</p>',size:[420,280],at:[0.34,0.3]}],
                hid:{emoji:'🐟',at:[0.74,0.62],size:86}},
-        goal:{k:'seq',steps:[{k:'uncover'},{k:'flag',name:'hidclick'}]}, star:false, guided:2,
+        goal:{k:'seq',steps:[{k:'uncover'},{k:'flag',name:'hidclick'}]}, star:true, guided:2,
         steps:['① 按住标题栏','② 拖到一边','③ 点露出来的东西'],
         demo:[{at:'#play .mwin .tbar',msg:'① 按住窗口最上面的标题栏'},
               {run:function(next){ demoWinMove('win-essay',190,40,next); }},
@@ -1433,7 +1708,7 @@
                  DT(470,function(){ rip(S.hid); S.flags.hidclick=true; say('③ 点它，就完成啦'); DT(520,next); }); }}] },
       { tip:'点「—」把照片窗口最小化，再从任务栏点回来', hint:'最小化以后，任务栏上还有它。',
         scene:{w:[{id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[400,260],at:[0.3,0.4],active:true}],bar:true},
-        goal:{k:'seq',steps:[{k:'state',id:'win-photo',value:'min'},{k:'active',id:'win-photo'}]}, star:false, guided:1,
+        goal:{k:'seq',steps:[{k:'state',id:'win-photo',value:'min'},{k:'active',id:'win-photo'}]}, star:true, guided:1,
         steps:['① 点「—」','② 从任务栏点回来'] },
       { tip:'把画图窗口放到最大，再点「❐」还原', hint:'□ 是最大化。',
         scene:{w:[{id:'win-draw',title:'画图',icon:'🎨',html:APPS.draw.body,size:[400,260],at:[0.32,0.32],active:true}],bar:true},
@@ -1459,13 +1734,13 @@
      rounds:[
       { tip:'把窗口拖到左边缘，松手占左半边', hint:'拖到最左边，会先出现一个方框。',
         scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>把我拖到屏幕最左边试试。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
-        goal:{k:'snap',id:'win-essay',zone:'left'}, star:false, guided:2,
+        goal:{k:'snap',id:'win-essay',zone:'left'}, star:true, guided:2,
         steps:['① 按住标题栏','② 拖到最左边','③ 松手'],
         demo:[{at:'#play .mwin .tbar',msg:'① 按住标题栏，一直拖到最左边'},
               {run:function(next){ demoWinSnap('win-essay','left',next); }}] },
       { tip:'再拖到右边缘，占右半边', hint:'先拖回来一点，再往右拖。',
         scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>这次拖到最右边。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
-        goal:{k:'snap',id:'win-essay',zone:'right'}, star:false, guided:1,
+        goal:{k:'snap',id:'win-essay',zone:'right'}, star:true, guided:1,
         steps:['① 按住标题栏','② 拖到最右边'] },
       { tip:'拖到左上角，占四分之一', hint:'贴着左上角松手。',
         scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>试试左上角。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
@@ -1523,8 +1798,8 @@
   function updatePhase(){
     const r=curRound();
     if(!r){ phaseEl.className='phase'; phaseEl.textContent=''; return; }
-    phaseEl.className='phase '+(r.star?'star':'practice');
-    phaseEl.textContent=r.star?('第 '+(RI+1)+' 次 · 计星'):'练习轮 · 不计星';
+    phaseEl.className='phase star';
+    phaseEl.textContent='第 '+(RI+1)+' 次 · 计星';
   }
   function updateStepbar(){
     const r=curRound();
@@ -1612,21 +1887,35 @@
     if(S.done) return;
     S.done=true;
     clearTag();
-    const r=curRound();
-    if(r.star){
-      stars++;
-      setStars(stars,levelStars(LEVELS[L]));
-      confetti();
-      say('太棒了！<b>得到一颗星</b> ⭐');
-    } else {
-      say('做到啦！✅ 这次是<b>练习</b>，不计星～');
-    }
+    stars++;
+    setStars(stars,levelStars(LEVELS[L]));
+    confetti();
+    say('太棒了！<b>得到一颗星</b> ⭐');
     T(1200,nextRound);
   }
   function nextRound(){
     RI++;
     if(RI>=LEVELS[L].rounds.length) levelDone();
     else showRound();
+  }
+  function showFinale(){
+    clearTimers(); stopDemo(); hideModal();
+    document.documentElement.style.overflow='hidden';
+    const navBtns=document.querySelectorAll('#nav button');
+    for(let i=0;i<navBtns.length;i++) navBtns[i].disabled=true;
+    $('#certSkills').innerHTML=LEVELS.map(function(l){ return '<span>'+l.emoji+' '+l.name+'</span>'; }).join('');
+    $('#certSub').innerHTML='图标、双击、右键、拖动、滚轮、窗口，你都会啦！<br>一共拿到 <b>⭐ '+TOTAL+'</b> 颗星。';
+    $('#finale').classList.add('show');
+    scheduleSliceGame();
+    for(let i=0;i<60;i++){
+      const c=el('div','cf');
+      const colors=['#ffd23f','#43a3ff','#4ed47e','#ff8a65','#b39ddb','#43d2e8'];
+      c.style.left=(Math.random()*100)+'vw';
+      c.style.background=colors[Math.floor(Math.random()*colors.length)];
+      c.style.animationDelay=(Math.random()*.6)+'s';
+      document.body.appendChild(c);
+      setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); },3600);
+    }
   }
   function levelDone(){
     const lv=LEVELS[L];
@@ -1640,18 +1929,7 @@
     play.dataset.round='done';
     const all=LEVELS.every(function(l){ return cleared[l.id]; });
     if(all){
-      $('#certSkills').innerHTML=LEVELS.map(function(l){ return '<span>'+l.emoji+' '+l.name+'</span>'; }).join('');
-      $('#certSub').innerHTML='图标、双击、右键、拖动、滚轮、窗口，你都会啦！<br>一共拿到 <b>⭐ '+TOTAL+'</b> 颗星。';
-      $('#finale').classList.add('show');
-      for(let i=0;i<60;i++){
-        const c=el('div','cf');
-        const colors=['#ffd23f','#43a3ff','#4ed47e','#ff8a65','#b39ddb','#43d2e8'];
-        c.style.left=(Math.random()*100)+'vw';
-        c.style.background=colors[Math.floor(Math.random()*colors.length)];
-        c.style.animationDelay=(Math.random()*.6)+'s';
-        document.body.appendChild(c);
-        setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); },3600);
-      }
+      showFinale();
       return;
     }
     let nextIdx=-1;
@@ -1673,31 +1951,302 @@
     ctrlrow.style.display='';
     showRound();
   }
+  function buildHomeScene(){
+    clearHandlers();
+    play.innerHTML='';
+    S.icons=[]; S.wins=[]; S.sel=null; S.selSeen={}; S.inFolder={}; S.seqStep=0; S.flags={};
+    S.zTop=20; S.active=null; S.done=true; S.found=false; S.hid=null; S.menu=null; S.start=null;
+    S.ready=false; S.scene=null; S.layer=null; S.winLayer=null; S.info=null; S.taskbar=null; S.stage=null;
+    const hub=el('div','home-hub');
+    hub.appendChild(el('div','home-head','<b>选择一课开始</b>'));
+    const grid=el('div','home-grid');
+    LEVELS.forEach(function(lv,i){
+      const total=levelStars(lv), got=best[lv.id]||0, done=!!cleared[lv.id];
+      const card=el('button','home-card'+(done?' done':''),
+        '<span class="hc-top"><span class="hc-ico">'+navIcon(NAV_ICON_NAMES[lv.id])+'</span>'
+        +'<b class="hc-name">'+(i+1)+'. '+lv.name+'</b></span>'
+        +'<span class="hc-foot">'+(done?'✓ 已完成 · ':'')+'⭐ '+got+' / '+total+'</span>');
+      card.dataset.mode=lv.id;
+      card.style.setProperty('--lv',lv.color);
+      on(card,'click',function(){ startLevel(i); });
+      grid.appendChild(card);
+    });
+    hub.appendChild(grid);
+    play.appendChild(hub);
+    S.stage=hub;
+  }
   function enterHome(){
     mode='home';
     clearTimers(); stopDemo(); hideModal();
     ctrlrow.style.display='none';
-    buildScene({i:[['pc',0,0],['photo',1,0],['folder',2,0]],
-      w:[{id:'win-home',title:'电脑小课堂',icon:'💡',
-          html:'<p>点上面的圆圈，选一课开始。</p><p>每一课都先「看一遍」，再跟着做。</p>',
-          size:[420,240],at:[0.3,0.3]}]});
-    S.done=true;                       /* 首页不判任务 */
+    buildHomeScene();
     setStars(0,0);
-    say('欢迎来到电脑小课堂！<br>点上面的圆圈，<b>选一课</b>开始学。');
+    say('欢迎来到电脑小课堂！<br>在下面的屏幕里选一课，<b>点一下</b>就开始。');
     play.dataset.level='home';
     play.dataset.round='0';
     markNav('home');
   }
 
   /* ================= 启动 ================= */
+  const NAV_ICON_PATHS={
+    home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9.5 21v-6h5v6"/>',
+    grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    click:'<path d="m5 3.5 6.5 15.5 2.2-6.1L20 10.7 5 3.5Z"/><path d="M15.5 3.5v3M14 5h3"/>',
+    menu:'<path d="M4 6h16M4 11h11M4 16h7"/><path d="m15 12 5 5-2 .4-.4 2L15 12Z"/>',
+    move:'<path d="M12 3v18M3 12h18"/><path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/>',
+    wheel:'<rect x="7" y="2.5" width="10" height="19" rx="5"/><path d="M12 6.5v4"/>',
+    windows:'<rect x="3" y="5" width="13" height="12" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-2"/>',
+    snap:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/><path d="m7 9-3 3 3 3"/>',
+    flag:'<path d="M6 21V4"/><path d="M6 5h11l-2 3 2 3H6"/>'
+  };
+  const NAV_ICON_NAMES={l1:'grid',l2:'click',l3:'menu',l4:'move',l5:'wheel',l6:'windows',l7:'snap',l8:'flag'};
+  function navIcon(name){
+    return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" '
+      +'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+      +(NAV_ICON_PATHS[name]||NAV_ICON_PATHS.grid)+'</svg>';
+  }
+
+  /* ================= 通关页「鼠标切切乐」 ================= */
+  const SLICE_ICONS={
+    apple:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 15c-4-5-11-5-14 0-4 7 1 20 8 24 2 1 4 1 6 0 2 1 4 1 6 0 7-4 12-17 8-24-3-5-10-5-14 0Z" fill="#ff6b6b" stroke="#c2410c" stroke-width="2.5" stroke-linejoin="round"/><path d="M24 15c0-4 2-7 5-9" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/><path d="M24 15c-2-4-5-6-8-6" fill="none" stroke="#65a30d" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    orange:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="27" r="15" fill="#fb923c" stroke="#c2410c" stroke-width="2.5"/><path d="M24 12c1-4 4-6 8-6" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/><path d="M18 25c3-3 9-3 12 0" fill="none" stroke="#fed7aa" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    lemon:'<svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="26" rx="16" ry="13" fill="#fde047" stroke="#ca8a04" stroke-width="2.5"/><path d="M9 20c4 5 12 8 21 7" fill="none" stroke="#fef9c3" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    melon:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 20a18 18 0 0 1 36 0Z" fill="#4ade80" stroke="#15803d" stroke-width="2.5" stroke-linejoin="round"/><path d="M11 20a13 13 0 0 1 26 0Z" fill="#fb7185" stroke="#be123c" stroke-width="2"/><path d="M18 20h.1M24 20h.1M30 20h.1" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    star:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m24 5 5.5 11.2 12.4 1.8-9 8.8 2.1 12.4L24 33.4l-11 5.8 2.1-12.4-9-8.8 12.4-1.8Z" fill="#fbbf24" stroke="#d97706" stroke-width="2.5" stroke-linejoin="round"/><path d="m24 12 3 6.1 6.7 1-4.8 4.7 1.1 6.7-6-3.2-6 3.2 1.1-6.7-4.8-4.7 6.7-1Z" fill="#fde68a"/></svg>'
+  };
+  function sliceIcon(name){ return SLICE_ICONS[name]||SLICE_ICONS.apple; }
+  let sliceStartTimer=0, sliceCleanup=null;
+  function scheduleSliceGame(){
+    if(sliceStartTimer){ clearTimeout(sliceStartTimer); sliceStartTimer=0; }
+    sliceStartTimer=setTimeout(function(){ sliceStartTimer=0; startSliceGame(); },1700);
+  }
+  function stopSliceGame(){
+    if(sliceStartTimer){ clearTimeout(sliceStartTimer); sliceStartTimer=0; }
+    if(sliceCleanup){ sliceCleanup(); sliceCleanup=null; }
+  }
+  function startSliceGame(){
+    stopSliceGame();
+    const area=$('#sliceArea');
+    if(!area) return;
+    const scoreEl=$('#sliceScore'), lvEl=$('#sliceLevel'), lvChip=$('#sliceLvChip'), tip=$('#sliceTip');
+    const blade=$('#sliceBlade'), bctx=blade?blade.getContext('2d'):null;
+    const FRUITS=['apple','orange','lemon','melon'];
+    let score=0, level=1, items=[], last=0, nextSpawn=120, raf=0, slicing=false, lastPt=null, tipTimer=0;
+    let bladePoints=[], bladeW=0, bladeH=0;
+    scoreEl.textContent=score; lvEl.textContent=level;
+    if(tip) tipTimer=setTimeout(function(){ tip.classList.add('hide'); },5200);
+    function resizeBlade(){
+      if(!blade||!bctx) return;
+      bladeW=area.clientWidth; bladeH=area.clientHeight;
+      const dpr=Math.min(2,window.devicePixelRatio||1);
+      blade.width=Math.round(bladeW*dpr); blade.height=Math.round(bladeH*dpr);
+      blade.style.width=bladeW+'px'; blade.style.height=bladeH+'px';
+      bctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    function drawBlade(now){
+      if(!bctx||!blade) return;
+      bctx.clearRect(0,0,bladeW,bladeH);
+      if(bladePoints.length<2) return;
+      const life=180;
+      let write=0;
+      for(let i=0;i<bladePoints.length;i++){ if(now-bladePoints[i].t<life) bladePoints[write++]=bladePoints[i]; }
+      bladePoints.length=write;
+      if(bladePoints.length<2) return;
+      const first=bladePoints[0], lastP=bladePoints[bladePoints.length-1];
+      const headFade=Math.max(0,1-(now-lastP.t)/life);
+      function bladePath(){
+        bctx.beginPath();
+        bctx.moveTo(bladePoints[0].x,bladePoints[0].y);
+        for(let i=1;i<bladePoints.length-1;i++){
+          const xc=(bladePoints[i].x+bladePoints[i+1].x)/2;
+          const yc=(bladePoints[i].y+bladePoints[i+1].y)/2;
+          bctx.quadraticCurveTo(bladePoints[i].x,bladePoints[i].y,xc,yc);
+        }
+        bctx.lineTo(lastP.x,lastP.y);
+      }
+      const glow=bctx.createLinearGradient(first.x,first.y,lastP.x,lastP.y);
+      glow.addColorStop(0,'rgba(37,99,235,0)');
+      glow.addColorStop(.52,'rgba(37,99,235,'+(.3*headFade)+')');
+      glow.addColorStop(1,'rgba(37,99,235,'+(.9*headFade)+')');
+      const core=bctx.createLinearGradient(first.x,first.y,lastP.x,lastP.y);
+      core.addColorStop(0,'rgba(255,255,255,0)');
+      core.addColorStop(1,'rgba(255,255,255,'+(.95*headFade)+')');
+      bctx.save();
+      bctx.lineCap='round'; bctx.lineJoin='round';
+      bctx.shadowColor='rgba(37,99,235,.55)'; bctx.shadowBlur=16;
+      bladePath(); bctx.strokeStyle=glow; bctx.lineWidth=12; bctx.stroke();
+      bctx.shadowBlur=0;
+      bladePath(); bctx.strokeStyle=core; bctx.lineWidth=3.5; bctx.stroke();
+      bctx.beginPath(); bctx.arc(lastP.x,lastP.y,5*headFade+1,0,Math.PI*2);
+      bctx.fillStyle='rgba(255,255,255,'+(.9*headFade)+')';
+      bctx.shadowColor='rgba(37,99,235,.6)'; bctx.shadowBlur=12; bctx.fill();
+      bctx.restore();
+    }
+    function removeEl(n){ if(n&&n.parentNode) n.parentNode.removeChild(n); }
+    function areaPoint(ev){
+      const r=area.getBoundingClientRect();
+      return {x:ev.clientX-r.left,y:ev.clientY-r.top};
+    }
+    function spawn(forceFruit,startY){
+      const w=area.clientWidth,h=area.clientHeight;
+      if(w<80||h<120) return;
+      const gold=!forceFruit&&Math.random()<0.08;
+      const kind=gold?'star':FRUITS[Math.floor(Math.random()*FRUITS.length)];
+      const lv=level;
+      const vyBoost=Math.min(1.35,1+(lv-1)*0.045);
+      const gBoost=Math.min(1.95,1+(lv-1)*0.095);
+      const sizeFactor=Math.max(0.78,1-(lv-1)*0.025);
+      const size=Math.round(Math.max(36,Math.min(68,h*0.15)*sizeFactor));
+      const node=document.createElement('div');
+      node.className='slice-item'+(gold?' gold':'');
+      node.style.width=size+'px'; node.style.height=size+'px';
+      node.innerHTML=sliceIcon(kind);
+      const it={
+        el:node,x:size+Math.random()*Math.max(1,w-size*2),y:startY!=null?startY:h+size*.65,
+        vx:(Math.random()-.5)*(w*Math.min(.22,.12+(lv-1)*.012)),
+        vy:-(h*.92*vyBoost+Math.random()*h*.30*vyBoost),
+        g:h*1.05*gBoost,size:size,gold:gold,rot:Math.random()*360,
+        vr:(Math.random()-.5)*160,dead:false
+      };
+      node.style.transform='translate3d('+it.x+'px,'+it.y+'px,0) rotate('+it.rot+'deg)';
+      area.appendChild(node);
+      items.push(it);
+      if(items.length>16){ const old=items.shift(); if(old) removeEl(old.el); }
+    }
+    function spark(it){
+      for(let i=0;i<6;i++){
+        const s=document.createElement('div');
+        s.className='slice-spark'+(it.gold?' gold':'');
+        const a=Math.random()*Math.PI*2, d=18+Math.random()*26;
+        s.style.left=(it.x+it.size/2)+'px'; s.style.top=(it.y+it.size/2)+'px';
+        s.style.setProperty('--dx',Math.round(Math.cos(a)*d)+'px');
+        s.style.setProperty('--dy',Math.round(Math.sin(a)*d)+'px');
+        area.appendChild(s);
+        setTimeout(function(){ removeEl(s); },440);
+      }
+    }
+    function cut(it,ang){
+      const c=document.createElement('div');
+      const len=Math.round(it.size*1.45);
+      c.className='slice-cut';
+      c.style.width=len+'px';
+      c.style.left=(it.x+it.size/2-len/2)+'px';
+      c.style.top=(it.y+it.size/2-2)+'px';
+      c.style.setProperty('--rot',ang+'rad');
+      area.appendChild(c);
+      setTimeout(function(){ removeEl(c); },260);
+    }
+    function nearSegment(it,a,b){
+      const cx=it.x+it.size/2, cy=it.y+it.size/2;
+      const dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy;
+      let t=len2?((cx-a.x)*dx+(cy-a.y)*dy)/len2:0;
+      t=Math.max(0,Math.min(1,t));
+      const px=a.x+t*dx,py=a.y+t*dy,ddx=cx-px,ddy=cy-py,r=it.size*.62;
+      return ddx*ddx+ddy*ddy<=r*r;
+    }
+    function showPlus(it,gain){
+      const p=document.createElement('div');
+      p.className='slice-plus'+(gain>1?' big':'');
+      p.textContent='+'+gain;
+      p.style.left=(it.x+it.size/2)+'px'; p.style.top=(it.y+it.size*.12)+'px';
+      area.appendChild(p);
+      setTimeout(function(){ removeEl(p); },900);
+    }
+    function hit(it,ang){
+      if(it.dead) return;
+      it.dead=true;
+      const gain=it.gold?5:1;
+      score+=gain; scoreEl.textContent=score;
+      const nl=Math.floor(score/10)+1;
+      if(nl>level){
+        level=nl; lvEl.textContent=level;
+        if(lvChip){ lvChip.classList.remove('flash'); void lvChip.offsetWidth; lvChip.classList.add('flash'); }
+      }
+      it.el.classList.add('hit');
+      it.el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0) rotate('+(it.rot+24)+'deg) scale(1.35)';
+      setTimeout(function(){ removeEl(it.el); },240);
+      cut(it,ang);
+      spark(it);
+      showPlus(it,gain);
+    }
+    function onDown(ev){
+      if(ev.button!==0) return;
+      slicing=true; lastPt=areaPoint(ev);
+      bladePoints=[{x:lastPt.x,y:lastPt.y,t:performance.now()}];
+      try{ area.setPointerCapture(ev.pointerId); }catch(e){}
+      if(ev.preventDefault) ev.preventDefault();
+    }
+    function onMove(ev){
+      if(!slicing) return;
+      const p=areaPoint(ev);
+      bladePoints.push({x:p.x,y:p.y,t:performance.now()});
+      if(bladePoints.length>24) bladePoints.shift();
+      for(let i=items.length-1;i>=0;i--){
+        const it=items[i];
+        if(!it.dead&&nearSegment(it,lastPt,p)){ hit(it,Math.atan2(p.y-lastPt.y,p.x-lastPt.x)); items.splice(i,1); }
+      }
+      lastPt=p;
+      if(ev.preventDefault) ev.preventDefault();
+    }
+    function onUp(){ slicing=false; lastPt=null; }
+    area.addEventListener('pointerdown',onDown);
+    area.addEventListener('pointermove',onMove);
+    area.addEventListener('pointerup',onUp);
+    area.addEventListener('pointercancel',onUp);
+    resizeBlade();
+    window.addEventListener('resize',resizeBlade);
+    function frame(now){
+      raf=requestAnimationFrame(frame);
+      if(document.hidden) return;
+      if(!last){ last=now; return; }
+      const dt=Math.min(.05,(now-last)/1000); last=now;
+      const h=area.clientHeight;
+      if(h<120) return;
+      nextSpawn-=dt*1000;
+      if(nextSpawn<=0){
+        spawn();
+        nextSpawn=Math.max(220,540-level*42)*(0.8+Math.random()*0.4);
+      }
+      const w=area.clientWidth;
+      for(let i=items.length-1;i>=0;i--){
+        const it=items[i];
+        if(it.dead) continue;
+        it.vy+=it.g*dt; it.x+=it.vx*dt; it.y+=it.vy*dt; it.rot+=it.vr*dt;
+        if(it.x<2){ it.x=2; it.vx=Math.abs(it.vx); }
+        if(it.x>w-it.size-2){ it.x=w-it.size-2; it.vx=-Math.abs(it.vx); }
+        if(it.y>h+it.size&&it.vy>0){ removeEl(it.el); items.splice(i,1); continue; }
+        it.el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0) rotate('+it.rot+'deg)';
+      }
+      drawBlade(now);
+    }
+    sliceCleanup=function(){
+      cancelAnimationFrame(raf);
+      if(tipTimer){ clearTimeout(tipTimer); tipTimer=0; }
+      window.removeEventListener('resize',resizeBlade);
+      area.removeEventListener('pointerdown',onDown);
+      area.removeEventListener('pointermove',onMove);
+      area.removeEventListener('pointerup',onUp);
+      area.removeEventListener('pointercancel',onUp);
+      bladePoints=[];
+      if(bctx) bctx.clearRect(0,0,bladeW,bladeH);
+      items.forEach(function(it){ removeEl(it.el); });
+      items=[];
+      const leftovers=area.querySelectorAll('.slice-item,.slice-spark,.slice-cut,.slice-plus');
+      for(let i=0;i<leftovers.length;i++) removeEl(leftovers[i]);
+      if(tip) tip.classList.remove('hide');
+    };
+    const firstH=area.clientHeight;
+    spawn(true,firstH*.68); spawn(true,firstH*.84); spawn(true,firstH*.98);
+    raf=requestAnimationFrame(frame);
+  }
   (function buildNav(){
     const nav=$('#nav');
-    const bh=el('button','b-home','<span class="emo">🏠</span>开始');
+    const bh=el('button','b-home','<span class="emo">'+navIcon('home')+'</span><span>开始</span>');
     bh.dataset.mode='home';
     bh.addEventListener('click',function(){ enterHome(); });
     nav.appendChild(bh);
     LEVELS.forEach(function(lv,i){
-      const b=el('button',null,'<span class="emo">'+lv.emoji+'</span>'+lv.name);
+      const b=el('button',null,'<span class="emo">'+navIcon(NAV_ICON_NAMES[lv.id])+'</span><span>'+lv.name+'</span>');
       b.dataset.mode=lv.id;
       b.style.background=lv.color;
       b.addEventListener('click',function(){ startLevel(i); });
@@ -1705,21 +2254,15 @@
     });
     navs=[].slice.call(nav.querySelectorAll('button'));
   })();
-  on(btnDemo,'click',function(){ playDemo(); });
-  on($('#certOk'),'click',function(){
-    $('#finale').classList.remove('show');
-    for(const k in cleared) delete cleared[k];
-    for(const k in best) delete best[k];
-    TOTAL=0;
-    const n=document.getElementById('starNum'); if(n) n.textContent='0';
-    enterHome();
-  });
+  btnDemo.addEventListener('click',function(){ playDemo(); });
   window.addEventListener('resize',function(){ if(S.stage) layout(); });
   window.__mt={ levels:LEVELS, state:S, mode:function(){ return mode; },
                 level:function(){ return L; }, round:function(){ return RI; },
                 stars:function(){ return stars; }, total:function(){ return TOTAL; },
                 ready:function(){ return !!S.ready && !demoOn; },
                 goalMet:function(g){ return goalMet(g); },
+                sliceStart:function(){ startSliceGame(); },
+                sliceStop:function(){ stopSliceGame(); },
                 goto:function(li,ri){ mode='play'; L=li; RI=ri||0; stars=0;
                   markNav(LEVELS[li].id); setStars(0,levelStars(LEVELS[li]));
                   ctrlrow.style.display=''; showRound(); } };
@@ -1737,7 +2280,16 @@
       $('#bg').appendChild(s);
     }
   })();
-  enterHome();
+  /* ?finale=1 只用于预览结束页：星级只标在内存里，不写任何进度。 */
+  if(/[?&]finale=1\b/.test(location.search)){
+    LEVELS.forEach(function(l){ cleared[l.id]=true; best[l.id]=levelStars(l); });
+    TOTAL=0;
+    for(const k in best) TOTAL+=(best[k]||0);
+    const n=document.getElementById('starNum'); if(n) n.textContent=TOTAL;
+    showFinale();
+  } else {
+    enterHome();
+  }
 })();
 </script>
 </body>
