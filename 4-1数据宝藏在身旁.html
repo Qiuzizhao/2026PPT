@@ -784,6 +784,9 @@ function updateProgress(){
 const AVATARS=["🦊","🐼","🐯","🐸","🦁","🐰","🦄","🐨","🦉","🐳","🦋","🐞"];
 const KLASS_LABEL={"41":"四(1)班","410":"四(10)班","测试班":"测试班"};
 const ROSTER={"41":["欧嘉豪","古伊霖","王思思","贺煜涵","施佳羽","骆高嘉","何康铄","王莫森","吴妍倪","刘皖婷","吴宇航","陈江浩","陈洛禧","左家悦","李圆圆","周嘉凯","唐骁宇","赵思鹏","刘若乔","盛子珊","廖睿","兰淼城","唐龙昊","王逸凡","杨必博","李翰宸","项钰祺","谭志铭","雷子欣","邓星皓","陈治廷","戴淇翊","谢博睿","黄茗俞","许婧雅","熊希颖","李咏轩","区杰智","雷浩琳","陈悦滢","林美含","林美成","李梓赫","王思睿"],"410":["李睿珩","李雨珂","黄芊晴","黄子瑜","刘思妍","陈卓谦","熊梓茵","林秀函","刘夜","陈俊熹","崔雅婧","贺雨辰","叶奕晨","张奕心","王灿灿","李淑昀","莫雄宇","陈梓睿","曾梓霖","王嘉乐","郭奕尊","黄子灏","黄乔羽","谢嘉树","徐嘉悦","饶培铮","陈俊亦","古渝鹏","黎文朗","丘雨萌","范诗诗","麦均键","陈希旋","赵思言","郑雨桐","巢弘钰","黄攀义","钟昀译","梁倚衔","李梓瑜","李雨檀","党可瑞","蔡乐琪","谢梓渔","戴博聪","龚梓晴","彭裕源"]};
+/* 各班预留账号；测试班也保留自由输入 */
+const CLASS_TEST_ACCOUNTS=["测试","备用1","备用2","备用3"];
+["41","410"].forEach(klass=>ROSTER[klass].push(...CLASS_TEST_ACCOUNTS));
 function enterMap(){
   document.getElementById("whoname").textContent=state.student;
   buildMap();
@@ -809,8 +812,20 @@ function renderRoster(){
     return;
   }
   if(klass==="测试班"){
-    box.innerHTML='<div class="roster-tip">测试班：请在下方输入你的名字</div>';
+    box.innerHTML='<div class="roster-tip">测试班：点选一个账号，或在下方输入名字</div>';
     nameInput.style.display="block";
+    CLASS_TEST_ACCOUNTS.forEach(nm=>{
+      const d=document.createElement("div");
+      d.className="rp"+(nm===nameInput.value.trim()?" sel":"");
+      d.textContent=nm;
+      d.onclick=()=>{
+        box.querySelectorAll(".rp").forEach(x=>x.classList.remove("sel"));
+        d.classList.add("sel");
+        nameInput.value=nm;
+        state.student=nm;
+      };
+      box.appendChild(d);
+    });
     state.student=nameInput.value.trim();
     return;
   }

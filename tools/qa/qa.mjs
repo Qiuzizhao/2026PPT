@@ -1380,6 +1380,20 @@ add({
         rosterTip: !!document.querySelector('#roster-pick .roster-tip')
       });
     `), shot: true },
+    { label: '所有班级都有测试号和三个备用号', js: wrap(`
+      const sel=document.getElementById('inp-class'),result={},required=['测试','备用1','备用2','备用3'];
+      ['41','410'].forEach(klass=>{
+        sel.value=klass;sel.dispatchEvent(new Event('change'));
+        const names=[...document.querySelectorAll('#roster-pick .rp')].map(el=>el.textContent);
+        result[klass]=required.every(nm=>names.includes(nm));
+      });
+      sel.value='测试班';sel.dispatchEvent(new Event('change'));
+      const testNames=[...document.querySelectorAll('#roster-pick .rp')].map(el=>el.textContent);
+      document.querySelector('#roster-pick .rp').click();
+      result['测试班']=required.every(nm=>testNames.includes(nm))&&document.getElementById('inp-name').value==='测试';
+      if(!result['41']||!result['410']||!result['测试班'])throw new Error('班级缺少测试/备用号：'+JSON.stringify(result));
+      return JSON.stringify(result);
+    `) },
     { label: '选班级 → 点名字 → 开始探险 → 地图七关全锁', js: wrap(`
       const sel = document.getElementById('inp-class');
       sel.value = '41';
@@ -1484,6 +1498,11 @@ add({ name: '4-1-回归-学生端验证', page: '4-1数据宝藏在身旁.html',
   `) }
 ]});
 add({ name: '4-1-回归-教师端统计与批量操作', page: '4-1教师端.html', blockUrls: ['*qiuform.qiuzizhao.com*'], steps: [
+  { label: '教师端名单含测试号和三个备用号', js: wrap(`
+    const names=['测试','备用1','备用2','备用3'],result={41:names.every(n=>ROSTER['41'].filter(x=>x===n).length===1),410:names.every(n=>ROSTER['410'].filter(x=>x===n).length===1)};
+    if(!result['41']||!result['410'])throw new Error('教师端测试/备用号名单不一致：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `) },
   { label: '全部班级按轮次时间戳统计猜人结果', js: wrap(`
     await __wait(900);
     const at=localNow();selectedClass='__all__';stateMap={};localTcUntil=Date.now()+10000;
