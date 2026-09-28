@@ -1818,30 +1818,27 @@ add({
   name: '鼠标练习营3-拖动图标-同列任意行',
   page: '鼠标练习营3.html',
   steps: [
-    { label: '这一轮仍限定第1列', js: wrap(`
+    { label: '同列的第1、2、4行可以通关，但仍限定第1列', js: wrap(`
       window.__mt.goto(3, 5);
       const goal = window.__mt.levels[3].rounds[5].goal;
       window.__mt.state.icons.forEach((ic, i) => { ic.col = 1; ic.row = i; });
       const acceptedOtherColumn = window.__mt.goalMet(goal);
       if (acceptedOtherColumn) throw new Error('摆在第2列也被错误判为通关');
-      return JSON.stringify({ acceptedOtherColumn });
-    `) },
-    { label: '第1、2、4行都在第1列时通关', js: wrap(`
       window.__mt.goto(3, 5);
-      return JSON.stringify({ round: window.__mt.round(), ready: window.__mt.ready() });
-    `) },
-    { label: '真实拖到第1、2、4行后应通关', nativeDrags: [
-      {from:'#play .micon[data-id="pc"]',to:'#play .slot-cell:nth-child(1)'},
-      {from:'#play .micon[data-id="bin"]',to:'#play .slot-cell:nth-child(9)'},
-      {from:'#play .micon[data-id="paint"]',to:'#play .slot-cell:nth-child(25)'}
-    ], js: wrap(`
+      window.__mt.state.icons.forEach((ic, i) => { ic.col = 0; ic.row = [0, 1, 3][i]; });
+      const acceptedNonconsecutiveRows = window.__mt.goalMet(goal);
+      if (!acceptedNonconsecutiveRows) throw new Error('第1、2、4行同在第1列仍未通过同列判定');
+      const pc = __$('#play .micon[data-id="pc"]'), point = __center(pc);
+      __pd(pc, 'pointerdown', point[0], point[1]);
+      __pd(document, 'pointerup', point[0], point[1]);
       const byId = id => window.__mt.state.icons.find(ic => ic.id === id);
       const result = { done: window.__mt.state.done,
+        acceptedOtherColumn, acceptedNonconsecutiveRows,
         positions: ['pc','bin','paint'].map(id => [byId(id).col, byId(id).row]) };
-      if (!result.done || JSON.stringify(result.positions) !== '[[0,0],[0,1],[0,3]]')
+      if (!result.done || !result.acceptedNonconsecutiveRows || JSON.stringify(result.positions) !== '[[0,0],[0,1],[0,3]]')
         throw new Error('第1、2、4行同在第1列时未通关：' + JSON.stringify(result));
       return JSON.stringify(result);
-    `), shot: true }
+    `) }
   ]
 });
 add({ name: '鼠标练习营3-进度存档-清档', page: 'index.html', steps: [

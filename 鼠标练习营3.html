@@ -1589,9 +1589,8 @@
                         return ic && ic.col===x.col && ic.row===x.row; });
       case 'slotsAny': {
         const icons=g.ids.map(iconById);
-        return icons.length===g.rows.length &&
-          icons.every(function(ic){ return ic&&!ic.hidden&&!S.inFolder[ic.id]&&ic.col===g.col; }) &&
-          g.rows.every(function(row){ return icons.some(function(ic){ return ic.row===row; }); });
+        return icons.length>0 &&
+          icons.every(function(ic){ return ic&&!ic.hidden&&!S.inFolder[ic.id]&&ic.col===g.col; });
       }
       case 'uncover': return visFrac()>=0.9;
       case 'marker':  return markerVisible(g.win,g.marker);
@@ -1827,9 +1826,9 @@
       { tip:'把「音乐」拖到第2列 第2行，「照片」拖到第2列 第3行', hint:'一次拖一个，对准格子上的标签。',
         scene:{i:[['music',4,0],['photo',5,0]]},
         goal:{k:'slots',list:[{id:'music',col:1,row:1},{id:'photo',col:1,row:2}]}, star:true },
-      { tip:'把三个图标都摆到第1列', hint:'第1列的第1、2、3行各放一个。',
+      { tip:'把三个图标都摆到第1列', hint:'不用排在指定的行，只要三个图标都在第1列就可以。',
         scene:{i:[['pc',3,0],['bin',4,0],['paint',5,0]]},
-        goal:{k:'slotsAny',ids:['pc','bin','paint'],col:0,rows:[0,1,2]}, star:true }
+        goal:{k:'slotsAny',ids:['pc','bin','paint'],col:0}, star:true }
      ] },
 
    { id:'l5', name:'开始菜单与滚轮', emoji:'🌀', color:'#0b7285',
