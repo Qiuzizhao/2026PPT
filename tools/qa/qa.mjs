@@ -1502,6 +1502,8 @@ for (const [w, h] of [[1024, 768], [1920, 1080]]) {
 const k4Helpers = `
   const __k4key = k => document.dispatchEvent(new KeyboardEvent('keydown', {
     key: k, ctrlKey: true, bubbles: true, cancelable: true }));
+  const __k4up = k => document.dispatchEvent(new KeyboardEvent('keyup', {
+    key: k, ctrlKey: true, bubbles: true, cancelable: true }));
   const __k4click = s => { const el = __$(s); if (el) el.click(); return !!el; };
   const __k4right = s => { const el = __$(s); if (!el) return false; const r = el.getBoundingClientRect();
     el.dispatchEvent(new MouseEvent('contextmenu', {bubbles:true,cancelable:true,button:2,clientX:r.left+18,clientY:r.top+18})); return true; };
@@ -1555,22 +1557,24 @@ add({ name: '鼠标练习营4-太空补给任务线', page: '鼠标练习营4.ht
     __k4click('#mmenu button[data-act="paste"]'); await __wait(150);
     const delivered=__$$('#deliverySlots .delivery-slot.is-filled').length;
     const sourceStays=!!__$('#cargo[data-id="signal"]');
+    if(window.__mc4.state.index!==0||__$$('#deliverySlots .delivery-slot').length!==5)throw new Error('第一轮不能直接过关');
+    for(let i=1;i<5;i++){__k4menu('#cargo[data-id="signal"]','copy');__k4menu('#port','paste');await __wait(100);}
     await __wait(800);
     const result={delivered,sourceStays,next:__$('#missionTitle').textContent.trim()};
     if(result.delivered!==1||!result.sourceStays||!result.next.includes('照片'))
       throw new Error('复制求救文字没有正确进入下一单：'+JSON.stringify(result));
     return JSON.stringify(result);
   `), shot:true },
-  { label: '同一张照片复制两次，每次都能重新装进口袋', js: wrap(k4Helpers + `
+  { label: '同一张照片复制五次，每次都能重新装进口袋', js: wrap(k4Helpers + `
     __k4right('#cargo[data-id="photo"]'); const menuBlocked=__$('#mmenu').hidden;
     await __k4deliver('photo','c'); const sourceStays=!!__$('#cargo[data-id="photo"]');
     const firstDelivered=__$$('#deliverySlots .delivery-slot.is-filled').length;
-    await __k4deliver('photo','c');
+    for(let i=1;i<5;i++){await __k4deliver('photo','c');if(i<4&&window.__mc4.state.index!==1)throw new Error('照片不足五轮不能过关');}
     const delivered=__$$('#deliverySlots .delivery-slot.is-filled').length;
     await __wait(800);
     const result={menuBlocked,sourceStays,firstDelivered,delivered,next:__$('#missionTitle').textContent.trim()};
-    if(!menuBlocked||!sourceStays||result.firstDelivered!==1||result.delivered!==2||!result.next.includes('电池'))
-      throw new Error('照片不能复制两份后进入电池任务：'+JSON.stringify(result));
+    if(!menuBlocked||!sourceStays||result.firstDelivered!==1||result.delivered!==5||!result.next.includes('电池'))
+      throw new Error('照片不能复制五份后进入电池任务：'+JSON.stringify(result));
     return JSON.stringify(result);
   `), shot:true },
   { label: '剪切电池后原件离开货舱，三单完成并锁定在发射页', js: wrap(k4Helpers + `
@@ -1578,7 +1582,11 @@ add({ name: '鼠标练习营4-太空补给任务线', page: '鼠标练习营4.ht
     const keyboardBlocked=!window.__mc4.state.clip;
     __k4menu('#cargo[data-id="battery"]','cut'); __k4click('#port'); __k4key('v');
     const pasteBlocked=__$$('#deliverySlots .delivery-slot.is-filled').length===0;
-    __k4menu('#port','paste'); await __wait(900);
+    __k4menu('#port','paste');await __wait(100);
+    if(__$('#cargo[data-id="battery"]')||window.__mc4.state.index!==2||__$('#finale').classList.contains('show'))throw new Error('电池没有搬走或提前结束');
+    await __wait(650);
+    for(let i=1;i<5;i++){__k4menu('#cargo[data-id="battery"]','cut');__k4menu('#port','paste');await __wait(750);}
+    await __wait(200);
     const path0=location.pathname+location.search; history.back(); await __wait(350);
     const saved=JSON.parse(localStorage.getItem('mousecamp4.progress.v2')||'null');
     const result={keyboardBlocked,pasteBlocked,finale:__$('#finale').classList.contains('show'),
@@ -1635,51 +1643,63 @@ add({ name: '鼠标练习营4-发射页预览', page: '鼠标练习营4.html?fin
 ]});
 
 add({ name:'鼠标练习营4-隐藏关卡',page:'鼠标练习营4.html?finale=1',steps:[
-  { label:'发射后进入太空；空弹不能发射，护盾必须先剪断',js:wrap(k4Helpers + `
+  { label:'飞船在下方跟随鼠标，三类目标从上方下落',js:wrap(k4Helpers + `
     __k4click('#startSecret');
-    const started=__$('#finale').classList.contains('battle');
-    window.__k4InitialSpeed=window.__mc4.battle.speed;
-    __k4key('v'); const emptyBlocked=window.__mc4.battle.index===0;
-    __k4key('c'); const charged=window.__mc4.battle.charged;
-    __k4key('v'); await __wait(1850);
-    const firstHit=window.__mc4.battle.index===1&&window.__mc4.battle.score===1;
-    __k4key('c'); __k4key('v'); await __wait(1850);
-    const shield=window.__mc4.battle.shield;
-    __k4key('c'); const shieldBlocked=!window.__mc4.battle.charged;
-    __k4key('x'); const cut=!window.__mc4.battle.shield;
-    const result={started,emptyBlocked,charged,firstHit,shield,shieldBlocked,cut};
-    if(Object.values(result).some(v=>!v))throw new Error('隐藏关卡基础操作失败：'+JSON.stringify(result));
+    const b=window.__mc4.battle,r=__$('#secretArena').getBoundingClientRect(),firstY=b.enemies[0].y;
+    __$('#secretArena').dispatchEvent(new PointerEvent('pointermove',{bubbles:true,clientX:r.left+r.width*.3,clientY:r.top+r.height*.82}));await __wait(350);
+    const ship=__$('#secretShip').getBoundingClientRect();
+    const result={threeTypes:new Set(b.enemies.map(e=>e.type)).size===3,mouse:Math.abs(b.x-.3)<.02,bottom:ship.top>r.top+r.height*.6,falling:b.enemies[0].y>firstY};
+    if(Object.values(result).some(v=>!v))throw new Error('三弹种射击场没有正确运行：'+JSON.stringify(result));
     return JSON.stringify(result);
   `),shot:true },
-  { label:'六个目标后继续生成，第十分快速升级且预览不写档',js:wrap(k4Helpers + `
-    for(let i=2;i<6;i++){
-      if(window.__mc4.battle.shield)__k4key('x');
-      __k4key('c');__k4key('v');await __wait(1850);
+  { label:'按住连发，松键/松Ctrl/失焦停火，弹种必须匹配',nativeClicks:[{selector:'#secretArena',button:'left'}],js:wrap(k4Helpers + `
+    const b=window.__mc4.battle,r=__$('#secretArena').getBoundingClientRect();
+    const aim=x=>__$('#secretArena').dispatchEvent(new PointerEvent('pointermove',{bubbles:true,clientX:r.left+r.width*x,clientY:r.top+r.height*.84}));
+    const nativeMouse=Math.abs(b.y-.65)<.02;b.spawnClock=100000;aim(.5);
+    const asteroid=b.enemies.find(e=>e.type==='asteroid');
+    __k4key('v');const once=b.fired;
+    for(let i=0;i<12;i++)document.dispatchEvent(new KeyboardEvent('keydown',{key:'v',ctrlKey:true,repeat:true,bubbles:true,cancelable:true}));
+    const repeatSafe=b.fired===once;await __wait(380);
+    const autoFire=b.fired>=once+2,wrongBlocked=b.score===0&&b.enemies.includes(asteroid);
+    __k4up('v');const stoppedAt=b.fired;await __wait(250);const releaseStops=b.fired===stoppedAt;
+    b.enemies.forEach(e=>{e.x=.05;});__k4key('c');__k4up('Control');const controlAt=b.fired;await __wait(200);const ctrlStops=b.fired===controlAt;
+    __k4key('v');window.dispatchEvent(new Event('blur'));const blurAt=b.fired;await __wait(200);const blurStops=b.fired===blurAt;
+    const expected=[['asteroid','c',1],['ufo','v',3],['barrier','x',6]];
+    for(const [type,key,score] of expected){
+      b.enemies.forEach(e=>{e.x=.05;});const target=b.enemies.find(e=>e.type===type);target.x=.5;target.y=.5;
+      __k4key(key);await __wait(180);__k4up(key);await __wait(180);
+      if(b.score!==score)throw new Error(type+' 没有被对应飞弹击毁：'+b.score);
     }
-    const beyondSix=window.__mc4.battle.index===6&&!!window.__mc4.battle.current;
-    if(window.__mc4.battle.shield)__k4key('x');
-    __k4key('c');__k4key('v');await __wait(1850);
-    const b=window.__mc4.battle;
-    const result={beyondSix,stillPlaying:__$('#finale').classList.contains('battle'),score:b.score,
-      level:b.level,speedUp:b.speed<window.__k4InitialSpeed,gapUp:b.gap<700,
-      noSave:!localStorage.getItem('mousecamp4.progress.v2')};
-    if(!result.beyondSix||!result.stillPlaying||result.score<10||result.level<2||!result.speedUp||!result.gapUp||!result.noSave)
-      throw new Error('隐藏关卡无尽升级错误：'+JSON.stringify(result));
+    const result={nativeMouse,repeatSafe,autoFire,wrongBlocked,releaseStops,ctrlStops,blurStops,threeMissiles:true,score:b.score};
+    if(Object.values(result).some(v=>v===false))throw new Error('连发或弹种规则错误：'+JSON.stringify(result));
     return JSON.stringify(result);
   `),shot:true },
-  { label:'目标飞走不扣分，仍然继续刷新',js:wrap(`
-    const oldScore=window.__mc4.battle.score,oldIndex=window.__mc4.battle.index;
-    await __wait(window.__mc4.battle.speed+window.__mc4.battle.gap+250);
-    const b=window.__mc4.battle;
-    const result={sameScore:b.score===oldScore,nextTarget:b.index>oldIndex,playing:__$('#finale').classList.contains('battle')};
-    if(!result.sameScore||!result.nextTarget||!result.playing)throw new Error('漏掉目标后游戏中断：'+JSON.stringify(result));
-    return JSON.stringify(result);
-  `) }
+  { label:'无尽升级、碰撞扣分不降关、恢复分数后再升级',js:wrap(k4Helpers + `
+    const b=window.__mc4.battle,oldSpeed=b.speed,oldGap=b.gap;b.spawnClock=0;await __wait(120);const continuous=b.spawned>3;
+    const shoot=async()=>{
+      b.spawnClock=0;await __wait(80);b.enemies.forEach(e=>{e.x=.05;});
+      const goal=b.enemies[0];goal.x=b.x;goal.y=b.y-.2;goal.type='asteroid';goal.weapon='c';
+      __k4key('c');await __wait(60);__k4up('c');await __wait(250);
+    };
+    for(let i=0;i<8&&b.score<10;i++)await shoot();
+    const result={continuous,score:b.score,level:b.level,faster:b.speed>oldSpeed,denser:b.gap<oldGap,playing:__$('#finale').classList.contains('battle'),noSave:!localStorage.getItem('mousecamp4.progress.v2')};
+    if(!result.continuous||result.score<10||result.level<2||!result.faster||!result.denser||!result.playing||!result.noSave)throw new Error('无尽升级错误：'+JSON.stringify(result));
+    if(!b.enemies.length){b.spawnClock=0;await __wait(80);}const score=b.score;b.enemies.forEach(e=>{e.y=1.2;});await __wait(100);
+    if(b.score!==score||!b.escaped)throw new Error('漏过目标不应扣分');
+    b.score=10;const reachedLevel=b.level,retainedSpeed=b.speed;
+    b.spawnClock=0;await __wait(80);let obstacle=b.enemies[0];obstacle.x=b.x;obstacle.y=b.y;await __wait(60);
+    if(b.score!==9||b.level!==reachedLevel||b.speed!==retainedSpeed)throw new Error('碰撞应扣分不降关');
+    b.score=0;b.spawnClock=0;await __wait(80);obstacle=b.enemies[0];obstacle.x=b.x;obstacle.y=b.y;await __wait(60);
+    if(b.score!==0||b.level!==reachedLevel)throw new Error('零分碰撞不能变负分或降关');
+    b.level=3;b.score=28;await shoot();const speedAt3=b.speed;
+    if(b.score!==29||b.level!==3)throw new Error('29 分仍应保持第 3 关');
+    await shoot();if(b.score!==30||b.level!==4||Math.abs(b.speed-speedAt3-.018)>.00001)throw new Error('30 分才应升级到第 4 关并加速');
+    result.collisionMinusOne=true;result.levelRetained=true;result.level4At30=true;return JSON.stringify(result);
+  `),shot:true }
 ]});
-
 add({ name: '鼠标练习营4-续关种档', page:'index.html', steps:[
   { label:'种下前两单已经完成的进度', js:wrap(`
-    localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{s1:true,s2:true},ts:Date.now()}));
+    localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{s1:true,s2:true},rounds:{s3:2},ts:Date.now()}));
     return JSON.stringify({seeded:true});
   `) }
 ]});
@@ -1687,8 +1707,8 @@ add({ name:'鼠标练习营4-刷新接第三单',page:'鼠标练习营4.html',st
   { label:'新页面从电池任务继续，发射页仍未开放',js:wrap(`
     await __wait(450);
     const result={title:__$('#missionTitle').textContent.trim(),done:__$$('.route-step.done').length,
-      finale:__$('#finale').classList.contains('show')};
-    if(!result.title.includes('电池')||result.done!==2||result.finale)
+      finale:__$('#finale').classList.contains('show'),rounds:window.__mc4.state.delivered,counter:__$('#missionCounter').textContent};
+    if(!result.title.includes('电池')||result.done!==2||result.finale||result.rounds!==2||!result.counter.includes('3 / 5'))
       throw new Error('刷新后没有从第三单继续：'+JSON.stringify(result));
     return JSON.stringify(result);
   `),shot:true }
@@ -1723,7 +1743,7 @@ add({ name:'鼠标练习营4-发射页-1024',page:'鼠标练习营4.html?finale=
 
 add({ name:'鼠标练习营4-隐藏关存档种档',page:'index.html',steps:[
   { label:'已完成三单的旧版 v2 存档也能解锁隐藏关',js:wrap(`
-    localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{s1:true,s2:true,s3:true},ts:Date.now()}));
+    localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{s1:true,s2:true,s3:true},secretScore:9,secretLevel:3,ts:Date.now()}));
     return JSON.stringify({seeded:true});
   `) }
 ]});
@@ -1731,27 +1751,31 @@ add({ name:'鼠标练习营4-隐藏关存档得分',page:'鼠标练习营4.html'
   { label:'命中目标后写入无尽关得分',js:wrap(k4Helpers + `
     const unlocked=__$('#finale').classList.contains('show')&&!!__$('#startSecret');
     __k4click('#startSecret');
-    __k4key('c');__k4key('v');await __wait(1850);
+    __k4key('c');await __wait(60);__k4up('c');await __wait(600);
     const saved=JSON.parse(localStorage.getItem('mousecamp4.progress.v2')||'null');
     const result={unlocked,playing:__$('#finale').classList.contains('battle'),score:window.__mc4.battle.score,
-      saved:!!(saved&&saved.secretScore===1)};
-    if(!result.unlocked||!result.playing||result.score!==1||!result.saved)throw new Error('隐藏关没有正确存档：'+JSON.stringify(result));
+      saved:!!(saved&&saved.secretScore===10&&saved.secretLevel===3)};
+    if(!result.unlocked||!result.playing||result.score!==10||!result.saved)throw new Error('隐藏关没有正确存档：'+JSON.stringify(result));
+    const b=window.__mc4.battle,obstacle=b.enemies[0];obstacle.x=b.x;obstacle.y=b.y;await __wait(60);
+    const collisionSave=JSON.parse(localStorage.getItem('mousecamp4.progress.v2')||'null');
+    result.collisionSaved=!!(collisionSave&&collisionSave.secretScore===9&&collisionSave.secretLevel===3);
+    if(!result.collisionSaved)throw new Error('碰撞后没有保存扣分和原关卡');
     return JSON.stringify(result);
   `) }
 ]});
 add({ name:'鼠标练习营4-隐藏关存档刷新',page:'鼠标练习营4.html',steps:[
   { label:'刷新后得分保留，仍可从发射页续玩',js:wrap(k4Helpers + `
-    const launch=__$('#finale').classList.contains('show'),entry=__$('#startSecret').textContent.includes('1 分');
+    const launch=__$('#finale').classList.contains('show'),entry=__$('#startSecret').textContent.includes('9 分');
     __k4click('#startSecret');
     const result={launch,entry,score:window.__mc4.battle.score,level:window.__mc4.battle.level};
-    if(!result.launch||!result.entry||result.score!==1||result.level!==1)throw new Error('隐藏关刷新状态错误：'+JSON.stringify(result));
+    if(!result.launch||!result.entry||result.score!==9||result.level!==3)throw new Error('隐藏关刷新状态错误：'+JSON.stringify(result));
     return JSON.stringify(result);
   `) }
 ]});
 add({ name:'鼠标练习营4-隐藏关-1024',page:'鼠标练习营4.html?finale=1',viewport:[1024,768],steps:[
   { label:'1024×768 战斗区、提示栏和目标完整可见',js:wrap(k4Helpers + `
     __k4click('#startSecret');
-    const arena=__$('#secretArena').getBoundingClientRect(),hint=__$('.secret-dialogue').getBoundingClientRect(),target=__$('#secretTarget').getBoundingClientRect();
+    const arena=__$('#secretArena').getBoundingClientRect(),hint=__$('.secret-dialogue').getBoundingClientRect(),target=__$('#secretShip').getBoundingClientRect();
     const result={overflowX:document.documentElement.scrollWidth>innerWidth+1,
       arena:arena.top>=0&&arena.bottom<=innerHeight,target:target.left>=arena.left&&target.right<=arena.right,
       dialogue:hint.top>=0&&hint.bottom<=innerHeight};
@@ -1786,6 +1810,36 @@ add({
     { label: '真实鼠标分多段拖动音乐后过关', nativeDrags: [{from:'#play .micon[data-id="music"]',to:'#play .slot-cell:nth-child(13)'}], js: wrap(`
       const result = { done: window.__mt.state.done, position: window.__mt.state.icons[0].col + ',' + window.__mt.state.icons[0].row };
       if (!result.done) throw new Error('拖动第5列第2行后仍未过关：' + JSON.stringify(result));
+      return JSON.stringify(result);
+    `), shot: true }
+  ]
+});
+add({
+  name: '鼠标练习营3-拖动图标-同列任意行',
+  page: '鼠标练习营3.html',
+  steps: [
+    { label: '这一轮仍限定第1列', js: wrap(`
+      window.__mt.goto(3, 5);
+      const goal = window.__mt.levels[3].rounds[5].goal;
+      window.__mt.state.icons.forEach((ic, i) => { ic.col = 1; ic.row = i; });
+      const acceptedOtherColumn = window.__mt.goalMet(goal);
+      if (acceptedOtherColumn) throw new Error('摆在第2列也被错误判为通关');
+      return JSON.stringify({ acceptedOtherColumn });
+    `) },
+    { label: '第1、2、4行都在第1列时通关', js: wrap(`
+      window.__mt.goto(3, 5);
+      return JSON.stringify({ round: window.__mt.round(), ready: window.__mt.ready() });
+    `) },
+    { label: '真实拖到第1、2、4行后应通关', nativeDrags: [
+      {from:'#play .micon[data-id="pc"]',to:'#play .slot-cell:nth-child(1)'},
+      {from:'#play .micon[data-id="bin"]',to:'#play .slot-cell:nth-child(9)'},
+      {from:'#play .micon[data-id="paint"]',to:'#play .slot-cell:nth-child(25)'}
+    ], js: wrap(`
+      const byId = id => window.__mt.state.icons.find(ic => ic.id === id);
+      const result = { done: window.__mt.state.done,
+        positions: ['pc','bin','paint'].map(id => [byId(id).col, byId(id).row]) };
+      if (!result.done || JSON.stringify(result.positions) !== '[[0,0],[0,1],[0,3]]')
+        throw new Error('第1、2、4行同在第1列时未通关：' + JSON.stringify(result));
       return JSON.stringify(result);
     `), shot: true }
   ]

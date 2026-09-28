@@ -65,6 +65,7 @@ html.no-flexgap .delivery-slots>*:not(:last-child){margin-right:7px}
 .delivery-slot img{width:34px;height:34px;object-fit:contain}
 .port{position:relative;z-index:2;width:96%;height:72%;max-width:360px;min-height:230px;max-height:380px;border:3px dashed #e6ae36;border-radius:24px;padding:13px 12px;background:linear-gradient(160deg,#fff9e9,#fff2c9);color:#513709;font-size:17px;font-weight:900;cursor:pointer;box-shadow:0 7px 0 #dcbd70,0 13px 24px rgba(107,81,27,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:transform .12s,border-color .12s,box-shadow .12s}
 .port-title{display:block;padding:6px 12px;border-radius:999px;background:#ffcd60;color:#563907;font-size:16px;font-weight:900;line-height:1.3}
+html.no-flexgap .port>*:not(:last-child){margin-bottom:5px}
 .port .rocket-body{pointer-events:none}.port:hover{transform:translateY(-2px);border-color:#d89112}
 .port.ready:not(.targeted){box-shadow:0 0 0 6px rgba(255,195,65,.22),0 7px 0 #dcbd70;animation:pulse 1.1s infinite}
 .port.targeted{border-style:solid;border-color:#ea9d21;background:linear-gradient(160deg,#fff1c4,#ffdf85);box-shadow:0 0 0 7px rgba(255,194,65,.35),0 7px 0 #c8922d}
@@ -102,31 +103,41 @@ kbd{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:1
 .secret-game{position:relative;z-index:1;display:none;width:100%;max-width:1050px;height:100%;max-height:710px;min-height:0;grid-template-rows:auto minmax(0,1fr) auto;gap:12px}
 .finale.battle{place-items:stretch center}.finale.battle .launch-card{display:none}.finale.battle .secret-game{display:grid}
 .secret-head{display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid rgba(255,255,255,.24);border-radius:18px;padding:12px 18px;background:rgba(11,24,59,.84)}
+html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
 .secret-head b{display:block;color:#fff;font-size:22px}.secret-head small{display:block;color:#9cedff;font-size:13px;font-weight:800;margin-bottom:3px}
-.secret-progress{text-align:right;font-size:15px;font-weight:900;color:#ffe28e;white-space:nowrap}
-.secret-progress span{display:block;color:#bdcced;font-size:12px;margin-top:3px}
+.secret-progress{display:grid;grid-template-columns:repeat(2,minmax(100px,auto));gap:12px;text-align:center;font-weight:900;white-space:nowrap}
+.secret-stat{display:block;padding:7px 16px;border:2px solid #eab856;border-radius:13px;background:rgba(66,43,14,.8);box-shadow:0 0 16px rgba(255,199,76,.16);color:#ffe28e}
+.secret-stat.level{border-color:#68ceff;background:rgba(13,54,88,.8);color:#a6ecff}
+.secret-stat small{display:block;font-size:13px;color:inherit;margin:0 0 2px}
+.secret-stat strong{display:block;font-size:32px;line-height:1.1;text-shadow:0 0 12px rgba(255,255,255,.2)}
 .secret-arena{position:relative;min-height:210px;overflow:hidden;border:1px solid rgba(130,212,255,.34);border-radius:22px;background:radial-gradient(circle at 70% 45%,rgba(42,97,163,.58),transparent 35%),linear-gradient(120deg,rgba(8,20,49,.86),rgba(19,33,78,.7));box-shadow:inset 0 0 70px rgba(38,127,207,.15)}
 .secret-arena::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;background:radial-gradient(#fff 1px,transparent 1.5px);background-size:47px 49px;opacity:.35}
-.secret-ship{position:absolute;left:4%;top:50%;width:38%;max-width:330px;transform:translateY(-50%);filter:drop-shadow(0 18px 20px rgba(0,0,0,.55));animation:secretFloat 3s ease-in-out infinite}
-.secret-ship img,.secret-target img{display:block;width:100%;height:auto}
-.secret-target{position:absolute;right:7%;top:50%;width:27%;max-width:235px;transform:translateY(-50%);filter:drop-shadow(0 18px 22px rgba(0,0,0,.55))}
-.secret-target.asteroid{width:24%}.secret-target.hit{animation:targetHit .6s ease-in forwards}
-.secret-shield{position:absolute;top:7%;right:2%;bottom:7%;left:2%;border:5px solid rgba(111,234,255,.8);border-radius:50%;box-shadow:0 0 20px #64e8ff,inset 0 0 25px #64e8ff;background:rgba(72,190,242,.12);pointer-events:none;animation:shieldPulse 1.8s ease-in-out infinite}
-.secret-shield[hidden]{display:none}
-.secret-bolt{position:absolute;left:35%;top:47%;width:11%;height:13px;border-radius:20px;background:#fff8ab;box-shadow:0 0 12px #fff,0 0 30px #ffc343;opacity:0;pointer-events:none}
-.secret-bolt.firing{animation:boltFly .55s ease-in forwards}
-.secret-flash{position:absolute;right:14%;top:44%;font-size:48px;opacity:0;pointer-events:none}
-.secret-flash.pop{animation:hitFlash .65s ease-out}
-.secret-energy{position:absolute;left:12%;bottom:10px;border-radius:13px;background:rgba(10,20,49,.8);border:1px solid rgba(154,225,255,.45);padding:8px 12px;font-size:15px;font-weight:900;color:#bcefff}
+.secret-arena{cursor:crosshair;touch-action:none}
+.secret-arena::before{animation:starTravel 5s linear infinite}
+.secret-ship{position:absolute;left:50%;top:85%;width:100px;height:100px;transform:translate(-50%,-50%);filter:drop-shadow(0 8px 12px rgba(70,187,255,.55));z-index:4;pointer-events:none}
+.secret-ship img{display:block;width:100%;height:100%;object-fit:contain;transform:rotate(-90deg)}
+.secret-ship.bump{animation:shipBump .5s ease-out}
+.secret-target{position:absolute;width:66px;height:66px;transform:translate(-50%,-50%);filter:drop-shadow(0 5px 8px rgba(0,0,0,.5));pointer-events:none;z-index:2}
+.secret-target img{display:block;width:100%;height:100%;object-fit:contain}
+.secret-target.ufo{width:80px;height:66px}.secret-target.aimed::after{content:"";position:absolute;top:-7px;right:-7px;bottom:-7px;left:-7px;border:2px dashed #ffe080;border-radius:50%}
+.secret-target.barrier{width:74px;height:74px;display:grid;place-items:center}.barrier-core{width:46px;height:46px;border:3px solid #efd1ff;border-radius:8px;transform:rotate(45deg);background:linear-gradient(135deg,#f5a7ff,#6738bb);box-shadow:0 0 14px #b775ff,inset 0 0 16px #fff}.barrier-core::after{content:"";position:absolute;top:8px;right:8px;bottom:8px;left:8px;border:2px solid #fff;border-radius:3px}
+.enemy-key{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);padding:2px 8px;border:1px solid #ffd27d;background:#5b3518;color:#ffe2a1;border-radius:7px;font:900 13px Consolas,monospace}.ufo .enemy-key{border-color:#91eaff;background:#123f62;color:#b8f5ff}.barrier .enemy-key{border-color:#e2b8ff;background:#4d276b;color:#f2dbff}
+.secret-bolt{position:absolute;width:7px;height:23px;border-radius:10px;background:#fff8ab;box-shadow:0 0 9px #fff,0 0 18px #ffc343;transform:translate(-50%,-50%);pointer-events:none;z-index:3}
+.secret-bolt.c{background:#fff1a9;box-shadow:0 0 7px #fff,0 12px 14px #ff8626}.secret-bolt.v{width:9px;height:28px;background:#c1fbff;box-shadow:0 0 10px #43dfff,0 15px 16px #247eff}.secret-bolt.x{width:13px;height:38px;background:#f4ceff;box-shadow:0 0 11px #ce69ff,0 18px 18px #a43cff}
+.secret-ship.firing img{animation:weaponRecoil .13s ease-in-out infinite}.secret-ship.firing{filter:drop-shadow(0 0 14px #8cdcff)}
+.secret-burst{position:absolute;width:65px;height:65px;border:4px solid #ffde79;border-radius:50%;background:radial-gradient(circle,#fff 0,#ffca4f 22%,#ff7033 42%,transparent 70%);pointer-events:none;z-index:5;animation:blastRing .5s ease-out forwards}.secret-burst.ufo{border-color:#91f4ff;filter:hue-rotate(145deg)}.secret-burst.barrier{border-color:#ebb5ff;filter:hue-rotate(235deg)}
+.weapon-legend{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px!important}.weapon{display:block;border:1px solid #a07839;border-radius:9px;padding:5px 8px;background:#2b2944;color:#ffd990}.weapon.v{border-color:#478bae;color:#a4edff}.weapon.x{border-color:#9060bb;color:#e8bdff}.weapon.active{background:#485077;box-shadow:0 0 0 2px rgba(255,255,255,.2)}
+@keyframes weaponRecoil{0%,100%{transform:rotate(-90deg) translateX(0)}50%{transform:rotate(-90deg) translateX(-3px)}}
+@keyframes blastRing{0%{opacity:1;transform:translate(-50%,-50%) scale(.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.8)}}
+.secret-effect{position:absolute;font-size:27px;font-weight:900;color:#ffdd79;pointer-events:none;z-index:5;animation:hitFlash .65s ease-out forwards}
+.secret-aim{position:absolute;top:0;left:50%;width:1px;height:85%;background:linear-gradient(transparent,rgba(103,223,255,.28));pointer-events:none;z-index:1}
+.secret-energy{position:absolute;left:12px;bottom:10px;border-radius:13px;background:rgba(10,20,49,.8);border:1px solid rgba(154,225,255,.45);padding:8px 12px;font-size:13px;font-weight:900;color:#bcefff;z-index:6;pointer-events:none}
 .secret-energy.ready{color:#ffdf7a;box-shadow:0 0 18px rgba(255,213,98,.45)}
 .secret-dialogue{display:grid;grid-template-columns:76px minmax(0,1fr);gap:13px;align-items:center;min-height:116px;padding:12px 18px;border:2px solid #9eeaff;border-radius:20px;background:rgba(11,24,59,.94);box-shadow:0 0 0 4px rgba(55,144,206,.18)}
 .secret-dialogue img{width:72px;height:72px;object-fit:contain}.secret-dialogue strong{display:block;font-size:15px;color:#ffdb83;margin-bottom:4px}
 .secret-dialogue p{margin:0;font-size:20px;font-weight:800;line-height:1.42}.secret-dialogue em{display:block;font-style:normal;color:#b5d0f5;font-size:13px;margin-top:3px}
-@keyframes secretFloat{0%,100%{margin-top:7px}50%{margin-top:-8px}}
-@keyframes secretApproach{0%{right:7%;margin-top:7px}50%{margin-top:-8px}100%{right:76%;margin-top:7px}}
-@keyframes shieldPulse{0%,100%{opacity:.65;transform:scale(.97)}50%{opacity:1;transform:scale(1.04)}}
-@keyframes boltFly{0%{left:35%;opacity:0;transform:scale(.6)}15%{opacity:1}100%{left:73%;opacity:1;transform:scale(1.4)}}
-@keyframes targetHit{0%{opacity:1;transform:translateY(-50%) scale(1)}40%{filter:brightness(3);transform:translateY(-50%) scale(1.2)}100%{opacity:0;transform:translateY(-50%) scale(.25)}}
+@keyframes starTravel{from{background-position:0 0}to{background-position:0 196px}}
+@keyframes shipBump{0%,100%{opacity:1}30%,70%{opacity:.25;filter:brightness(3)}}
 @keyframes hitFlash{0%{opacity:0;transform:scale(.4)}35%{opacity:1;transform:scale(1.4)}100%{opacity:0;transform:scale(2)}}
 @media(min-width:801px){.app{min-height:calc(100vh - 24px);grid-template-rows:auto auto minmax(0,1fr)}#station{min-height:0}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
@@ -155,7 +166,7 @@ kbd{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:1
  .launch-card{min-height:0;grid-template-columns:1fr;padding:18px;gap:0}.launch-copy{text-align:center}
  .launch-copy h2{font-size:30px}.launch-copy p{font-size:15px}.launch-scene{min-height:175px}
  .launch-rocket{max-width:230px}
- .secret-head b{font-size:17px}.secret-head{padding:9px 12px}.secret-progress{font-size:13px}
+ .secret-head b{font-size:17px}.secret-head{padding:9px 12px}.secret-progress{grid-template-columns:repeat(2,minmax(65px,auto));gap:6px}.secret-stat{padding:6px 9px}.secret-stat strong{font-size:26px}
  .secret-game{gap:8px}.secret-dialogue{grid-template-columns:56px minmax(0,1fr);min-height:103px;padding:9px;gap:7px}
  .secret-dialogue img{width:54px;height:54px}.secret-dialogue p{font-size:16px}.secret-dialogue em{font-size:11px}
 }
@@ -311,14 +322,14 @@ kbd{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:1
     </div>
   </div>
   <div class="secret-game" id="secretGame" aria-label="隐藏关卡：星际护航">
-    <div class="secret-head"><div><small>隐藏关卡 · 无尽星际护航</small><b id="secretTitle">前方出现陨石！</b></div><div class="secret-progress" id="secretProgress">得分 0<span>第 1 关</span></div></div>
+    <div class="secret-head"><div><small>隐藏关卡 · 无尽星际护航</small><b id="secretTitle">护送补给，穿过星际风暴！</b></div><div class="secret-progress" id="secretProgress"><span class="secret-stat"><small>得分</small><strong>0</strong></span><span class="secret-stat level"><small>关卡</small><strong>1</strong></span></div></div>
     <div class="secret-arena" id="secretArena">
-      <div class="secret-ship"><img src="assets/mousecamp4/cargo-ship.png" alt="我们的补给飞船"></div>
-      <div class="secret-target asteroid" id="secretTarget"><img id="secretTargetArt" src="assets/mousecamp4/asteroid.png" alt="陨石"><div class="secret-shield" id="secretShield" hidden></div></div>
-      <div class="secret-bolt" id="secretBolt"></div><div class="secret-flash" id="secretFlash" aria-hidden="true">💥</div>
-      <div class="secret-energy" id="secretEnergy">能量舱：空</div>
+      <div class="secret-aim" id="secretAim"></div>
+      <div id="secretEnemies"></div><div id="secretShots"></div><div id="secretEffects"></div>
+      <div class="secret-ship" id="secretShip"><img src="assets/mousecamp4/cargo-ship.png" alt="我们的补给飞船"></div>
+      <div class="secret-energy" id="secretEnergy">碎岩弹 · 按住 Ctrl+C 连发</div>
     </div>
-    <div class="secret-dialogue" role="status" aria-live="polite"><img src="assets/mousecamp4/daidai-astronaut.png" alt=""><div><strong>袋袋 · 航行提示</strong><p id="secretHint">按 Ctrl + C 复制能量弹。</p><em id="secretSubhint">目标会飞过航道；没打中也不扣分，下一个还会来。</em></div></div>
+    <div class="secret-dialogue" role="status" aria-live="polite"><img src="assets/mousecamp4/daidai-astronaut.png" alt=""><div><strong>袋袋 · 航行提示</strong><p id="secretHint">按住对应快捷键连发，移动鼠标扫射！</p><em class="weapon-legend" id="secretSubhint"><span class="weapon c active" id="weaponC">Ctrl+C · 碎岩弹 → 陨石</span><span class="weapon v" id="weaponV">Ctrl+V · 追击弹 → 飞碟</span><span class="weapon x" id="weaponX">Ctrl+X · 穿透弹 → 屏障</span></em></div></div>
   </div>
 </section>
 
@@ -328,21 +339,25 @@ kbd{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:1
   var PREVIEW=/[?&]finale=1/.test(location.search);
   var SAVE_KEY='mousecamp4.progress.v2';
   var TASKS=[
-    {id:'s1',title:'右键复制求救文字',order:'用鼠标右键复制求救信号，再用右键粘贴到飞船。',target:'广播舱',action:'copy',method:'menu',count:1,item:{id:'signal',name:'求救信号',word:'SOS！',type:'文字',art:'assets/mousecamp4/sos-signal.png'}},
-    {id:'s2',title:'快捷键复制两份照片',order:'这次用 Ctrl+C 和 Ctrl+V，把同一张照片送进去两次。',target:'照片舱',action:'copy',method:'keys',count:2,item:{id:'photo',name:'星球照片',word:'蓝色星球.jpg',type:'图片',art:'assets/mousecamp4/planet-photo.png'}},
-    {id:'s3',title:'右键剪切电池文件',order:'用鼠标右键剪切电池，再用右键粘贴到引擎舱。',target:'引擎舱',action:'cut',method:'menu',count:1,item:{id:'battery',name:'电池文件',word:'能量电池.png',type:'文件',art:'assets/mousecamp4/energy-battery.png'}}
+    {id:'s1',title:'右键复制求救文字',order:'用鼠标右键复制求救信号，再用右键粘贴到飞船，共练习 5 次。',target:'广播舱',action:'copy',method:'menu',count:5,item:{id:'signal',name:'求救信号',word:'SOS！',type:'文字',art:'assets/mousecamp4/sos-signal.png'}},
+    {id:'s2',title:'快捷键复制太空照片',order:'这次用 Ctrl+C 和 Ctrl+V，把同一张照片复制并投递 5 次。',target:'照片舱',action:'copy',method:'keys',count:5,item:{id:'photo',name:'星球照片',word:'蓝色星球.jpg',type:'图片',art:'assets/mousecamp4/planet-photo.png'}},
+    {id:'s3',title:'右键剪切电池文件',order:'用鼠标右键剪切电池，再用右键粘贴到引擎舱，共搬运 5 块电池。',target:'引擎舱',action:'cut',method:'menu',count:5,item:{id:'battery',name:'电池文件',word:'能量电池.png',type:'文件',art:'assets/mousecamp4/energy-battery.png'}}
   ];
-  var save={v:2,cleared:{},secretCleared:false,secretScore:0,ts:0};
+  var save={v:2,cleared:{},rounds:{},secretCleared:false,secretScore:0,secretLevel:1,ts:0};
   var S={index:0,selected:false,clip:null,targetSelected:false,delivered:0,sourceGone:false,completed:false,note:'',noteTimer:null,finale:false,secret:false};
-  var ENEMIES=['asteroid','asteroid','ufo','asteroid','ufo','ufo'];
-  var B={index:0,score:0,level:1,current:null,shield:false,charged:false,busy:false,escapeTimer:null,spawnTimer:null};
+  var B={score:0,level:1,weapon:'c',held:[],fireClock:0,fired:0,bumpUntil:0,x:.5,y:.84,enemies:[],bullets:[],effects:[],spawned:0,escaped:0,hits:0,frame:0,last:0,spawnClock:0,width:1,height:1};
   function $(id){return document.getElementById(id);}
   function esc(text){return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function loadSave(){
     try{
       var raw=localStorage.getItem(SAVE_KEY);if(!raw)return;
       var d=JSON.parse(raw);
-      if(d&&d.v===2&&d.cleared)save={v:2,cleared:{s1:!!d.cleared.s1,s2:!!d.cleared.s2,s3:!!d.cleared.s3},secretCleared:!!d.secretCleared,secretScore:Math.max(0,Math.floor(Number(d.secretScore)||0)),ts:d.ts||0};
+      if(d&&d.v===2&&d.cleared){
+        var savedScore=Math.max(0,Math.floor(Number(d.secretScore)||0));
+        save={v:2,cleared:{s1:!!d.cleared.s1,s2:!!d.cleared.s2,s3:!!d.cleared.s3},secretCleared:!!d.secretCleared,secretScore:savedScore,secretLevel:Math.max(1,Math.floor(savedScore/10)+1,Math.floor(Number(d.secretLevel)||1)),ts:d.ts||0};
+        save.rounds={};
+        for(var r=0;r<TASKS.length;r++){var id=TASKS[r].id;save.rounds[id]=save.cleared[id]?5:Math.max(0,Math.min(4,Math.floor(Number(d.rounds&&d.rounds[id])||0)));}
+      }
     }catch(e){}
   }
   function writeSave(){
@@ -378,7 +393,7 @@ kbd{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:1
   }
   function renderGame(){
     var t=task();if(!t)return;
-    $('missionCounter').textContent='订单 '+(S.index+1)+' / '+TASKS.length;
+    $('missionCounter').textContent='第 '+(S.index+1)+' 关 · 第 '+Math.min(t.count,S.delivered+1)+' / '+t.count+' 轮';
     $('missionTitle').textContent=t.title;$('missionPrompt').textContent=t.order;
     $('targetName').textContent=t.target;
     $('cargoHelp').textContent=t.method==='menu'?'对货物点右键':'点货物后按 Ctrl + C';
@@ -402,7 +417,7 @@ kbd{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:1
   }
   function closeMenu(){$('mmenu').hidden=true;}
   function setTask(index){
-    S.index=index;S.selected=false;S.clip=null;S.targetSelected=false;S.delivered=0;S.sourceGone=false;S.completed=false;S.note='';
+    S.index=index;S.selected=false;S.clip=null;S.targetSelected=false;S.delivered=save.rounds[TASKS[index].id]||0;S.sourceGone=false;S.completed=false;S.note='';
     if(S.noteTimer)clearTimeout(S.noteTimer);
     closeMenu();renderGame();
   }
@@ -434,11 +449,17 @@ kbd{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:1
     if(!S.clip){say(task().method==='menu'?'袋袋是空的，先在货物上点右键，选「'+(task().action==='copy'?'复制':'剪切')+'」。':'袋袋是空的，先点货物，再按 Ctrl + C。','🧺');return;}
     if(via!==task().method){say(task().method==='menu'?'这一单请在黄色投递口上点鼠标右键，再选「粘贴」。':'这一单练快捷键，点投递口后按 Ctrl + V。','🖱️');return;}
     if(!S.targetSelected){say('先点右边发光的投递口，再粘贴。','👇');return;}
-    S.delivered++;
+    S.delivered++;save.rounds[task().id]=S.delivered;writeSave();
     if(S.clip.kind==='cut')S.sourceGone=true;
     S.clip=null;S.selected=false;S.targetSelected=false;
     if(S.delivered>=task().count){completeTask();return;}
-    renderGame();say('投递成功！再复制一份，原件仍在货舱。','🚀');renderGame();
+    renderGame();
+    if(S.sourceGone){
+      say('第 '+S.delivered+' 块电池已经搬走！下一块电池马上送来。','🚀');
+      var index=S.index,round=S.delivered;
+      setTimeout(function(){if(S.index!==index||S.delivered!==round||S.finale)return;S.sourceGone=false;renderGame();say('新电池到啦！继续右键剪切，再右键粘贴。','🔋');},600);
+    }else say('已完成 '+S.delivered+' / '+task().count+' 轮！再复制一份，原件仍在货舱。','🚀');
+    renderGame();
   }
   function doAction(kind,via){if(kind==='copy'||kind==='cut')copyOrCut(kind,via);else if(kind==='paste')paste(via);}
   function openMenu(x,y,kind){
@@ -486,79 +507,153 @@ kbd{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:1
     if(b)doAction(b.getAttribute('data-act'),'menu');
   });
   function renderSecret(){
-    var ufo=B.current==='ufo';
-    $('secretTitle').textContent=ufo?'飞碟拦住了航道！':'前方出现陨石！';
-    $('secretProgress').innerHTML='得分 '+B.score+'<span>第 '+B.level+' 关 · 每 10 分升级</span>';
-    $('secretTarget').className='secret-target '+B.current;
-    $('secretTargetArt').src='assets/mousecamp4/'+(ufo?'ufo':'asteroid')+'.png';
-    $('secretTargetArt').alt=ufo?'飞碟':'陨石';
-    $('secretShield').hidden=!B.shield;
-    $('secretEnergy').className='secret-energy'+(B.charged?' ready':'');
-    $('secretEnergy').textContent=B.charged?'能量舱：已装弹 ✨':'能量舱：空';
-    $('secretHint').innerHTML=B.shield?'飞碟有护盾！先按 <kbd>Ctrl</kbd> + <kbd>X</kbd> 剪断护盾。':B.charged?'能量弹准备好了！按 <kbd>Ctrl</kbd> + <kbd>V</kbd> 粘贴发射。':'按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 复制一颗能量弹。';
-    $('secretSubhint').textContent=B.shield?'剪断后，才能装弹并开火。':B.charged?'瞄准已经自动完成，按键就能发射。':'目标会飞过航道；没打中也不扣分。';
+    B.level=Math.max(B.level,Math.floor(B.score/10)+1);
+    B.speed=.085+.018*(B.level-1);
+    B.gap=Math.max(300,1100/(1+.16*(B.level-1)));
+    $('secretProgress').innerHTML='<span class="secret-stat"><small>得分</small><strong>'+B.score+'</strong></span><span class="secret-stat level"><small>关卡</small><strong>'+B.level+'</strong></span>';
+    var names={c:'碎岩弹',v:'追击弹',x:'穿透弹'};
+    $('secretEnergy').className='secret-energy ready';
+    $('secretEnergy').textContent=names[B.weapon]+' · 按住 Ctrl+'+B.weapon.toUpperCase()+' 连发';
+    ['c','v','x'].forEach(function(k){$('weapon'+k.toUpperCase()).className='weapon '+k+(B.weapon===k?' active':'');});
   }
-  function secretSay(message,sub){$('secretHint').innerHTML=message;if(sub)$('secretSubhint').textContent=sub;}
+  function secretSay(message){$('secretHint').innerHTML=message;}
+  function saveBattle(){save.secretScore=B.score;save.secretLevel=B.level;writeSave();}
+  function placeEntity(entity){entity.el.style.left=(entity.x*100)+'%';entity.el.style.top=(entity.y*100)+'%';}
+  function removeEntity(list,index){var item=list[index];if(item.el.parentNode)item.el.parentNode.removeChild(item.el);list.splice(index,1);}
+  function battleEffect(x,y,text){
+    if(B.effects.length>=24)removeEntity(B.effects,0);
+    var el=document.createElement('div');el.className='secret-effect';el.textContent=text;$('secretEffects').appendChild(el);
+    var item={el:el,x:x,y:y,life:.65};B.effects.push(item);placeEntity(item);
+  }
+  function spawnEnemy(type,x,y){
+    if(B.enemies.length>=12)return;
+    if(!type){var roll=Math.random();type=roll<.25?'barrier':roll<.6?'ufo':'asteroid';}
+    var el=document.createElement('div');el.className='secret-target '+type;
+    var weapon=type==='asteroid'?'c':type==='ufo'?'v':'x';
+    el.innerHTML=(type==='barrier'?'<span class="barrier-core" aria-label="能量屏障"></span>':'<img src="assets/mousecamp4/'+type+'.png" alt="'+(type==='ufo'?'敌方飞碟':'陨石')+'">')+'<span class="enemy-key">'+weapon.toUpperCase()+'</span>';
+    $('secretEnemies').appendChild(el);
+    var enemy={el:el,type:type,weapon:weapon,x:x==null ? .08+Math.random()*.84 : x,y:y==null?-.1:y,width:type==='ufo'?80:type==='barrier'?74:66,height:type==='barrier'?74:66};
+    B.enemies.push(enemy);B.spawned++;placeEntity(enemy);
+  }
+  function resizeBattle(){var r=$('secretArena').getBoundingClientRect();B.width=Math.max(1,r.width);B.height=Math.max(1,r.height);}
+  function movePlayer(e){
+    if(!S.secret)return;
+    var r=$('secretArena').getBoundingClientRect();
+    B.x=Math.max(55/r.width,Math.min(1-55/r.width,(e.clientX-r.left)/r.width));
+    B.y=Math.max(.65,Math.min(.88,1-52/r.height,(e.clientY-r.top)/r.height));
+    positionPlayer();
+  }
+  function positionPlayer(){
+    B.x=Math.max(55/B.width,Math.min(1-55/B.width,B.x));B.y=Math.min(B.y,1-52/B.height);
+    $('secretShip').style.left=(B.x*100)+'%';$('secretShip').style.top=(B.y*100)+'%';
+    $('secretAim').style.left=(B.x*100)+'%';$('secretAim').style.height=(B.y*100)+'%';
+  }
+  function aimedEnemy(){
+    var best=null;
+    for(var i=0;i<B.enemies.length;i++){
+      var e=B.enemies[i];
+      if(e.y<0||e.y>B.y-.05||Math.abs(e.x-B.x)>(e.width/2+8)/B.width)continue;
+      if(!best||e.y>best.y)best=e;
+    }
+    return best;
+  }
   function startSecret(){
-    if(B.escapeTimer)clearTimeout(B.escapeTimer);
-    if(B.spawnTimer)clearTimeout(B.spawnTimer);
-    B.index=0;B.score=PREVIEW?0:save.secretScore;B.level=Math.floor(B.score/10)+1;
-    B.shield=false;B.charged=false;B.busy=true;S.secret=true;
-    $('finale').className='finale show battle';loadEnemy();
+    cancelAnimationFrame(B.frame);S.secret=true;
+    $('finale').className='finale show battle';
+    $('secretEnemies').innerHTML='';$('secretShots').innerHTML='';$('secretEffects').innerHTML='';
+    B.enemies=[];B.bullets=[];B.effects=[];B.spawned=0;B.escaped=0;B.hits=0;B.last=0;B.held=[];B.fired=0;B.fireClock=0;B.weapon='c';B.bumpUntil=0;
+    B.score=PREVIEW?0:save.secretScore;B.level=PREVIEW?1:save.secretLevel;B.x=.5;B.y=.84;
+    resizeBattle();renderSecret();positionPlayer();B.spawnClock=B.gap;
+    spawnEnemy('asteroid',.5,.18);spawnEnemy('barrier',.22,.02);spawnEnemy('ufo',.78,.09);
+    secretSay('按住对应快捷键连发，移动鼠标扫射！');
+    B.frame=requestAnimationFrame(battleFrame);
   }
-  function enemySpeed(){return Math.round(2500+8000/(1+.18*(B.level-1)));}
-  function nextDelay(){return Math.round(120+580/(1+.14*(B.level-1)));}
-  function loadEnemy(){
-    B.current=B.index<ENEMIES.length?ENEMIES[B.index]:(Math.random()<Math.min(.75,.28+B.level*.035)?'ufo':'asteroid');
-    B.shield=B.current==='ufo';B.charged=false;B.busy=false;
-    $('secretBolt').className='secret-bolt';$('secretFlash').className='secret-flash';renderSecret();
-    var target=$('secretTarget');
-    B.speed=enemySpeed();B.gap=nextDelay();
-    target.style.animation='none';target.getBoundingClientRect();
-    target.style.animation='secretApproach '+B.speed+'ms linear forwards';
-    B.escapeTimer=setTimeout(function(){
-      if(!S.secret||B.busy)return;
-      B.busy=true;B.index++;
-      secretSay('目标飞过去了，没关系！下一个马上来。','没有扣分，继续护航。');
-      B.spawnTimer=setTimeout(loadEnemy,B.gap);
-    },B.speed);
+  function battleFrame(now){
+    if(!S.secret)return;
+    var dt=B.last?Math.min(.05,(now-B.last)/1000):0;B.last=now;
+    if(document.hidden){B.frame=requestAnimationFrame(battleFrame);return;}
+    B.fireClock-=dt;
+    if(B.held.length&&B.fireClock<=0){fireMissile(B.weapon);}
+    $('secretShip').className='secret-ship'+(B.held.length?' firing':'')+(now<B.bumpUntil?' bump':'');
+    B.spawnClock-=dt*1000;
+    if(B.spawnClock<=0){spawnEnemy();B.spawnClock=B.gap;}
+    for(var i=B.enemies.length-1;i>=0;i--){
+      var enemy=B.enemies[i];enemy.y+=dt*B.speed*(enemy.type==='ufo' ? .9 : 1);placeEntity(enemy);
+      if(enemy.y>1.12){removeEntity(B.enemies,i);B.escaped++;continue;}
+      if(Math.abs(enemy.x-B.x)<(enemy.width*.32+25)/B.width&&Math.abs(enemy.y-B.y)<(enemy.height*.3+23)/B.height){
+        var lost=Math.min(1,B.score);B.score-=lost;renderSecret();saveBattle();
+        battleEffect(enemy.x,enemy.y,lost?'🛡️ −1':'🛡️');removeEntity(B.enemies,i);
+        B.bumpUntil=now+500;$('secretShip').className='secret-ship bump';
+        secretSay('碰撞扣 1 分，关卡不会降低！移动鼠标躲开障碍物。');
+      }
+    }
+    for(var j=B.bullets.length-1;j>=0;j--){
+      var bullet=B.bullets[j];
+      if(bullet.weapon==='v'){
+        var lock=null;
+        for(var q=0;q<B.enemies.length;q++){var candidate=B.enemies[q];if(candidate.type==='ufo'&&candidate.y>=0&&candidate.y<bullet.y&&Math.abs(candidate.x-bullet.x)<.16&&(!lock||candidate.y>lock.y))lock=candidate;}
+        if(lock)bullet.x+=Math.max(-dt*.42,Math.min(dt*.42,lock.x-bullet.x));
+      }
+      bullet.y-=dt*(bullet.weapon==='x'?1.9:1.65);placeEntity(bullet);
+      if(bullet.y<-.06){removeEntity(B.bullets,j);continue;}
+      for(var n=B.enemies.length-1;n>=0;n--){
+        var target=B.enemies[n];
+        if(Math.abs(bullet.x-target.x)>(target.width*.42+4)/B.width||Math.abs(bullet.y-target.y)>(target.height*.4+10)/B.height)continue;
+        if(bullet.weapon!==target.weapon){
+          removeEntity(B.bullets,j);battleEffect(target.x,target.y,'✦');
+          if(now>(B.wrongUntil||0)){secretSay('这个目标要用 Ctrl+'+target.weapon.toUpperCase()+'！看它身上的字母。');B.wrongUntil=now+1200;}
+        }
+        else{
+          var points=target.type==='barrier'?3:target.type==='ufo'?2:1,oldLevel=B.level;
+          var burst=document.createElement('div');burst.className='secret-burst '+target.type;$('secretEffects').appendChild(burst);
+          if(B.effects.length>=24)removeEntity(B.effects,0);var blast={el:burst,x:target.x,y:target.y,life:.5};B.effects.push(blast);placeEntity(blast);
+          battleEffect(target.x,target.y,'💥 ＋'+points);removeEntity(B.enemies,n);
+          if(bullet.weapon!=='x')removeEntity(B.bullets,j);
+          B.hits++;B.score+=points;renderSecret();saveBattle();
+          if(B.level>oldLevel)secretSay('第 '+B.level+' 关！敌人更快、更多了，继续护航！');
+        }
+        break;
+      }
+    }
+    var aim=aimedEnemy();
+    for(var a=0;a<B.enemies.length;a++){var item=B.enemies[a];item.el.className='secret-target '+item.type+(item===aim?' aimed':'');}
+    for(var k=B.effects.length-1;k>=0;k--){var effect=B.effects[k];effect.life-=dt;if(effect.life<=0){removeEntity(B.effects,k);continue;}if(!effect.beam){effect.y-=dt*.06;placeEntity(effect);}}
+    B.frame=requestAnimationFrame(battleFrame);
+  }
+  function fireMissile(k){
+    B.fireClock=k==='x' ? .17 : k==='v' ? .13 : .12;
+    if(B.bullets.length>=48)return;
+    var offsets=k==='c'?[-7,7]:[0];
+    for(var i=0;i<offsets.length;i++){
+      if(B.bullets.length>=48)break;
+      var el=document.createElement('div');el.className='secret-bolt '+k;$('secretShots').appendChild(el);
+      var bullet={el:el,weapon:k,x:B.x+offsets[i]/B.width,y:B.y-.08};B.bullets.push(bullet);placeEntity(bullet);
+    }
+    B.fired++;
   }
   function secretKey(k){
-    if(B.busy)return;
-    if(k==='x'){
-      if(!B.shield){secretSay('这里没有护盾，先按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 装弹。','飞碟出现时，再用 Ctrl + X 剪断护盾。');return;}
-      B.shield=false;renderSecret();secretSay('咔嚓！护盾断开啦。现在按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 装弹。','剪切成功，护盾消失了！');return;
-    }
-    if(k==='c'){
-      if(B.shield){secretSay('护盾还在！先按 <kbd>Ctrl</kbd> + <kbd>X</kbd> 剪断它。','飞碟的护盾会挡住能量弹。');return;}
-      if(B.charged){secretSay('能量舱已经有一颗弹了！按 <kbd>Ctrl</kbd> + <kbd>V</kbd> 发射。','发射后可以再复制下一颗。');return;}
-      B.charged=true;renderSecret();return;
-    }
-    if(k==='v'){
-      if(B.shield){secretSay('护盾挡住了！先按 <kbd>Ctrl</kbd> + <kbd>X</kbd>。','剪断护盾后再装弹、发射。');return;}
-      if(!B.charged){secretSay('能量舱还是空的！先按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 复制能量弹。','复制后，Ctrl + V 才能发射。');return;}
-      B.charged=false;B.busy=true;clearTimeout(B.escapeTimer);
-      $('secretEnergy').className='secret-energy';$('secretEnergy').textContent='能量舱：空';
-      $('secretBolt').className='secret-bolt firing';secretSay('发射！能量弹命中目标！','准备前往下一个目标……');
-      setTimeout(function(){
-        $('secretTarget').className+=' hit';$('secretTarget').style.animation='targetHit .6s ease-in forwards';
-        var earned=B.current==='ufo'?2:1,previousLevel=B.level;
-        B.score+=earned;B.level=Math.floor(B.score/10)+1;
-        save.secretScore=B.score;writeSave();
-        $('secretProgress').innerHTML='得分 '+B.score+'<span>第 '+B.level+' 关 · 每 10 分升级</span>';
-        $('secretFlash').textContent='＋'+earned+' ✨';$('secretFlash').className='secret-flash pop';
-        if(B.level>previousLevel)secretSay('升级啦！现在是第 '+B.level+' 关！','目标飞得更快，出现得更密了。');
-        setTimeout(function(){
-          B.index++;
-          B.spawnTimer=setTimeout(loadEnemy,B.gap);
-        },600);
-      },440);
-    }
+    if(B.held.indexOf(k)>=0)return;
+    B.held.push(k);B.weapon=k;renderSecret();fireMissile(k);
+    secretSay('按住 Ctrl+'+k.toUpperCase()+' 连发！鼠标移动扫射，瞄准同字母目标。');
   }
+  function stopFire(){B.held=[];B.fireClock=0;$('secretShip').className='secret-ship';}
+  document.addEventListener('keyup',function(e){
+    if(!S.secret)return;
+    var k=(e.key||'').toLowerCase();
+    if(k==='control'||k==='meta'){stopFire();return;}
+    var index=B.held.indexOf(k);if(index<0)return;
+    B.held.splice(index,1);
+    if(B.held.length){B.weapon=B.held[B.held.length-1];B.fireClock=0;renderSecret();}
+  });
+  window.addEventListener('blur',stopFire);
+  document.addEventListener('visibilitychange',function(){if(document.hidden)stopFire();});
+  $('secretArena').addEventListener('pointermove',movePlayer);
+  $('secretArena').addEventListener('pointerdown',function(e){if(S.secret){e.preventDefault();movePlayer(e);}});
+  window.addEventListener('resize',function(){if(S.secret){resizeBattle();positionPlayer();}});
   $('startSecret').addEventListener('click',startSecret);
   document.addEventListener('keydown',function(e){
     if(S.finale){
-      if(S.secret&&(e.ctrlKey||e.metaKey)&&!e.repeat){
+      if(S.secret&&(e.ctrlKey||e.metaKey)){
         var sk=(e.key||'').toLowerCase();if(sk==='c'||sk==='v'||sk==='x'){e.preventDefault();secretKey(sk);return;}
       }
       if(e.target&&e.target.tagName==='BUTTON'&&(e.key==='Enter'||e.key===' '))return;

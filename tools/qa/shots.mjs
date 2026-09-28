@@ -48,9 +48,8 @@ const SHOTS = [
   { name: '太空补给站-隐藏关陨石', page: '鼠标练习营4.html?finale=1', js: j(`
       __$('#startSecret').click(); await __wait(350); return 'ok';`) },
   { name: '太空补给站-隐藏关飞碟', page: '鼠标练习营4.html?finale=1', js: j(`
-      const key=k=>document.dispatchEvent(new KeyboardEvent('keydown',{key:k,ctrlKey:true,bubbles:true,cancelable:true}));
       __$('#startSecret').click();
-      for(let i=0;i<2;i++){key('c');key('v');await __wait(1850);}
+      await __wait(2200);
       return 'ok';`) },
   { name: '键盘-数字关卡', page: '键盘练习营.html', js: j(`
       __$('#nav [data-mode="n"]').click(); await __wait(600); return 'ok';`) },
