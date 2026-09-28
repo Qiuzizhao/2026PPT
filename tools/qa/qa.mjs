@@ -476,6 +476,46 @@ add({
   ]
 });
 
+/* ============ 3c.1 鼠标练习营2：最后一击直接进入隐藏关 ============
+   预置前五关已通、最后一关练到第 10 轮并已有 9 星，真实点击最后一个目标。
+   最后一击之后，进度完成和隐藏关必须在同一轮同步发生，不能留一个可被打断的延时。 */
+add({ name: '鼠标练习营2-最后一击直达隐藏关-种最后一轮', page: 'index.html', steps: [
+  { label: '前五关已通，最后一关只剩最后一击', js: wrap(`
+    const best = { point:10, hover:10, drag:10, select:10, cursor:10, window:9 };
+    const cleared = { point:true, hover:true, drag:true, select:true, cursor:true };
+    const stage = { window:{ round:10, stars:9 } };
+    localStorage.setItem('mousecamp2.progress.v1', JSON.stringify({ v:1, best, cleared, stage, ts:Date.now() }));
+    localStorage.removeItem('mousecamp2.finale.v1');
+    return JSON.stringify({ seeded:true, finalRound:stage.window.round, stars:stage.window.stars });
+  `) }
+]});
+add({ name: '鼠标练习营2-最后一击直达隐藏关-最后一击立即跳转', page: '鼠标练习营2.html', steps: [
+  { label: '进入最后一轮并露出最后目标', js: wrap(`
+    __$('#nav button[data-mode="window"]').click();
+    await __wait(350);
+    const wins = __$$('#play .win');
+    const second = wins[wins.length - 1];
+    second.style.left = '-14px'; second.style.top = '-14px';
+    const bar = second.querySelector('.tbar');
+    const r = bar.getBoundingClientRect();
+    const x = r.left + r.width/2, y = r.top + r.height/2;
+    __pd(bar, 'pointerdown', x, y);
+    document.dispatchEvent(new PointerEvent('pointermove', { bubbles:true, cancelable:true,
+      clientX:x+1, clientY:y+1, pointerId:7, pointerType:'mouse', isPrimary:true, button:0, buttons:1 }));
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles:true, cancelable:true,
+      clientX:x+1, clientY:y+1, pointerId:7, pointerType:'mouse', isPrimary:true, button:0, buttons:0 }));
+    return JSON.stringify({ round:__$('#play').dataset.round, exposed:__$('#play .hid').classList.contains('found') });
+  `) },
+  { label: '真实鼠标最后一击后隐藏关已立即出现并落盘', nativeClicks:['#play .hid'], js: wrap(`
+    const progress = JSON.parse(localStorage.getItem('mousecamp2.progress.v1') || 'null');
+    return JSON.stringify({
+      finaleShown:__$('#finale').classList.contains('show'),
+      finalLevelCleared:!!(progress && progress.cleared && progress.cleared.window),
+      finaleSaved:!!localStorage.getItem('mousecamp2.finale.v1')
+    });
+  `), shot:true }
+]});
+
 /* ============ 3d. 鼠标练习营2：结束页的得分/第几关存在本地，刷新还留在结束页 ============
    场景共用一个浏览器 profile，所以"种存档"放在 index.html 上做，
    下一页打开练习营2 就等价于学生刷新了一次。 */

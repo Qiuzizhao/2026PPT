@@ -2208,6 +2208,12 @@
     recordStars(L,starsEarned);
     confetti();
     say('太棒了！<b>得到一颗星</b> ⭐');
+    /* 最后一关的最后一轮就是通关最后一击：同步收尾，避免延时被导航操作取消。 */
+    if(roundIndex>=GAMES[L].rounds.length-1&&
+       LEVELS.every(function(level){ return level.id===L||cleared[level.id]; })){
+      levelComplete();
+      return;
+    }
     T(1000,nextRound);
   }
   function fail(msg){
@@ -2261,8 +2267,12 @@
     markNav(L);
     const all=allCleared();
     say(all ? '六关全部做完啦！🎉' : '这一关做完啦！🎉');
+    if(all){
+      cur=null;
+      showFinale();
+      return;
+    }
     showDonePanel(L,false);
-    if(all) T(900,function(){ showFinale(); });
   }
 
   /* ===== 通关页的「无尽点点乐」 =====
