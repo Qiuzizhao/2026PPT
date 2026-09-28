@@ -1410,6 +1410,75 @@ add({
   ]
 });
 
+/* ============ 7.6 4-1 修复回归：拖放、复验、必填、批量状态、轮次统计 ============ */
+add({ name: '4-1-回归-学生端验证', page: '4-1数据宝藏在身旁.html', blockUrls: ['*qiuform.qiuzizhao.com*'], steps: [
+  { label: '账本答案改动后提交必须重新验算', js: wrap(`
+    window.fetch=async()=>({ok:true,status:200,json:async()=>({ok:true})});
+    state.student='QA学生';state.klass='测试班';state.open={classroom:true,ledger:true,classify:true,self:true,guess:true,travel:true,quiz:true};
+    buildMap();go('ledger');
+    const inputs=[...document.querySelectorAll('input.ans')];[48,60,45].forEach((v,i)=>inputs[i].value=String(v));
+    document.getElementById('btn-check-ledger').click();
+    inputs[0].value='47';inputs[0].dispatchEvent(new Event('input',{bubbles:true}));
+    const enabled=!document.getElementById('btn-save-ledger').disabled;
+    if(enabled)throw new Error('答案改错后，上交按钮仍可用');
+    return JSON.stringify({enabled,needsRecheck:true});
+  `) },
+  { label: '进入分类挑战准备原生拖放', js: wrap(`
+    go('classify');window.__qaDropCount=0;
+    document.getElementById('bins').addEventListener('drop',()=>window.__qaDropCount++);
+    return JSON.stringify({chips:document.querySelectorAll('#pool-chips .chip').length});
+  `) },
+  { label: '分类数据块可直接拖进正确分类框', nativeDrags: [{from:'#chip-0',to:'.bin[data-cat="number"]'}], js: wrap(`
+    const result={placed:state.cls.placed,score:state.cls.score,drops:window.__qaDropCount};
+    if(result.placed!==1||result.score!==10||result.drops<1)throw new Error('分类拖放未生效：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `) },
+  { label: '旅行推荐缺少数据时不能完成', js: wrap(`
+    go('travel');document.querySelector('.travel-card').click();
+    window.__qaTravelPosts=[];
+    window.fetch=async(url,init)=>{if(String(init&&init.method||'GET').toUpperCase()==='POST')window.__qaTravelPosts.push(JSON.parse(init.body));return {ok:true,status:200,json:async()=>({ok:true})};};
+    document.getElementById('btn-save-travel').click();await __wait(30);
+    const result={done:state.done.travel,posts:window.__qaTravelPosts.length,missing:['t-alt','t-temp','t-dist','t-fact'].filter(id=>!document.getElementById(id).value.trim())};
+    if(result.done||result.posts)throw new Error('空数据旅行推荐被接受：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `) }
+]});
+add({ name: '4-1-回归-教师端统计与批量操作', page: '4-1教师端.html', blockUrls: ['*qiuform.qiuzizhao.com*'], steps: [
+  { label: '全部班级按轮次时间戳统计猜人结果', js: wrap(`
+    await __wait(900);
+    const at=localNow();selectedClass='__all__';stateMap={};localTcUntil=Date.now()+10000;
+    dataCache={at:Date.now(),subs:[
+      {_id:1,type:'self_portrait',student:'神秘学生',klass:'41',_at:at,age:'10',height:'140',fav_color:'蓝色',fav_subject:'数学',fav_animal:'熊猫',hobby:['画画'],avatar:'🐼'},
+      {_id:2,type:'guess_round',klass:'__all__',_at:at,at,target_name:'神秘学生'},
+      {_id:3,type:'guess_submit',student:'参与学生',klass:'41',_at:at,round_id:at,wrong_count:2}
+    ]};
+    renderAll();
+    const stats=document.getElementById('guess-stats').textContent;
+    if(!stats.includes('已猜对 1 人')||!stats.includes('全班猜错 2 次'))throw new Error('全部班级猜人统计未匹配时间戳：'+stats);
+    return JSON.stringify({stats});
+  `) },
+  { label: '全部班级任务开关准确报告部分失败班级', js: wrap(`
+    window.__qaWrites=[];
+    window.fetch=async(url,init)=>{
+      const method=String(init&&init.method||'GET').toUpperCase(),u=String(url);
+      if(method==='PUT'){
+        const key=decodeURIComponent(u.substring(u.indexOf('/state/')+7).split('?')[0]);
+        const ok=key.endsWith(':41');window.__qaWrites.push({key,ok});return {ok,status:ok?200:503,json:async()=>({})};
+      }
+      return {ok:true,status:200,json:async()=>({ok:true})};
+    };
+    selectedClass='__all__';taskOpen={classroom:false,ledger:false,classify:false,self:false,guess:false,travel:false,quiz:false};renderTaskControls();
+    document.querySelector('#task-controls .tc-item').click();await __wait(50);
+    const taskToast=document.getElementById('_toast').textContent;
+    const taskMissing=!taskToast.includes('四(10)班')||!taskToast.includes('测试班');
+    window.__qaWrites=[];document.getElementById('btn-broadcast').click();await __wait(50);
+    const roundToast=document.getElementById('_toast').textContent;
+    const roundMissing=!roundToast.includes('四(10)班')||!roundToast.includes('测试班');
+    if(taskMissing||roundMissing)throw new Error('部分失败没有准确报告：'+JSON.stringify({taskToast,roundToast,taskMissing,roundMissing}));
+    return JSON.stringify({taskToast,roundToast,writes:window.__qaWrites});
+  `) }
+]});
+
 /* ============ 8. 多分辨率不溢出 ============ */
 for (const [w, h] of [[1024, 768], [1920, 1080]]) {
   for (const page of ['index.html', '键盘练习营.html', '鼠标练习营.html', '鼠标练习营2.html', '鼠标反应力实验室.html', '数据自画像-猜猜我是谁.html', '数据自画像-教师端看板.html', '4-1数据宝藏在身旁.html', '4-1教师端.html']) {
@@ -1428,7 +1497,447 @@ for (const [w, h] of [[1024, 768], [1920, 1080]]) {
   }
 }
 
+/* ============ 11. 鼠标练习营4（太空补给站）：一条任务线 + 飞船发射 ============
+   清档、任务、预览和续关场景共用一个浏览器 profile。 */
+const k4Helpers = `
+  const __k4key = k => document.dispatchEvent(new KeyboardEvent('keydown', {
+    key: k, ctrlKey: true, bubbles: true, cancelable: true }));
+  const __k4click = s => { const el = __$(s); if (el) el.click(); return !!el; };
+  const __k4right = s => { const el = __$(s); if (!el) return false; const r = el.getBoundingClientRect();
+    el.dispatchEvent(new MouseEvent('contextmenu', {bubbles:true,cancelable:true,button:2,clientX:r.left+18,clientY:r.top+18})); return true; };
+  const __k4menu = (s,act) => { __k4right(s); const b=__$('#mmenu button[data-act="'+act+'"]');
+    if(!b) throw new Error('右键菜单缺少 '+act); b.click(); };
+  const __k4deliver = async (id, key) => {
+    __k4click('#cargo[data-id="' + id + '"]'); __k4key(key);
+    __k4click('#port'); __k4key('v'); await __wait(120);
+  };
+`;
+
+add({ name: '鼠标练习营4-太空补给清档', page: 'index.html', steps: [
+  { label: '清除新版进度并种下旧版已通关记录', js: wrap(`
+    localStorage.removeItem('mousecamp4.progress.v2');
+    localStorage.setItem('mousecamp4.progress.v1',JSON.stringify({v:1,cleared:{s1:true,s2:true,s3:true},ts:Date.now()}));
+    return JSON.stringify({ cleared: !localStorage.getItem('mousecamp4.progress.v2'),oldSaved:!!localStorage.getItem('mousecamp4.progress.v1') });
+  `) }
+]});
+
+add({ name: '鼠标练习营4-太空补给任务线', page: '鼠标练习营4.html', steps: [
+  { label: '开场聚焦一张订单、一个货舱和一个投递口', js: wrap(k4Helpers + `
+    const result = {title:__$('#missionTitle')&&__$('#missionTitle').textContent.trim(),
+      cargo:!!__$('#cargo[data-id="signal"]'),port:!!__$('#port'),oldNav:!!__$('#nav')};
+    if(!result.cargo||!result.port||result.oldNav||!result.title.includes('右键')||!__$('#hintText').textContent.includes('鼠标右键')||__$('#finale').classList.contains('show'))
+      throw new Error('主界面没有聚焦到一个补给任务：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `), shot:true },
+  { label: '真实鼠标右键打开复制菜单', nativeClicks:[{selector:'#cargo[data-id="signal"]',button:'right'}], js: wrap(`
+    const result={menuOpen:!__$('#mmenu').hidden,copy:!!__$('#mmenu button[data-act="copy"]')};
+    if(!result.menuOpen||!result.copy)throw new Error('真实右键没有打开复制菜单：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `), shot:true },
+  { label: '快捷键不能跳过右键复制和粘贴', js: wrap(k4Helpers + `
+    __k4click('#cargo[data-id="signal"]'); __k4key('c');
+    const keyboardBlocked=!window.__mc4.state.clip;
+    __k4right('#cargo[data-id="signal"]'); await __wait(120);
+    const menuOpen=!__$('#mmenu').hidden;
+    __k4click('#mmenu button[data-act="copy"]'); __k4click('#port'); __k4key('v');
+    const pasteBlocked=__$$('#deliverySlots .delivery-slot.is-filled').length===0;
+    const result={menuOpen,keyboardBlocked,pasteBlocked,clipReady:!!window.__mc4.state.clip};
+    if(!menuOpen||!keyboardBlocked||!pasteBlocked||!result.clipReady)
+      throw new Error('键盘操作跳过了右键任务：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `) },
+  { label: '真实鼠标右键打开粘贴菜单', nativeClicks:[{selector:'#port',button:'right'}], js: wrap(`
+    const result={menuOpen:!__$('#mmenu').hidden,paste:!!__$('#mmenu button[data-act="paste"]')};
+    if(!result.menuOpen||!result.paste)throw new Error('真实右键没有打开粘贴菜单：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `), shot:true },
+  { label: '求救文字右键粘贴后原件留下', js: wrap(k4Helpers + `
+    __k4click('#mmenu button[data-act="paste"]'); await __wait(150);
+    const delivered=__$$('#deliverySlots .delivery-slot.is-filled').length;
+    const sourceStays=!!__$('#cargo[data-id="signal"]');
+    await __wait(800);
+    const result={delivered,sourceStays,next:__$('#missionTitle').textContent.trim()};
+    if(result.delivered!==1||!result.sourceStays||!result.next.includes('照片'))
+      throw new Error('复制求救文字没有正确进入下一单：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `), shot:true },
+  { label: '同一张照片复制两次，每次都能重新装进口袋', js: wrap(k4Helpers + `
+    __k4right('#cargo[data-id="photo"]'); const menuBlocked=__$('#mmenu').hidden;
+    await __k4deliver('photo','c'); const sourceStays=!!__$('#cargo[data-id="photo"]');
+    const firstDelivered=__$$('#deliverySlots .delivery-slot.is-filled').length;
+    await __k4deliver('photo','c');
+    const delivered=__$$('#deliverySlots .delivery-slot.is-filled').length;
+    await __wait(800);
+    const result={menuBlocked,sourceStays,firstDelivered,delivered,next:__$('#missionTitle').textContent.trim()};
+    if(!menuBlocked||!sourceStays||result.firstDelivered!==1||result.delivered!==2||!result.next.includes('电池'))
+      throw new Error('照片不能复制两份后进入电池任务：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `), shot:true },
+  { label: '剪切电池后原件离开货舱，三单完成并锁定在发射页', js: wrap(k4Helpers + `
+    __k4click('#cargo[data-id="battery"]'); __k4key('x');
+    const keyboardBlocked=!window.__mc4.state.clip;
+    __k4menu('#cargo[data-id="battery"]','cut'); __k4click('#port'); __k4key('v');
+    const pasteBlocked=__$$('#deliverySlots .delivery-slot.is-filled').length===0;
+    __k4menu('#port','paste'); await __wait(900);
+    const path0=location.pathname+location.search; history.back(); await __wait(350);
+    const saved=JSON.parse(localStorage.getItem('mousecamp4.progress.v2')||'null');
+    const result={keyboardBlocked,pasteBlocked,finale:__$('#finale').classList.contains('show'),
+      sourceGone:!__$('#cargo[data-id="battery"]'),done:__$$('.route-step.done').length,
+      saved:!!(saved&&saved.cleared&&saved.cleared.s1&&saved.cleared.s2&&saved.cleared.s3),
+      stayed:location.pathname+location.search===path0,
+      covers:__$('#finale').contains(document.elementFromPoint(10,10))};
+    if(!result.keyboardBlocked||!result.pasteBlocked||!result.finale||!result.sourceGone||result.done!==3||!result.saved||!result.stayed||!result.covers)
+      throw new Error('剪切、进度保存或发射页失败：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `), shot:true }
+]});
+
+add({ name:'鼠标练习营4-大投递口种档',page:'index.html',steps:[
+  { label:'进入照片任务以核对飞船主体可点',js:wrap(`
+    localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{s1:true},ts:Date.now()}));
+    return JSON.stringify({seeded:true});
+  `) }
+]});
+add({ name:'鼠标练习营4-大投递口',page:'鼠标练习营4.html',steps:[
+  { label:'投递口覆盖飞船主体和货物槽，而非底部小按钮',js:wrap(k4Helpers + `
+    __k4click('#cargo[data-id="photo"]');__k4key('c');
+    const port=__$('#port').getBoundingClientRect(),ship=__$('#port .ship-art').getBoundingClientRect();
+    const result={wide:port.width>190,tall:port.height>200,containsShip:__$('#port').contains(__$('.ship-art')),
+      shipInside:ship.left>=port.left&&ship.right<=port.right&&ship.top>=port.top&&ship.bottom<=port.bottom};
+    if(!result.wide||!result.tall||!result.containsShip||!result.shipInside)
+      throw new Error('投递口仍然太小或没有包住飞船：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `),shot:true },
+  { label:'真实鼠标点击飞船图就能选中投递口并粘贴',nativeClicks:[{selector:'#port .ship-art',button:'left'}],js:wrap(k4Helpers + `
+    const selected=window.__mc4.state.targetSelected;
+    __k4key('v');
+    const result={selected,delivered:__$$('#deliverySlots .delivery-slot.is-filled').length};
+    if(!result.selected||result.delivered!==1)throw new Error('点飞船主体未能选中投递口：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `),shot:true }
+]});
+
+add({ name: '鼠标练习营4-预览清档', page: 'index.html', steps: [
+  { label: '清档后检查预览模式不写入进度', js: wrap(`
+    localStorage.removeItem('mousecamp4.progress.v2');
+    return JSON.stringify({ cleared: !localStorage.getItem('mousecamp4.progress.v2') });
+  `) }
+]});
+add({ name: '鼠标练习营4-发射页预览', page: '鼠标练习营4.html?finale=1', wait:1800, steps: [
+  { label: '?finale=1 展示完整发射庆祝且不写档', js: wrap(`
+    const result={shown:__$('#finale').classList.contains('show'),
+      title:__$('#finale h2').textContent.trim(),done:__$$('.route-step.done').length,
+      hiddenEntry:!!__$('#startSecret'),noSave:!localStorage.getItem('mousecamp4.progress.v2')};
+    if(!result.shown||!result.title.includes('发射')||result.done!==3||!result.hiddenEntry||!result.noSave)
+      throw new Error('发射页预览状态错误：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `), shot:true }
+]});
+
+add({ name:'鼠标练习营4-隐藏关卡',page:'鼠标练习营4.html?finale=1',steps:[
+  { label:'发射后进入太空；空弹不能发射，护盾必须先剪断',js:wrap(k4Helpers + `
+    __k4click('#startSecret');
+    const started=__$('#finale').classList.contains('battle');
+    window.__k4InitialSpeed=window.__mc4.battle.speed;
+    __k4key('v'); const emptyBlocked=window.__mc4.battle.index===0;
+    __k4key('c'); const charged=window.__mc4.battle.charged;
+    __k4key('v'); await __wait(1850);
+    const firstHit=window.__mc4.battle.index===1&&window.__mc4.battle.score===1;
+    __k4key('c'); __k4key('v'); await __wait(1850);
+    const shield=window.__mc4.battle.shield;
+    __k4key('c'); const shieldBlocked=!window.__mc4.battle.charged;
+    __k4key('x'); const cut=!window.__mc4.battle.shield;
+    const result={started,emptyBlocked,charged,firstHit,shield,shieldBlocked,cut};
+    if(Object.values(result).some(v=>!v))throw new Error('隐藏关卡基础操作失败：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `),shot:true },
+  { label:'六个目标后继续生成，第十分快速升级且预览不写档',js:wrap(k4Helpers + `
+    for(let i=2;i<6;i++){
+      if(window.__mc4.battle.shield)__k4key('x');
+      __k4key('c');__k4key('v');await __wait(1850);
+    }
+    const beyondSix=window.__mc4.battle.index===6&&!!window.__mc4.battle.current;
+    if(window.__mc4.battle.shield)__k4key('x');
+    __k4key('c');__k4key('v');await __wait(1850);
+    const b=window.__mc4.battle;
+    const result={beyondSix,stillPlaying:__$('#finale').classList.contains('battle'),score:b.score,
+      level:b.level,speedUp:b.speed<window.__k4InitialSpeed,gapUp:b.gap<700,
+      noSave:!localStorage.getItem('mousecamp4.progress.v2')};
+    if(!result.beyondSix||!result.stillPlaying||result.score<10||result.level<2||!result.speedUp||!result.gapUp||!result.noSave)
+      throw new Error('隐藏关卡无尽升级错误：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `),shot:true },
+  { label:'目标飞走不扣分，仍然继续刷新',js:wrap(`
+    const oldScore=window.__mc4.battle.score,oldIndex=window.__mc4.battle.index;
+    await __wait(window.__mc4.battle.speed+window.__mc4.battle.gap+250);
+    const b=window.__mc4.battle;
+    const result={sameScore:b.score===oldScore,nextTarget:b.index>oldIndex,playing:__$('#finale').classList.contains('battle')};
+    if(!result.sameScore||!result.nextTarget||!result.playing)throw new Error('漏掉目标后游戏中断：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `) }
+]});
+
+add({ name: '鼠标练习营4-续关种档', page:'index.html', steps:[
+  { label:'种下前两单已经完成的进度', js:wrap(`
+    localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{s1:true,s2:true},ts:Date.now()}));
+    return JSON.stringify({seeded:true});
+  `) }
+]});
+add({ name:'鼠标练习营4-刷新接第三单',page:'鼠标练习营4.html',steps:[
+  { label:'新页面从电池任务继续，发射页仍未开放',js:wrap(`
+    await __wait(450);
+    const result={title:__$('#missionTitle').textContent.trim(),done:__$$('.route-step.done').length,
+      finale:__$('#finale').classList.contains('show')};
+    if(!result.title.includes('电池')||result.done!==2||result.finale)
+      throw new Error('刷新后没有从第三单继续：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `),shot:true }
+]});
+
+add({ name:'鼠标练习营4-小屏清档',page:'index.html',steps:[
+  { label:'清掉完成进度后再打开任务页',js:wrap(`
+    localStorage.removeItem('mousecamp4.progress.v2');
+    return JSON.stringify({cleared:!localStorage.getItem('mousecamp4.progress.v2')});
+  `) }
+]});
+add({ name:'鼠标练习营4-1024 小屏',page:'鼠标练习营4.html',viewport:[1024,768],steps:[
+  { label:'1024×768 任务布局没有溢出',js:wrap(`
+    const r=__$('#station').getBoundingClientRect(),c=__$('#cargo').getBoundingClientRect(),p=__$('#port').getBoundingClientRect();
+    const result={overflowX:document.documentElement.scrollWidth>innerWidth+1,
+      fits:r.bottom<=innerHeight+1&&c.right<=innerWidth+1,
+      port:p.height>200&&p.bottom<=innerHeight+1&&p.right<=innerWidth+1};
+    if(result.overflowX||!result.fits||!result.port)throw new Error('小屏投递口溢出：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `),shot:true }
+]});
+add({ name:'鼠标练习营4-发射页-1024',page:'鼠标练习营4.html?finale=1',viewport:[1024,768],wait:1800,steps:[
+  { label:'1024×768 发射页铺满屏幕并锁住历史后退',js:wrap(`
+    const r=__$('#finale').getBoundingClientRect(),p=location.pathname+location.search;
+    history.back(); await __wait(350);
+    return JSON.stringify({overflowX:document.documentElement.scrollWidth>innerWidth+1,
+      fits:r.width>=innerWidth&&r.height>=innerHeight,
+      covers:__$('#finale').contains(document.elementFromPoint(10,10)),
+      stayed:location.pathname+location.search===p});
+  `),shot:true }
+]});
+
+add({ name:'鼠标练习营4-隐藏关存档种档',page:'index.html',steps:[
+  { label:'已完成三单的旧版 v2 存档也能解锁隐藏关',js:wrap(`
+    localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{s1:true,s2:true,s3:true},ts:Date.now()}));
+    return JSON.stringify({seeded:true});
+  `) }
+]});
+add({ name:'鼠标练习营4-隐藏关存档得分',page:'鼠标练习营4.html',steps:[
+  { label:'命中目标后写入无尽关得分',js:wrap(k4Helpers + `
+    const unlocked=__$('#finale').classList.contains('show')&&!!__$('#startSecret');
+    __k4click('#startSecret');
+    __k4key('c');__k4key('v');await __wait(1850);
+    const saved=JSON.parse(localStorage.getItem('mousecamp4.progress.v2')||'null');
+    const result={unlocked,playing:__$('#finale').classList.contains('battle'),score:window.__mc4.battle.score,
+      saved:!!(saved&&saved.secretScore===1)};
+    if(!result.unlocked||!result.playing||result.score!==1||!result.saved)throw new Error('隐藏关没有正确存档：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `) }
+]});
+add({ name:'鼠标练习营4-隐藏关存档刷新',page:'鼠标练习营4.html',steps:[
+  { label:'刷新后得分保留，仍可从发射页续玩',js:wrap(k4Helpers + `
+    const launch=__$('#finale').classList.contains('show'),entry=__$('#startSecret').textContent.includes('1 分');
+    __k4click('#startSecret');
+    const result={launch,entry,score:window.__mc4.battle.score,level:window.__mc4.battle.level};
+    if(!result.launch||!result.entry||result.score!==1||result.level!==1)throw new Error('隐藏关刷新状态错误：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `) }
+]});
+add({ name:'鼠标练习营4-隐藏关-1024',page:'鼠标练习营4.html?finale=1',viewport:[1024,768],steps:[
+  { label:'1024×768 战斗区、提示栏和目标完整可见',js:wrap(k4Helpers + `
+    __k4click('#startSecret');
+    const arena=__$('#secretArena').getBoundingClientRect(),hint=__$('.secret-dialogue').getBoundingClientRect(),target=__$('#secretTarget').getBoundingClientRect();
+    const result={overflowX:document.documentElement.scrollWidth>innerWidth+1,
+      arena:arena.top>=0&&arena.bottom<=innerHeight,target:target.left>=arena.left&&target.right<=arena.right,
+      dialogue:hint.top>=0&&hint.bottom<=innerHeight};
+    if(result.overflowX||!result.arena||!result.target||!result.dialogue)
+      throw new Error('隐藏关小屏布局溢出：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `),shot:true }
+]});
+
 /* ================= CDP 驱动 ================= */
+add({
+  name: '鼠标练习营3-语文后音乐',
+  page: '鼠标练习营3.html',
+  steps: [
+    { label: '进入第五次练习', nativeClicks: ['#nav button[data-mode="home"]'], js: wrap(`
+      window.__mt.goto(0, 4);
+      return JSON.stringify({ round: window.__mt.round(), step: window.__mt.state.seqStep });
+    `) },
+    { label: '真实鼠标轻微移动后点击语文作业', nativeClicks: [{selector:'#play .micon[data-id="cn"]', jitter:8}], js: wrap(`
+      return JSON.stringify({ selected: window.__mt.state.sel, step: window.__mt.state.seqStep });
+    `), shot: true },
+    { label: '真实鼠标点击音乐后过关', nativeClicks: ['#play .micon[data-id="music"]'], js: wrap(`
+      const result = { selected: window.__mt.state.sel, step: window.__mt.state.seqStep,
+        done: window.__mt.state.done, round: window.__mt.round() };
+      if (!result.done) throw new Error('先点语文作业、再点音乐后仍未过关：' + JSON.stringify(result));
+      return JSON.stringify(result);
+    `), shot: true },
+    { label: '进入拖动图标练习', js: wrap(`
+      window.__mt.goto(3, 0);
+      return JSON.stringify({ level: window.__mt.level(), round: window.__mt.round() });
+    `) },
+    { label: '真实鼠标分多段拖动音乐后过关', nativeDrags: [{from:'#play .micon[data-id="music"]',to:'#play .slot-cell:nth-child(13)'}], js: wrap(`
+      const result = { done: window.__mt.state.done, position: window.__mt.state.icons[0].col + ',' + window.__mt.state.icons[0].row };
+      if (!result.done) throw new Error('拖动第5列第2行后仍未过关：' + JSON.stringify(result));
+      return JSON.stringify(result);
+    `), shot: true }
+  ]
+});
+add({ name: '鼠标练习营3-进度存档-清档', page: 'index.html', steps: [
+  { label: '清掉此前的练习营3进度', js: wrap(`
+    localStorage.removeItem('mousecamp3.progress.v1');
+    return JSON.stringify({ cleared: !localStorage.getItem('mousecamp3.progress.v1') });
+  `) }
+]});
+add({ name: '鼠标练习营3-进度存档-前半', page: '鼠标练习营3.html', steps: [
+  { label: '完成第一课第一轮并写入进度', js: wrap(`
+    __$('#nav button[data-mode="l1"]').click();
+    __$('#play .micon[data-id="pc"]').click();
+    await __wait(1350);
+    const saved = JSON.parse(localStorage.getItem('mousecamp3.progress.v1') || 'null');
+    if (!saved || !saved.stage || !saved.stage.l1 || saved.stage.l1.round !== 1 || saved.stage.l1.stars !== 1)
+      throw new Error('第一轮没有正确存档：' + JSON.stringify(saved));
+    return JSON.stringify({ saved: saved.stage.l1, best: saved.best.l1 });
+  `) }
+]});
+add({ name: '鼠标练习营3-进度存档-后半', page: '鼠标练习营3.html', steps: [
+  { label: '新页面显示已有星数并从第二轮接着练', js: wrap(`
+    const home = __$('#play .home-card[data-mode="l1"]').textContent;
+    __$('#nav button[data-mode="l1"]').click();
+    const result = { home, round: window.__mt.round(), stars: window.__mt.stars(),
+      total: window.__mt.total(), prompt: __$('#bubble').textContent };
+    if (result.round !== 1 || result.stars !== 1 || !home.includes('1 / 6'))
+      throw new Error('刷新后没有接着练：' + JSON.stringify(result));
+    return JSON.stringify(result);
+  `), shot: true }
+]});
+add({ name: '鼠标练习营3-进度存档-预览不写档', page: '鼠标练习营3.html?finale=1', steps: [
+  { label: '预览通关页不覆盖原进度', js: wrap(`
+    const saved = JSON.parse(localStorage.getItem('mousecamp3.progress.v1') || 'null');
+    const result = { finale: __$('#finale').classList.contains('show'), saved: saved && saved.stage && saved.stage.l1 };
+    if (!result.finale || !result.saved || result.saved.round !== 1)
+      throw new Error('预览污染了进度：' + JSON.stringify(result));
+    return JSON.stringify(result);
+  `) }
+]});
+add({ name: '鼠标练习营3-通关存档-种进度', page: 'index.html', steps: [
+  { label: '准备第一课最后一轮的真实存档', js: wrap(`
+    localStorage.setItem('mousecamp3.progress.v1', JSON.stringify({
+      v:1, best:{l1:5}, cleared:{}, stage:{l1:{round:5,stars:5}}, ts:Date.now()
+    }));
+    return JSON.stringify({ seeded:true });
+  `) }
+]});
+add({ name: '鼠标练习营3-通关存档-完成', page: '鼠标练习营3.html', steps: [
+  { label: '从第六轮接着做，完成后立即标记通关', js: wrap(`
+    __$('#nav button[data-mode="l1"]').click();
+    const started = {round:window.__mt.round(),stars:window.__mt.stars()};
+    for(const id of ['pc','bin','paint']) __$('#play .micon[data-id="'+id+'"]').click();
+    const saved = JSON.parse(localStorage.getItem('mousecamp3.progress.v1') || 'null');
+    if(started.round !== 5 || started.stars !== 5 || !saved || !saved.cleared.l1 || saved.best.l1 !== 6 || saved.stage.l1)
+      throw new Error('最后一轮未正确通关落盘：' + JSON.stringify({started,saved}));
+    return JSON.stringify({started,cleared:saved.cleared.l1,best:saved.best.l1,stage:saved.stage.l1||null});
+  `) }
+]});
+add({ name: '鼠标练习营3-通关存档-新页面', page: '鼠标练习营3.html', steps: [
+  { label: '刷新后已完成标记和总星数保留', js: wrap(`
+    const card = __$('#play .home-card[data-mode="l1"]');
+    const result = {done:card.classList.contains('done'),stars:__$('#starNum').textContent.trim(),text:card.textContent};
+    if (!result.done || result.stars !== '6') throw new Error('通关成绩未恢复：' + JSON.stringify(result));
+    return JSON.stringify(result);
+  `) }
+]});
+add({ name: '鼠标练习营3-通关存档-清空', page: '鼠标练习营3.html', steps: [
+  { label: '确认清空后成绩归零', js: wrap(`
+    window.confirm = () => true;
+    __$('#play .home-actions button:last-child').click();
+    const result = {save:localStorage.getItem('mousecamp3.progress.v1'),
+      stars:__$('#starNum').textContent.trim(),done:__$('#play .home-card[data-mode="l1"]').classList.contains('done')};
+    if (result.save || result.stars !== '0' || result.done) throw new Error('清空失败：' + JSON.stringify(result));
+    return JSON.stringify(result);
+  `) }
+]});
+add({ name: '鼠标练习营3-全通后入口-种进度', page: 'index.html', steps: [
+  { label: '八课全部通关', js: wrap(`
+    const cleared={}, best={};
+    for(let i=1;i<=8;i++){ cleared['l'+i]=true; best['l'+i]=6; }
+    localStorage.setItem('mousecamp3.progress.v1',JSON.stringify({v:1,best,cleared,stage:{},ts:Date.now()}));
+    return JSON.stringify({seeded:true});
+  `) }
+]});
+add({ name: '鼠标练习营3-全通后入口-验证', page: '鼠标练习营3.html', steps: [
+  { label: '刷新后从首页进入通关页', js: wrap(`
+    const btn=__$('#play .home-finale');
+    const total=__$('#starNum').textContent.trim();
+    if(!btn) throw new Error('全通后缺少通关页入口');
+    btn.click();
+    const result={total,finale:__$('#finale').classList.contains('show')};
+    if(!result.finale) throw new Error('通关页入口无效：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `) }
+]});
+add({ name: '鼠标练习营3-界面修正', page: '鼠标练习营3.html', steps: [
+  { label: '右键后选择显示设置即过关', js: wrap(`
+    window.__mt.goto(2, 3);
+    const tip = __$('#bubble').textContent;
+    __$('#play .stage').dispatchEvent(new MouseEvent('contextmenu', {bubbles:true,cancelable:true,button:2,clientX:450,clientY:430}));
+    __$('#play .mi[data-label="显示设置"]').click();
+    const result={tip,done:window.__mt.state.done,flag:window.__mt.state.flags.displaySettings};
+    if(!result.done || !result.flag || !tip.includes('点「显示设置」') || tip.includes('变亮'))
+      throw new Error('显示设置题目仍不明确：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `) },
+  { label: '摆窗口第二次只提示最小化按钮', js: wrap(`
+    window.__mt.goto(5, 1);
+    await __wait(380);
+    const tags=__$$('#play .tag-here');
+    const result={tags:tags.map(x=>x.textContent),target:!!__$('#play .wb.min.hintring'),done:window.__mt.state.done};
+    if(result.tags.length!==1 || !result.target || result.tags[0]!=='点「—」' || result.done)
+      throw new Error('最小化提示错误：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `), shot:true },
+  { label: '最小化后提示任务栏照片，点回来完成', js: wrap(`
+    __$('#play .mwin .wb.min').click();
+    const tags=__$$('#play .tag-here');
+    const result={tags:tags.map(x=>x.textContent),target:!!__$('#play .mtask .mtbtn[data-win="win-photo"].hintring')};
+    if(result.tags.length!==1 || result.tags[0]!=='点任务栏「照片」' || !result.target)
+      throw new Error('任务栏提示错误：'+JSON.stringify(result));
+    __$('#play .mtask .mtbtn[data-win="win-photo"]').click();
+    if(!window.__mt.state.done) throw new Error('从任务栏点回来后未过关');
+    return JSON.stringify({result,done:window.__mt.state.done});
+  `) },
+  { label: '摆窗口第五次停在第五次，待学生主动点照片窗口', js: wrap(`
+    window.__mt.goto(5, 4);
+    await __wait(400);
+    const before={round:window.__mt.round(),done:window.__mt.state.done,active:window.__mt.state.active};
+    if(before.round!==4 || before.done || before.active!=='win-essay')
+      throw new Error('第五次被自动跳过：'+JSON.stringify(before));
+    __$('#play .mwin[data-win="win-photo"] .wbody').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:5,button:0}));
+    const after={done:window.__mt.state.done,active:window.__mt.state.active};
+    if(!after.done || after.active!=='win-photo') throw new Error('主动点照片没有过关：'+JSON.stringify(after));
+    await __wait(1300);
+    const next={round:window.__mt.round(),prompt:__$('#bubble').textContent};
+    if(next.round!==5 || !next.prompt.includes('两个窗口都最小化'))
+      throw new Error('第五次后未正确进入第六次：'+JSON.stringify(next));
+    return JSON.stringify({before,after,next});
+  `), shot:true },
+  { label: '窗口贴边第一次只提示按住标题栏拖', js: wrap(`
+    window.__mt.goto(6, 0);
+    await __wait(380);
+    const tags=__$$('#play .tag-here');
+    const result={tags:tags.map(x=>x.textContent),target:!!__$('#play .mwin .tbar.hintring'),done:window.__mt.state.done};
+    if(result.tags.length!==1 || !result.target || result.tags[0]!=='按住标题栏拖' || result.done)
+      throw new Error('贴边提示错误：'+JSON.stringify(result));
+    return JSON.stringify(result);
+  `), shot:true }
+]});
 const userDir = join(tmpdir(), 'cdp-qa-' + Date.now());
 const chrome = spawn(CHROME, [
   '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
@@ -1497,6 +2006,40 @@ for (const sc of SCENARIOS) {
   for (let i = 0; i < sc.steps.length; i++) {
     const st = sc.steps[i];
     events = [];
+    for (const clickSpec of st.nativeClicks || []) {
+      const selector = typeof clickSpec === 'string' ? clickSpec : clickSpec.selector;
+      const jitter = typeof clickSpec === 'string' ? 0 : clickSpec.jitter || 0;
+      const button = typeof clickSpec === 'string' ? 'left' : clickSpec.button || 'left';
+      const buttons = button === 'right' ? 2 : 1;
+      const point = JSON.parse(await evalIn(s, `(() => {
+        const r = document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();
+        return JSON.stringify({x:r.left+r.width/2,y:r.top+r.height/2});
+      })()`));
+      await s('Input.dispatchMouseEvent', { type: 'mouseMoved', x: point.x, y: point.y });
+      await s('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.x, y: point.y, button, buttons, clickCount: 1 });
+      if (jitter) await s('Input.dispatchMouseEvent', { type: 'mouseMoved', x: point.x + jitter, y: point.y, button, buttons });
+      await s('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.x + jitter, y: point.y, button, buttons: 0, clickCount: 1 });
+    }
+    for (const dragSpec of st.nativeDrags || []) {
+      const getPoint = async selector => JSON.parse(await evalIn(s, `(() => {
+        const el = document.querySelector(${JSON.stringify(selector)});
+        const r = el.getBoundingClientRect();
+        if (el.classList.contains('slot-cell') && !r.width) {
+          const p = el.closest('.stage').getBoundingClientRect();
+          return JSON.stringify({x:p.left+parseFloat(el.style.left)+parseFloat(el.style.width)/2,
+            y:p.top+parseFloat(el.style.top)+parseFloat(el.style.height)/2});
+        }
+        return JSON.stringify({x:r.left+r.width/2,y:r.top+r.height/2});
+      })()`));
+      const from = await getPoint(dragSpec.from), to = await getPoint(dragSpec.to);
+      await s('Input.dispatchMouseEvent', { type: 'mouseMoved', x: from.x, y: from.y });
+      await s('Input.dispatchMouseEvent', { type: 'mousePressed', x: from.x, y: from.y, button: 'left', buttons: 1, clickCount: 1 });
+      for (let j = 1; j <= 20; j++) {
+        await s('Input.dispatchMouseEvent', { type: 'mouseMoved', x: from.x + (to.x-from.x)*j/20,
+          y: from.y + (to.y-from.y)*j/20, button: 'left', buttons: 1 });
+      }
+      await s('Input.dispatchMouseEvent', { type: 'mouseReleased', x: to.x, y: to.y, button: 'left', buttons: 0, clickCount: 1 });
+    }
     const value = await evalIn(s, st.js);
     const errs = events.filter(e => e.method === 'Runtime.exceptionThrown')
       .map(e => (e.params.exceptionDetails.exception || {}).description || e.params.exceptionDetails.text);

@@ -125,6 +125,7 @@
   nav button span.emo svg{width:18px;height:18px;display:block}
   nav button[style*="3px solid"] span.emo{background:#ffffff;box-shadow:0 0 0 2px rgba(37,99,235,.12)}
   nav button.n-done::after{content:" ✓";font-size:.72em;color:var(--green);opacity:1}
+  nav button.n-half::after{content:" ◷";font-size:.72em;color:#b45309}
 
   /* ===== 星星 ===== */
   .stars{display:flex;gap:7px;justify-content:center;margin:0 auto 10px;flex-wrap:wrap;position:relative;z-index:1;min-height:32px}
@@ -212,7 +213,6 @@
     border-radius:50% 50% 0 0;
     background:linear-gradient(180deg,rgba(10,58,104,.5),rgba(10,58,104,0));
   }
-  .stage.lightbg .wallmini{filter:brightness(1.12) saturate(.92)}
 
   /* ===== 开始页：直接铺开关卡 ===== */
   .home-hub{
@@ -243,6 +243,12 @@
   .home-card .hc-foot{font-size:13px;font-weight:700;color:var(--muted)}
   .home-card.done{border-top-color:var(--green)}
   .home-card.done .hc-foot{color:#059669}
+  .home-card.half{border-top-color:#f59e0b}
+  .home-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+  html.no-flexgap .home-actions > *:not(:last-child){margin-right:10px}
+  .home-actions button{border:1px solid var(--line);border-radius:10px;background:#ffffff;color:var(--muted);
+    padding:8px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+  .home-actions .home-finale{background:#fff7d6;border-color:#fbbf24;color:#92400e}
 
   /* 练习区里的小图标 */
   .micons{position:absolute;top:8px;right:0;bottom:6px;left:0}
@@ -396,7 +402,7 @@
   .ghost .rip.go{animation:rip .6s ease-out}
   @keyframes rip{0%{opacity:.95;transform:scale(.3)}100%{opacity:0;transform:scale(1.5)}}
 
-  /* "点这里"的标签 */
+  /* 具体操作提示标签 */
   .tag-here{
     position:absolute;z-index:70;pointer-events:none;background:var(--blue);color:#ffffff;
     border-radius:8px;padding:6px 14px;font-size:15px;font-weight:800;
@@ -871,7 +877,7 @@
   const COLS=8, ROWS=4, BAR=Math.round(38*UI_SCALE);
   function pW(){ return play.clientWidth; }
   function pH(){ return play.clientHeight; }
-  function barOn(){ return !!(S.scene&&S.scene.bar) || S.wins.length>0; }
+  function barOn(){ return !!(S.scene&&S.scene.bar); }
   function barH(){ return barOn()?BAR:0; }
   function workH(){ return pH()-barH(); }
   function slotPos(col,row){ return {x:PAD+col*CELL_W, y:PAD+row*CELL_H}; }
@@ -920,7 +926,7 @@
     folderSeq=0;                       /* 每一关新建的文件夹都从 1 号开始 */
     const scene=cfg.scene||{};
     S.scene=scene;
-    const st=el('div','stage'+(scene.light?' lightbg':''));
+    const st=el('div','stage');
     play.appendChild(st); S.stage=st;
     st.appendChild(el('div','wallmini'));
     const grid=el('div','slot-grid');
@@ -1066,7 +1072,9 @@
     if(id){
       const ic=iconById(id);
       S.selSeen[id]=true;
-      showInfo('已选中：<b>'+ic.label+'</b>　双击可以打开');
+      if(L===0&&RI===4) showInfo('已选中：<b>'+ic.label+'</b>　再点另一个图标，选中会切换');
+      else if(L===0) showInfo('已选中：<b>'+ic.label+'</b>');
+      else showInfo('已选中：<b>'+ic.label+'</b>　双击可以打开');
     } else showInfo('已取消选中');
     checkGoal();
   }
@@ -1093,7 +1101,8 @@
     stopDemo(); closeMenu(); closeStart();
     const node=iconEl(id); if(!node) return;
     const r=rectOf(node);
-    iconDrag={id:id,node:node,id0:e.pointerId,dx:e.clientX-r.x,dy:e.clientY-r.y,moved:false};
+    iconDrag={id:id,node:node,id0:e.pointerId,dx:e.clientX-r.x,dy:e.clientY-r.y,
+      startX:e.clientX,startY:e.clientY,moved:false};
     document.addEventListener('pointermove',iconDragMove);
     document.addEventListener('pointerup',iconDragEnd);
     document.addEventListener('pointercancel',iconDragEnd);
@@ -1102,16 +1111,15 @@
     if(!iconDrag||e.pointerId!==iconDrag.id0) return;
     const lr=S.layer.getBoundingClientRect();
     const x=e.clientX-iconDrag.dx-lr.left, y=e.clientY-iconDrag.dy-lr.top;
-    if(Math.abs(x-parseFloat(iconDrag.node.style.left||0))>3||Math.abs(y-parseFloat(iconDrag.node.style.top||0))>3){
-      if(!iconDrag.moved){
-        clearTag();
-        if(S.grid) S.grid.classList.add('show');
-      }
+    if(!iconDrag.moved && Math.hypot(e.clientX-iconDrag.startX,e.clientY-iconDrag.startY)>10){
+      clearTag();
+      if(S.grid) S.grid.classList.add('show');
       iconDrag.moved=true;
       iconDrag.node.classList.add('dragging');
       iconDrag.node.classList.remove('sel');
     }
-    if(iconDrag.moved) e.preventDefault();
+    if(!iconDrag.moved) return;  /* 轻微抖动仍是单击，图标也不提前移位 */
+    e.preventDefault();
     iconDrag.node.style.left=Math.round(x)+'px';
     iconDrag.node.style.top=Math.round(y)+'px';
     if(S.grid){
@@ -1154,7 +1162,7 @@
     S.layer.querySelectorAll('.folderTarget').forEach(function(n){ n.classList.remove('folderTarget'); });
     if(!d.moved){ checkGoal(); return; }  /* 没拖动，选中交给 click 事件 */
     const ic=iconById(d.id);
-    const f=folderUnder(e.clientX,e.clientY,null);
+    const f=folderUnder(e.clientX,e.clientY,d.node);  /* 松手时也跳过自己，文件夹不能装进自己 */
     if(f){
       S.inFolder[d.id]=f.dataset.id;
       if(S.sel===d.id) S.sel=null;
@@ -1249,7 +1257,7 @@
       });
       list.appendChild(b);
     });
-    const need=!!(S.scene&&S.scene.bar) || S.wins.length>0;
+    const need=!!(S.scene&&S.scene.bar);
     S.taskbar.classList.toggle('hide',!need);
     if(S.info) S.info.style.bottom=(need?BAR+8:8)+'px';
     if(S.hid) layout();
@@ -1367,8 +1375,8 @@
     return [
       {ic:'🔄',label:'刷新',act:function(){ S.flags.refresh=true; showInfo('桌面刷新好了'); }},
       {ic:'📁',label:'新建文件夹',act:function(){ createFolder(); }},
-      {ic:'⚙️',label:'显示设置',act:function(){ S.scene.light=!S.scene.light;
-        S.stage.classList.toggle('lightbg',!!S.scene.light); showInfo('桌面'+(S.scene.light?'变亮了':'恢复原样了')); }},
+      {ic:'⚙️',label:'显示设置',act:function(){ S.flags.displaySettings=true;
+        showInfo('你找到了「显示设置」'); }},
       {ic:'🧭',label:'排列图标',act:function(){ arrangeIcons(); showInfo('图标排整齐了'); }}
     ];
   }
@@ -1465,6 +1473,7 @@
       if(g.k==='selAll'&&g.ids&&g.ids.indexOf(id)>=0) need=true;
       if(g.k==='folder'&&(g.icon===id||g.folder===id)) need=true;
       if(g.k==='slots') g.list.forEach(function(x){ if(x.id===id) need=true; });
+      if(g.k==='slotsAny'&&g.ids.indexOf(id)>=0) need=true;
       if(g.k==='ctx'&&g.on==='icon'&&g.id===id) need=true;
       if((g.k==='winOpen'||g.k==='winClosed'||g.k==='state'||g.k==='snap'||g.k==='active')
          && g.id&&g.id.indexOf('win-')===0&&g.id.slice(4)===id) need=true;
@@ -1567,20 +1576,31 @@
       case 'state':   return !!winById(g.id) && winById(g.id).state===g.value;
       case 'snap':    return !!winById(g.id) && winById(g.id).snap===g.zone;
       case 'active':  return S.active===g.id && !!winById(g.id) && winById(g.id).state!=='min';
-      case 'folder':  return S.inFolder[g.icon]===g.folder;
+      case 'folder': {
+        if(g.folder==='anyNew'){
+          const folder=iconById(S.inFolder[g.icon]);
+          return !!folder && folder.folder && folder.isNew && !folder.hidden;
+        }
+        return S.inFolder[g.icon]===g.folder;
+      }
       case 'folders': return S.icons.filter(function(i){ return i.folder&&i.isNew&&!i.hidden; }).length>=g.n;
       case 'slots':   return g.list.every(function(x){
                         const ic=iconById(x.id);
                         return ic && ic.col===x.col && ic.row===x.row; });
+      case 'slotsAny': {
+        const icons=g.ids.map(iconById);
+        return icons.length===g.rows.length &&
+          icons.every(function(ic){ return ic&&!ic.hidden&&!S.inFolder[ic.id]&&ic.col===g.col; }) &&
+          g.rows.every(function(row){ return icons.some(function(ic){ return ic.row===row; }); });
+      }
       case 'uncover': return visFrac()>=0.9;
       case 'marker':  return markerVisible(g.win,g.marker);
       case 'bottom':  return scrolledBottom(g.win);
-      case 'light':   return !!S.scene.light;
       default: return false;
     }
   }
   function checkGoal(){
-    if(!S.stage) return;
+    if(!S.stage||!S.ready) return;
     tickHid();
     if(S.done) return;
     const r=curRound();
@@ -1735,9 +1755,10 @@
         scene:{i:[['pc',0,0],['bin',1,0]]}, goal:{k:'sel',id:'bin'}, star:true },
       { tip:'选中「美术作业」', hint:'',
         scene:{i:[['pc',0,0],['bin',1,0],['paint',2,0]]}, goal:{k:'sel',id:'paint'}, star:true },
-      { tip:'先选中「语文作业」，再选中「音乐」', hint:'选中第二个的时候，第一个会自动取消。',
+      { tip:'先点「语文作业」，再点「音乐」，看选中会切换', hint:'一次只能选中一个：点第二个时，第一个会自动取消。',
         scene:{i:[['pc',0,0],['cn',1,0],['music',2,0]]},
-        goal:{k:'seq',steps:[{k:'sel',id:'cn'},{k:'sel',id:'music'}]}, star:true },
+        goal:{k:'seq',steps:[{k:'sel',id:'cn'},{k:'sel',id:'music'}]}, star:true,
+        steps:['① 先点语文作业','② 再点音乐，看选中切换'] },
       { tip:'把这三个图标各点一次', hint:'顺序不限，每个都要点一次。',
         scene:{i:[['pc',0,0],['bin',1,0],['paint',2,0]]},
         goal:{k:'selAll',ids:['pc','bin','paint']}, star:true }
@@ -1780,8 +1801,8 @@
         steps:['① 在空白处点右键','② 选「新建文件夹」'] },
       { tip:'在「美术作业」上点右键，选「查看属性」', hint:'把鼠标移到「美术作业」上，再按右键。',
         scene:{i:[['paint',0,0]]}, goal:{k:'seq',steps:[{k:'ctx',on:'icon',id:'paint'},{k:'flag',name:'props'}]}, star:true },
-      { tip:'在空白处按右键，把桌面变亮（显示设置）', hint:'右键 → 显示设置。',
-        scene:{i:[]}, goal:{k:'light'}, star:true },
+      { tip:'在桌面空白处点右键，再点「显示设置」', hint:'菜单出现后，找到「显示设置」点一下。',
+        scene:{i:[]}, goal:{k:'flag',name:'displaySettings'}, star:true },
       { tip:'在「回收站」上右键，选「打开」', hint:'右键点图标 → 选「打开」。',
         scene:{i:[['bin',0,0]]}, goal:{k:'winOpen',id:'win-bin'}, star:true },
       { tip:'用右键菜单新建两个文件夹', hint:'建完一个，再在空白处右键一次。',
@@ -1791,24 +1812,24 @@
    { id:'l4', name:'拖动图标', emoji:'✋', color:'#107c41',
      line:'按住不放，拖过去，再松手。',
      rounds:[
-      { tip:'把「音乐」拖到右边第二行', hint:'按住不放，拖到第二行再松手。',
+      { tip:'把「音乐」拖到第5列 第2行', hint:'按住不放，拖到标着「第5列 第2行」的格子里再松手。',
         scene:{i:[['music',0,0]]}, goal:{k:'slots',list:[{id:'music',col:4,row:1}]}, star:true, guided:2,
-        steps:['① 按住图标','② 拖到右边第二行再松手'],
+        steps:['① 按住图标','② 拖到第5列 第2行再松手'],
         demo:[{at:'#play .micon',msg:'① 按住「音乐」不放'},
               {run:function(next){ demoIconDrag('music',4,1,next); }}] },
-      { tip:'把「照片」拖到第一列第二行', hint:'松手会自动对齐格子。',
+      { tip:'把「照片」拖到第1列 第2行', hint:'拖到标着「第1列 第2行」的格子里再松手。',
         scene:{i:[['music',4,0],['photo',5,0]]}, goal:{k:'slots',list:[{id:'photo',col:0,row:1}]}, star:true, guided:1,
-        steps:['① 按住照片','② 拖到第一列第二行'] },
-      { tip:'把「美术作业」拖到第一列第三行', hint:'按住「美术作业」，拖到最左边第三行。',
+        steps:['① 按住照片','② 拖到第1列 第2行'] },
+      { tip:'把「美术作业」拖到第1列 第3行', hint:'按住「美术作业」，拖到标着「第1列 第3行」的格子里。',
         scene:{i:[['paint',2,0]]}, goal:{k:'slots',list:[{id:'paint',col:0,row:2}]}, star:true },
       { tip:'把「语文作业」拖进「作业」文件夹', hint:'拖到文件夹上会变亮。',
         scene:{i:[['cn',0,0],['folder',2,0]]}, goal:{k:'folder',icon:'cn',folder:'folder'}, star:true },
-      { tip:'把「音乐」拖到第二列第二行，「照片」拖到第二列第三行', hint:'一次拖一个，拖到对应格子再松手。',
+      { tip:'把「音乐」拖到第2列 第2行，「照片」拖到第2列 第3行', hint:'一次拖一个，对准格子上的标签。',
         scene:{i:[['music',4,0],['photo',5,0]]},
         goal:{k:'slots',list:[{id:'music',col:1,row:1},{id:'photo',col:1,row:2}]}, star:true },
-      { tip:'把三个图标都摆到第一列', hint:'从上往下占第一、二、三行。',
+      { tip:'把三个图标都摆到第1列', hint:'第1列的第1、2、3行各放一个。',
         scene:{i:[['pc',3,0],['bin',4,0],['paint',5,0]]},
-        goal:{k:'slots',list:[{id:'pc',col:0,row:0},{id:'bin',col:0,row:1},{id:'paint',col:0,row:2}]}, star:true }
+        goal:{k:'slotsAny',ids:['pc','bin','paint'],col:0,rows:[0,1,2]}, star:true }
      ] },
 
    { id:'l5', name:'开始菜单与滚轮', emoji:'🌀', color:'#0b7285',
@@ -1906,7 +1927,7 @@
      rounds:[
       { tip:'在空白处右键新建一个文件夹，再把「语文作业」拖进去', hint:'先建文件夹，再把图标拖到文件夹上。',
         scene:{i:[['cn',0,0]]},
-        goal:{k:'seq',steps:[{k:'folders',n:1},{k:'folder',icon:'cn',folder:'newfolder1'}]}, star:true },
+        goal:{k:'seq',steps:[{k:'folders',n:1},{k:'folder',icon:'cn',folder:'anyNew'}]}, star:true },
       { tip:'双击打开「美术作业」，再把它拖到左边缘占左半边', hint:'按住窗口标题栏拖到最左边。',
         scene:{i:[['paint',0,0]]},
         goal:{k:'seq',steps:[{k:'winOpen',id:'win-paint'},{k:'snap',id:'win-paint',zone:'left'}]}, star:true },
@@ -1918,7 +1939,7 @@
         goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'snap',id:'win-essay',zone:'left'},
                              {k:'winOpen',id:'win-photo'},{k:'snap',id:'win-photo',zone:'right'}]}, star:true },
       { tip:'右键点「音乐」图标，选「打开」，最小化后再从任务栏点回来', hint:'先右键打开，再点「—」，最后点任务栏。',
-        scene:{i:[['music',0,0]]},
+        scene:{i:[['music',0,0]],bar:true},
         goal:{k:'seq',steps:[{k:'winOpen',id:'win-music'},{k:'state',id:'win-music',value:'min'},{k:'active',id:'win-music'}]}, star:true },
       { tip:'在空白处右键新建文件夹，把两个图标拖进去', hint:'整理好桌面就完成。',
         scene:{i:[['cn',0,0],['paint',1,0]]},
@@ -1929,15 +1950,58 @@
 
   /* ================= 每一关的流程 ================= */
   let L=0, RI=0, stars=0, TOTAL=0, mode='home';
-  const cleared={}, best={};
+  const cleared={}, best={}, stage={};
+  const SAVE_KEY='mousecamp3.progress.v1';
+  const previewFinale=/[?&]finale=1\b/.test(location.search);
   let navs=[];
   function curRound(){ const lv=LEVELS[L]; return lv&&lv.rounds[RI]; }
   function levelStars(lv){ return lv.rounds.filter(function(r){ return r.star; }).length; }
+  function refreshTotal(){
+    TOTAL=0;
+    LEVELS.forEach(function(lv){ TOTAL+=best[lv.id]||0; });
+    const n=document.getElementById('starNum');
+    if(n) n.textContent=TOTAL;
+  }
+  function writeSave(){
+    if(previewFinale) return;
+    try{ localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,best:best,cleared:cleared,stage:stage,ts:Date.now()})); }
+    catch(e){}
+  }
+  function restoreSave(){
+    let d=null;
+    try{ d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null'); }catch(e){}
+    if(!d||d.v!==1||typeof d!=='object') return;
+    LEVELS.forEach(function(lv){
+      const id=lv.id, max=levelStars(lv);
+      const b=d.best&&d.best[id];
+      if(typeof b==='number'&&isFinite(b)) best[id]=Math.max(0,Math.min(max,Math.floor(b)));
+      if(d.cleared&&d.cleared[id]===true){ cleared[id]=true; best[id]=max; return; }
+      const st=d.stage&&d.stage[id];
+      if(st&&typeof st.round==='number'&&typeof st.stars==='number'&&
+         isFinite(st.round)&&isFinite(st.stars)){
+        const round=Math.floor(st.round), stars=Math.floor(st.stars);
+        if(round>0&&round<lv.rounds.length&&stars>=0&&stars<=max){
+          stage[id]={round:round,stars:stars};
+          best[id]=Math.max(best[id]||0,stars);
+        }
+      }
+    });
+    refreshTotal();
+  }
+  function clearSave(){
+    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+    for(const k in best) delete best[k];
+    for(const k in cleared) delete cleared[k];
+    for(const k in stage) delete stage[k];
+    refreshTotal();
+  }
+  function allCleared(){ return LEVELS.every(function(lv){ return !!cleared[lv.id]; }); }
   function markNav(id){
     navs.forEach(function(b){
       b.style.outline=(b.dataset.mode===id)?'3px solid #fff':'none';
       if(b.dataset.mode!=='home'&&cleared[b.dataset.mode]) b.classList.add('n-done');
       else b.classList.remove('n-done');
+      b.classList.toggle('n-half',!!(stage[b.dataset.mode]&&!cleared[b.dataset.mode]));
     });
   }
   function updatePhase(){
@@ -1963,6 +2027,7 @@
       case 'seen': return '#play .micon[data-id="'+g.id+'"]';
       case 'folder': return '#play .micon[data-id="'+g.icon+'"]';
       case 'slots': return '#play .micon[data-id="'+g.list[0].id+'"]';
+      case 'slotsAny': return '#play .micon[data-id="'+g.ids[0]+'"]';
       case 'uncover': return '#play .mwin .tbar';
       case 'winClosed': return '#play .mwin[data-win="'+g.id+'"] .wb.cls';
       case 'winOpen':
@@ -2007,15 +2072,39 @@
   }
   function showTag(r){
     if(!r||!r.guided) return;
+    if(r._tag) clearTag();
     const sel=goalSelector(r.goal);
     const node=sel?$(sel):null;
     if(!node) return;
     node.classList.add('hintring');
     const c=centerOf(node), pr=play.getBoundingClientRect();
-    const tag=el('div','tag-here','点这里');
+    let g=r.goal;
+    if(g.k==='seq') g=g.steps[Math.min(S.seqStep||0,g.steps.length-1)];
+    let label='';
+    if(g.k==='sel'||g.k==='seen'){
+      const ic=iconById(g.id);
+      label='单击「'+(ic?ic.label:'图标')+'」';
+    } else if(g.k==='winOpen'){
+      if(g.id.indexOf('win-app-')===0) label='点「开始」';
+      else {
+        const ic=iconById(g.id.slice(4));
+        label='双击「'+(ic?ic.label:'图标')+'」';
+      }
+    } else if(g.k==='slots'||g.k==='slotsAny') label='按住图标拖';
+    else if(g.k==='uncover'||g.k==='snap') label='按住标题栏拖';
+    else if(g.k==='winClosed'||g.k==='allClosed') label='点「✕」';
+    else if(g.k==='state'&&g.value==='min'||g.k==='allMin') label='点「—」';
+    else if(g.k==='active'){
+      const w=winById(g.id), name=w?w.spec.title:'窗口';
+      label=node.classList.contains('mtbtn')?'点任务栏「'+name+'」':'点「'+name+'」窗口';
+    } else if(g.k==='flag'&&g.name==='refresh') label='右键选「刷新」';
+    else if(g.k==='flag'&&g.name==='hidclick') label='点露出的东西';
+    else if(g.k==='folders') label='右键选「新建文件夹」';
+    if(!label){ node.classList.remove('hintring'); return; }
+    const tag=el('div','tag-here',label);
     play.appendChild(tag);
     const nodeTop=c.y-pr.top-node.getBoundingClientRect().height/2;
-    const below=nodeTop<64;                 /* 目标太靠上就把标签放到下面，别压住它 */
+    const below=nodeTop<tag.offsetHeight;  /* 上面放不下时才移到下面 */
     tag.style.left=clamp(Math.round(c.x-pr.left-tag.offsetWidth/2),6,pW()-tag.offsetWidth-6)+'px';
     tag.style.top=clamp(below
       ? Math.round(nodeTop+node.getBoundingClientRect().height+10)
@@ -2049,6 +2138,10 @@
     play.dataset.level=lv.id;
     play.dataset.round=String(RI+1);
     S.ready=true;
+    if(!cleared[lv.id]){
+      stage[lv.id]={round:RI,stars:stars};
+      writeSave();
+    }
     T(300,function(){ if(!S.done) showTag(r); });
   }
   function roundDone(){
@@ -2057,6 +2150,14 @@
     clearTag();
     stars++;
     setStars(stars,levelStars(LEVELS[L]));
+    const lv=LEVELS[L];
+    if((best[lv.id]||0)<stars) best[lv.id]=stars;
+    if(cleared[lv.id]) delete stage[lv.id];
+    else if(RI+1>=lv.rounds.length){ cleared[lv.id]=true; delete stage[lv.id]; }
+    else stage[lv.id]={round:RI+1,stars:stars};
+    refreshTotal();
+    markNav(lv.id);
+    writeSave();
     confetti();
     say('太棒了！<b>得到一颗星</b> ⭐');
     T(1200,nextRound);
@@ -2089,11 +2190,10 @@
     const lv=LEVELS[L];
     cleared[lv.id]=true;
     if((best[lv.id]||0)<stars) best[lv.id]=stars;
-    TOTAL=0;
-    for(const k in best) TOTAL+=(best[k]||0);
-    const n=document.getElementById('starNum');
-    if(n) n.textContent=TOTAL;
-    markNav(L);
+    delete stage[lv.id];
+    refreshTotal();
+    writeSave();
+    markNav(lv.id);
     play.dataset.round='done';
     const all=LEVELS.every(function(l){ return cleared[l.id]; });
     if(all){
@@ -2113,11 +2213,20 @@
   }
   function startLevel(i){
     mode='play';
-    L=i; RI=0; stars=0;
+    L=i;
+    const st=cleared[LEVELS[i].id]?null:stage[LEVELS[i].id];
+    RI=st?st.round:0; stars=st?st.stars:0;
     markNav(LEVELS[i].id);
-    setStars(0,levelStars(LEVELS[i]));
+    setStars(stars,levelStars(LEVELS[i]));
     ctrlrow.style.display='';
     showRound();
+    if(st){
+      const id=LEVELS[i].id, at=RI;
+      T(1500,function(){
+        if(mode==='play'&&L===i&&RI===at&&!S.done&&stage[id])
+          say('接着上次继续：你已经有 '+stars+' 颗星啦 ⭐');
+      });
+    }
   }
   function buildHomeScene(){
     clearHandlers();
@@ -2129,17 +2238,30 @@
     hub.appendChild(el('div','home-head','<b>选择一课开始</b>'));
     const grid=el('div','home-grid');
     LEVELS.forEach(function(lv,i){
-      const total=levelStars(lv), got=best[lv.id]||0, done=!!cleared[lv.id];
-      const card=el('button','home-card'+(done?' done':''),
+      const total=levelStars(lv), got=best[lv.id]||0, done=!!cleared[lv.id], half=stage[lv.id];
+      const card=el('button','home-card'+(done?' done':(half?' half':'')),
         '<span class="hc-top"><span class="hc-ico">'+navIcon(NAV_ICON_NAMES[lv.id])+'</span>'
         +'<b class="hc-name">'+(i+1)+'. '+lv.name+'</b></span>'
-        +'<span class="hc-foot">'+(done?'✓ 已完成 · ':'')+'⭐ '+got+' / '+total+'</span>');
+        +'<span class="hc-foot">'+(done?'✓ 已完成 · ':(half?'◷ 接着做 · ':''))+'⭐ '+got+' / '+total+'</span>');
       card.dataset.mode=lv.id;
       card.style.setProperty('--lv',lv.color);
       on(card,'click',function(){ startLevel(i); });
       grid.appendChild(card);
     });
     hub.appendChild(grid);
+    const actions=el('div','home-actions');
+    if(allCleared()){
+      const finale=el('button','home-finale','🎉 进入通关页');
+      on(finale,'click',showFinale);
+      actions.appendChild(finale);
+    }
+    const reset=el('button',null,'清空进度');
+    on(reset,'click',function(){
+      if(!window.confirm('确定要清空练习营3的所有进度吗？清空后八课要重新开始。')) return;
+      clearSave(); enterHome();
+    });
+    actions.appendChild(reset);
+    hub.appendChild(actions);
     play.appendChild(hub);
     S.stage=hub;
   }
@@ -2454,11 +2576,10 @@
     }
   })();
   /* ?finale=1 只用于预览结束页：星级只标在内存里，不写任何进度。 */
-  if(/[?&]finale=1\b/.test(location.search)){
+  restoreSave();
+  if(previewFinale){
     LEVELS.forEach(function(l){ cleared[l.id]=true; best[l.id]=levelStars(l); });
-    TOTAL=0;
-    for(const k in best) TOTAL+=(best[k]||0);
-    const n=document.getElementById('starNum'); if(n) n.textContent=TOTAL;
+    refreshTotal();
     showFinale();
   } else {
     enterHome();

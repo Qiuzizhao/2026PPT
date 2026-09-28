@@ -409,18 +409,29 @@ function renderTaskControls(){
       const open = {...taskOpen};
       /* 主通道：写实时状态。选“全部”时给每个班各写一份，学生端只读自己班的键 */
       const targets = selectedClass==="__all__" ? CLASSES : [selectedClass];
-      let ok = false;
+      const succeeded = [], failed = [];
       for(const c of targets){
-        if(await putState("tc:"+c, {open, at:localNow()}, TTL_TC)) ok = true;
+        if(await putState("tc:"+c, {open, at:localNow()}, TTL_TC)) succeeded.push(c);
+        else failed.push(c);
       }
-      /* 记录表里留一条痕（数量极少，不影响负载；也兼容还没升级的学生端） */
-      fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({type:"task_control",klass:selectedClass,open})}).catch(()=>{});
-      if(ok){
+      /* 成功班级分别留痕；只有全部成功才写“全部班级”，避免旧版回退读到虚假的全班状态。 */
+      const logTargets = selectedClass==="__all__" && failed.length ? succeeded : (succeeded.length ? [selectedClass] : []);
+      logTargets.forEach(c=>fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({type:"task_control",klass:c,open})}).catch(()=>{}));
+      succeeded.forEach(c=>{
+        stateMap["tc:"+c]={value:{open},updated_at:localNow(),expires_at:null};
+      });
+      if(failed.length===0){
         stateMap["tc:"+selectedClass]={value:{open},updated_at:localNow(),expires_at:null};
         toastMsg((taskOpen[t.id]?"已开放":"已关闭")+(selectedClass==="__all__"?"全部班级":selectedClass)+" · "+t.name);
+      }else if(succeeded.length){
+        const action=taskOpen[t.id]?"已开放":"已关闭";
+        const okNames=succeeded.map(c=>CLASS_LABEL[c]||c).join("、");
+        const badNames=failed.map(c=>CLASS_LABEL[c]||c).join("、");
+        toastMsg(`${action}部分班级：${okNames}；同步失败：${badNames}`);
       }else{
-        toastMsg("开关同步失败，请检查网络后重点一次");
+        const badNames=failed.map(c=>CLASS_LABEL[c]||c).join("、");
+        toastMsg("开关同步失败："+badNames+"，请检查网络后重试");
         taskOpen[t.id] = !taskOpen[t.id];
         renderTaskControls();
       }
@@ -884,9 +895,13 @@ function render(subs){
   const lastRound = stRound ? null : (rounds.length?rounds[rounds.length-1]:null);
   if(stRound || lastRound){
     const targetName = stRound ? stRound.target_name : lastRound.target_name;
+    const stateRound=stateMap["round:"+selectedClass]||{};
+    const roundIds=stRound
+      ? [stRound.at,stateRound.updated_at].filter(v=>v!=null).map(String)
+      : [lastRound.at,lastRound._id].filter(v=>v!=null).map(String);
     const myGuesses = subs.filter(s=>{
       if(s.type!=="guess_submit") return false;
-      return stRound ? String(s.round_id)===String(stRound.at) : s.round_id===lastRound._id;
+      return roundIds.indexOf(String(s.round_id))>=0;
     });
     // 学生只有猜对才提交，所以提交数=猜对人数；wrong_count 累加得到全班错误总次数
     const guessed = myGuesses.length;
@@ -1060,20 +1075,28 @@ document.getElementById("btn-broadcast").onclick = async function(){
     names: guessPool.map(x=>x.student).filter(Boolean)
   };
   /* 主通道：写实时状态（选“全部”时给每个班各写一份） */
-  let ok = false;
+  const succeeded = [], failed = [];
   const targets = selectedClass==="__all__" ? CLASSES : [selectedClass];
   for(const c of targets){
-    if(await putState("round:"+c, round, TTL_ROUND)) ok = true;
+    if(await putState("round:"+c, round, TTL_ROUND)) succeeded.push(c);
+    else failed.push(c);
   }
-  /* 记录表留痕（同时也兼容还没升级的学生端） */
-  fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({type:"guess_round", klass:selectedClass, ...round})}).catch(()=>{});
+  /* 记录表留痕；部分成功时按实际收到轮次的班级分别记录。 */
+  const logTargets = selectedClass==="__all__" && failed.length ? succeeded : (succeeded.length ? [selectedClass] : []);
+  logTargets.forEach(c=>fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({type:"guess_round", klass:c, ...round})}).catch(()=>{}));
   this.disabled = false; this.textContent = "广播给全班猜";
-  if(ok){
+  if(failed.length===0){
     toastMsg("已广播！学生平板会自动加载（答案已隐藏，要看得点“揭晓答案”）");
     renderGuessCard();   // 保持“神秘同学”，不剧透
+  }else if(succeeded.length){
+    const okNames=succeeded.map(c=>CLASS_LABEL[c]||c).join("、");
+    const badNames=failed.map(c=>CLASS_LABEL[c]||c).join("、");
+    toastMsg(`已广播给${okNames}；以下班级失败：${badNames}`);
+    renderGuessCard();
   }else{
-    toastMsg("广播失败，请检查网络后再点一次");
+    const badNames=failed.map(c=>CLASS_LABEL[c]||c).join("、");
+    toastMsg("广播失败："+badNames+"，请检查网络后重试");
   }
 };
 function toastMsg(m){

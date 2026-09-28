@@ -4,3 +4,6 @@ _oldsim/
 .qa-shots/
 .qa-old/
 .qa-check/
+.qa-art*/
+.qa-secret*/
+.qa-port*/

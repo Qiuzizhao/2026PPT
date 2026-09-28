@@ -26,6 +26,32 @@ const P = `
 const j = (body) => `(async () => { ${P} try { ${body} } catch (e) { return String(e); } })()`;
 
 const SHOTS = [
+  { name: '太空补给站-求救信号订单', page: '鼠标练习营4.html', js: j(`
+      await __wait(500); return 'ok';`) },
+  { name: '太空补给站-右键复制菜单', page: '鼠标练习营4.html', js: j(`
+      const c=__$('#cargo[data-id="signal"]'),r=c.getBoundingClientRect();
+      c.dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true,button:2,clientX:r.left+18,clientY:r.top+18}));
+      await __wait(250); return __$('#mmenu').hidden?'menu missing':'ok';`) },
+  { name: '太空补给站-复制照片进行中', page: '鼠标练习营4.html', js: j(`
+      await __wait(350);
+      const kb = k => document.dispatchEvent(new KeyboardEvent('keydown',
+        { key:k, ctrlKey:true, bubbles:true, cancelable:true }));
+      const right = s => {const e=__$(s),r=e.getBoundingClientRect();
+        e.dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true,button:2,clientX:r.left+18,clientY:r.top+18}));};
+      right('#cargo[data-id="signal"]'); __$('#mmenu button[data-act="copy"]').click();
+      right('#port'); __$('#mmenu button[data-act="paste"]').click();
+      await __wait(850);
+      __$('#cargo[data-id="photo"]').click(); kb('c'); __$('#port').click(); kb('v');
+      await __wait(200); return 'ok';`) },
+  { name: '太空补给站-发射庆祝', page: '鼠标练习营4.html?finale=1', js: j(`
+      await __wait(900); return 'ok';`) },
+  { name: '太空补给站-隐藏关陨石', page: '鼠标练习营4.html?finale=1', js: j(`
+      __$('#startSecret').click(); await __wait(350); return 'ok';`) },
+  { name: '太空补给站-隐藏关飞碟', page: '鼠标练习营4.html?finale=1', js: j(`
+      const key=k=>document.dispatchEvent(new KeyboardEvent('keydown',{key:k,ctrlKey:true,bubbles:true,cancelable:true}));
+      __$('#startSecret').click();
+      for(let i=0;i<2;i++){key('c');key('v');await __wait(1850);}
+      return 'ok';`) },
   { name: '键盘-数字关卡', page: '键盘练习营.html', js: j(`
       __$('#nav [data-mode="n"]').click(); await __wait(600); return 'ok';`) },
   { name: '鼠标-左键关卡', page: '鼠标练习营.html', js: j(`

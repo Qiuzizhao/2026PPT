@@ -3,6 +3,7 @@
 """
 import os
 import re
+import shutil
 
 FILES = [
     "index.html",
@@ -14,6 +15,7 @@ FILES = [
     "鼠标练习营.html",
     "鼠标练习营2.html",
     "鼠标练习营3.html",
+    "鼠标练习营4.html",
     "4-1数据宝藏在身旁.html",
     "4-1教师端.html",
 ]
@@ -64,6 +66,9 @@ def main():
         out = out.replace("</head>", "<script>document.documentElement.className += ' no-flexgap';</script>\n</head>", 1)
         open(os.path.join(OUT, f), "w", encoding="utf-8", newline="").write(out)
         print("simulated:", f)
+    if os.path.isdir("assets"):
+        shutil.copytree("assets", os.path.join(OUT, "assets"), dirs_exist_ok=True)
+        print("simulated: assets")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 鼠标练习营 4 · 袋袋的太空补给站</title>
+<meta name="theme-color" content="#101b3b">
+<style>
+:root{--ink:#182344;--muted:#697692;--navy:#101b3b;--cyan:#5de6ff;--pink:#ff6db0;--gold:#ffcc67;--line:#d6e1f3;--shadow:0 18px 50px rgba(3,10,32,.24)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:"Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif}
+body{min-height:100vh;overflow-x:hidden;color:#f8fbff;padding:12px;background:#0b1430 url('assets/mousecamp4/space-background.png') center center / cover fixed no-repeat;user-select:none}
+body::before{content:"";position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:0;background:linear-gradient(180deg,rgba(8,18,49,.18),rgba(8,18,49,.42))}
+button{font:inherit}
+.app{width:100%;max-width:1160px;margin:0 auto;position:relative;z-index:1;display:grid;gap:11px}
+.hero{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:center}
+.mascot{width:72px;height:72px;border:2px solid rgba(255,255,255,.65);border-radius:21px;background:linear-gradient(145deg,#fff,#d9f9ff);display:grid;place-items:center;box-shadow:0 6px 0 #6476b0,0 14px 24px rgba(0,0,0,.18);animation:float 3s ease-in-out infinite;overflow:hidden}
+.mascot img{display:block;width:94%;height:94%;object-fit:contain;object-position:center top}
+.speech{background:#fff;color:var(--ink);border:2px solid #cdeeff;border-radius:18px;padding:9px 15px;box-shadow:0 8px 22px rgba(0,0,0,.12);min-height:66px;display:grid;align-content:center}
+.speech strong{font-size:18px;color:#243665}.speech span{font-size:14px;color:#596783;font-weight:600;margin-top:2px}
+.route-card{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:17px;padding:8px 12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.route-label{font-size:13px;font-weight:800;letter-spacing:.08em;color:#c0cff1}
+.route-steps{display:flex;gap:8px;align-items:center}
+html.no-flexgap .route-steps>*:not(:last-child){margin-right:8px}
+.route-step{min-width:112px;padding:6px 9px;border-radius:999px;background:rgba(6,14,38,.32);color:#b7c4e4;border:1px solid rgba(207,221,255,.23);font-size:12px;font-weight:800;text-align:center}
+.route-step.done{background:#164e56;color:#baf9e6;border-color:#44d9b0}
+.route-step.current{background:#fff;color:#243665;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(93,230,255,.18)}
+.rs-num{display:inline-block;margin-right:4px;color:var(--gold)}.route-step.done .rs-num{color:#68f0c0}
+#station{min-height:490px;padding:14px;border-radius:23px;border:1px solid rgba(255,255,255,.7);background:#eef6ff;background-image:linear-gradient(150deg,rgba(250,253,255,.75),rgba(226,240,255,.82)),url('assets/mousecamp4/hangar-interior.png');background-position:center;background-size:cover;color:var(--ink);box-shadow:var(--shadow);display:grid;grid-template-rows:auto 1fr auto auto;gap:11px}
+.mission-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:10px 13px;border-radius:15px;background:#fff;border:1px solid var(--line)}
+html.no-flexgap .mission-head>*:not(:last-child){margin-right:12px}
+.mission-counter{border-radius:999px;background:#e8fbff;color:#087994;padding:6px 10px;font-size:13px;font-weight:900;white-space:nowrap}
+#missionTitle{font-size:21px;line-height:1.25;margin:0;font-weight:900;color:#1a2d5b}
+#missionPrompt{font-size:14px;font-weight:700;color:#556480;margin:0 0 0 auto}
+.stage-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(90px,.34fr) minmax(0,1fr);gap:11px;align-items:stretch;min-height:275px}
+.bay,.ship{min-width:0;border-radius:19px;border:1px solid #cdd9ed;padding:12px;background:linear-gradient(180deg,#fff,#f5f8ff);box-shadow:0 5px 14px rgba(33,52,98,.08);display:flex;flex-direction:column}
+.bay-head,.ship-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+html.no-flexgap .bay-head>*:not(:last-child),html.no-flexgap .ship-head>*:not(:last-child){margin-right:8px}
+.bay-head strong,.ship-head strong{font-size:16px;color:#273862}
+.bay-head span,.ship-head span{font-size:12px;font-weight:700;color:#76839e}
+.cargo-wrap{display:grid;place-items:center;flex:1;min-height:170px}
+.cargo{width:100%;max-width:245px;min-height:160px;padding:12px 9px;border:2px solid #bfd3f2;border-radius:19px;background:linear-gradient(145deg,#fff,#edf6ff);color:var(--ink);cursor:pointer;box-shadow:0 6px 0 #d3e0f2,0 11px 22px rgba(41,72,130,.1);display:grid;place-items:center;align-content:center;transition:transform .14s,border-color .14s,opacity .14s;animation:crateBob 3s ease-in-out infinite}
+.cargo:hover{transform:translateY(-3px);border-color:#38bfd9}
+.cargo.selected{border-color:#e852a1;box-shadow:0 0 0 4px rgba(255,109,176,.17),0 6px 0 #d3e0f2}
+.cargo.is-cut{opacity:.36;border-style:dashed;animation:none}
+.cargo-art{width:100px;height:86px;max-width:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 5px 5px rgba(16,36,74,.18))}.cargo-name{font-size:16px;font-weight:900;margin-top:5px}.cargo-type{font-size:12px;font-weight:800;color:#75819b;margin-top:3px}
+.cargo-badge{font-size:11px;font-weight:900;color:#a13971;background:#ffe4f1;border-radius:999px;padding:4px 8px;margin-top:5px}
+.cargo-empty{color:#63708a;font-size:14px;font-weight:800;text-align:center;line-height:1.6;padding:17px;border:2px dashed #c4d2e8;border-radius:18px;background:#f6f8fc}
+.transfer{display:grid;align-content:center;justify-items:center;gap:8px;color:#2789a3}
+.transfer-arrow{font-size:34px;font-weight:900;line-height:1;text-shadow:0 3px 0 #c4eff5}
+.pocket{width:100%;min-height:88px;border-radius:19px;border:2px dashed #9cb6db;background:#e9f1ff;display:grid;place-items:center;text-align:center;padding:8px;color:#72809c}
+.pocket.full{background:#fff7dc;border:2px solid #edc34f;color:#473a17;box-shadow:0 0 0 4px rgba(255,204,103,.2)}
+.pocket-emoji{font-size:27px;line-height:1.05}.pocket-art{width:37px;height:31px;object-fit:contain;vertical-align:middle}.pocket-empty{font-size:12px;font-weight:800;margin-top:4px}
+.ship{background:linear-gradient(160deg,#f0fdff,#e5f6ff);border-color:#b4dce9;position:relative;overflow:hidden}
+.ship::before{content:"";position:absolute;width:165px;height:165px;right:-58px;top:15px;border-radius:50%;border:1px solid rgba(60,191,218,.18);box-shadow:0 0 0 20px rgba(60,191,218,.05),0 0 0 42px rgba(60,191,218,.04)}
+.ship-head{position:relative;z-index:1}
+.ship-frame{position:relative;z-index:1;flex:1;display:grid;place-items:center;min-height:145px}
+.rocket-body{width:96%;max-width:300px;min-height:147px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.ship-art{display:block;width:100%;max-height:145px;object-fit:contain;filter:drop-shadow(0 12px 10px rgba(34,85,128,.22));pointer-events:none}
+.delivery-slots{display:flex;gap:7px;justify-content:center;align-items:center;flex-wrap:wrap}
+html.no-flexgap .delivery-slots>*:not(:last-child){margin-right:7px}
+.delivery-slot{width:44px;height:44px;border:2px dashed #9db5d1;border-radius:12px;background:rgba(255,255,255,.92);display:grid;place-items:center;color:#93a2bb;font-size:12px;font-weight:900;transition:.2s}
+.delivery-slot.is-next{border-color:#e4a830;background:#fff3cb;box-shadow:0 0 0 4px rgba(255,204,103,.23);animation:pulse 1.1s infinite}
+.delivery-slot.is-filled{border-style:solid;border-color:#51bb9d;background:#dffff3}
+.delivery-slot img{width:34px;height:34px;object-fit:contain}
+.port{position:relative;z-index:2;width:96%;height:72%;max-width:360px;min-height:230px;max-height:380px;border:3px dashed #e6ae36;border-radius:24px;padding:13px 12px;background:linear-gradient(160deg,#fff9e9,#fff2c9);color:#513709;font-size:17px;font-weight:900;cursor:pointer;box-shadow:0 7px 0 #dcbd70,0 13px 24px rgba(107,81,27,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:transform .12s,border-color .12s,box-shadow .12s}
+.port-title{display:block;padding:6px 12px;border-radius:999px;background:#ffcd60;color:#563907;font-size:16px;font-weight:900;line-height:1.3}
+.port .rocket-body{pointer-events:none}.port:hover{transform:translateY(-2px);border-color:#d89112}
+.port.ready:not(.targeted){box-shadow:0 0 0 6px rgba(255,195,65,.22),0 7px 0 #dcbd70;animation:pulse 1.1s infinite}
+.port.targeted{border-style:solid;border-color:#ea9d21;background:linear-gradient(160deg,#fff1c4,#ffdf85);box-shadow:0 0 0 7px rgba(255,194,65,.35),0 7px 0 #c8922d}
+.hint{min-height:112px;border-radius:19px;background:linear-gradient(135deg,#1b326a,#101d42);color:#fff;padding:12px 18px;display:flex;align-items:center;gap:16px;border:3px solid #e8c97d;box-shadow:inset 0 0 0 2px #526a9d,0 7px 0 rgba(14,27,66,.2)}
+html.no-flexgap .hint>*:not(:last-child){margin-right:16px}
+.hint-portrait{width:82px;height:82px;flex:0 0 82px;position:relative;overflow:hidden;border:2px solid #8bb8df;border-radius:14px;background:linear-gradient(145deg,#e6f8ff,#adcbe9);box-shadow:0 4px 0 rgba(6,15,40,.35)}
+.hint-portrait img{display:block;width:100%;height:100%;object-fit:contain;object-position:center top}
+.hint-icon{position:absolute;right:2px;bottom:2px;width:25px;height:25px;border:1px solid #c59c55;border-radius:50%;background:#fff2ca;color:#273b68;display:grid;place-items:center;font-size:14px}
+.hint-body{min-width:0;flex:1}
+.hint-name{display:inline-block;padding:3px 14px;margin-bottom:7px;border-radius:6px;background:#f5d88e;color:#3b3150;font-size:14px;font-weight:900;letter-spacing:.1em}
+#hintText{font-size:19px;font-weight:800;line-height:1.45}
+#hintText small{display:block;font-size:12px;font-weight:600;color:#c5d3f1;margin-top:1px}
+kbd{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:13px;font-weight:900;background:#fff;color:#1c2b55;border-radius:6px;padding:2px 6px;box-shadow:0 2px 0 #b9c7e1;margin:0 2px}
+.lesson-key{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;border-radius:13px;padding:8px 12px;background:#edf3ff;border:1px solid #d8e3f5;color:#596986}
+.lesson-key div{font-size:12px;font-weight:800}.lesson-key b{color:#263967}
+.mmenu{position:fixed;z-index:31000;min-width:182px;padding:6px;border:1px solid #cbd8ee;border-radius:14px;background:#fff;box-shadow:0 14px 36px rgba(3,10,32,.35);color:var(--ink)}
+.mmenu[hidden]{display:none}.menu-title{padding:5px 9px 7px;font-size:12px;font-weight:900;color:#73809a}
+.mmenu button{width:100%;border:0;border-radius:9px;background:transparent;color:#26365e;text-align:left;padding:9px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.mmenu button:hover{background:#edf7ff}.mmenu small{font-size:11px;font-family:ui-monospace,Consolas,monospace;color:#71809b}
+.finale{position:fixed;top:0;right:0;bottom:0;left:0;z-index:30000;display:none;overflow:hidden;background:#0b1430 url('assets/mousecamp4/space-background.png') center / cover no-repeat;color:#fff;place-items:center;padding:18px}
+.finale.show{display:grid}
+.finale::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;background:radial-gradient(#fff 1px,transparent 1.4px);background-size:69px 69px;opacity:.38}
+.launch-card{position:relative;z-index:1;width:100%;max-width:800px;min-height:400px;border:1px solid rgba(255,255,255,.25);border-radius:28px;background:rgba(13,23,58,.76);box-shadow:0 24px 80px rgba(0,0,0,.3);display:grid;grid-template-columns:1.05fr .95fr;gap:12px;align-items:center;overflow:hidden;padding:22px}
+.launch-copy{text-align:left}.launch-kicker{color:#92edff;font-weight:900;font-size:14px;letter-spacing:.12em}
+.launch-copy h2{font-size:42px;font-size:clamp(28px,5vw,42px);line-height:1.1;margin:10px 0;color:#fff}
+.launch-copy p{font-size:17px;line-height:1.65;color:#d9e5ff;margin:0}
+.launch-copy .lesson{margin-top:15px;border-radius:14px;background:rgba(255,255,255,.09);padding:12px 14px;font-size:14px;font-weight:800}
+.launch-next{margin-top:18px;border:0;border-radius:14px;background:#ffd36e;color:#1d2b50;padding:13px 22px;font-size:18px;font-weight:900;cursor:pointer;box-shadow:0 5px 0 #b78128}
+.launch-next:hover{filter:brightness(1.08)}
+.launch-scene{min-height:320px;position:relative;display:grid;place-items:center;overflow:hidden;border-radius:20px;background:#152756 url('assets/mousecamp4/launch-scene.png') center / cover no-repeat}
+.launch-rocket{position:relative;width:95%;max-width:340px;filter:drop-shadow(0 16px 14px rgba(0,0,0,.35));animation:launch 2.4s ease-in-out infinite}
+.launch-rocket img{display:block;width:100%;height:auto}
+.spark{position:absolute;font-size:26px;animation:sparkle 2.2s ease-in-out infinite}
+.spark.a{left:6%;top:17%}.spark.b{left:11%;bottom:18%;animation-delay:.4s}.spark.c{right:8%;bottom:15%;animation-delay:.9s}.spark.d{right:22%;top:8%;animation-delay:.7s}
+.secret-game{position:relative;z-index:1;display:none;width:100%;max-width:1050px;height:100%;max-height:710px;min-height:0;grid-template-rows:auto minmax(0,1fr) auto;gap:12px}
+.finale.battle{place-items:stretch center}.finale.battle .launch-card{display:none}.finale.battle .secret-game{display:grid}
+.secret-head{display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid rgba(255,255,255,.24);border-radius:18px;padding:12px 18px;background:rgba(11,24,59,.84)}
+.secret-head b{display:block;color:#fff;font-size:22px}.secret-head small{display:block;color:#9cedff;font-size:13px;font-weight:800;margin-bottom:3px}
+.secret-progress{text-align:right;font-size:15px;font-weight:900;color:#ffe28e;white-space:nowrap}
+.secret-progress span{display:block;color:#bdcced;font-size:12px;margin-top:3px}
+.secret-arena{position:relative;min-height:210px;overflow:hidden;border:1px solid rgba(130,212,255,.34);border-radius:22px;background:radial-gradient(circle at 70% 45%,rgba(42,97,163,.58),transparent 35%),linear-gradient(120deg,rgba(8,20,49,.86),rgba(19,33,78,.7));box-shadow:inset 0 0 70px rgba(38,127,207,.15)}
+.secret-arena::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;background:radial-gradient(#fff 1px,transparent 1.5px);background-size:47px 49px;opacity:.35}
+.secret-ship{position:absolute;left:4%;top:50%;width:38%;max-width:330px;transform:translateY(-50%);filter:drop-shadow(0 18px 20px rgba(0,0,0,.55));animation:secretFloat 3s ease-in-out infinite}
+.secret-ship img,.secret-target img{display:block;width:100%;height:auto}
+.secret-target{position:absolute;right:7%;top:50%;width:27%;max-width:235px;transform:translateY(-50%);filter:drop-shadow(0 18px 22px rgba(0,0,0,.55))}
+.secret-target.asteroid{width:24%}.secret-target.hit{animation:targetHit .6s ease-in forwards}
+.secret-shield{position:absolute;top:7%;right:2%;bottom:7%;left:2%;border:5px solid rgba(111,234,255,.8);border-radius:50%;box-shadow:0 0 20px #64e8ff,inset 0 0 25px #64e8ff;background:rgba(72,190,242,.12);pointer-events:none;animation:shieldPulse 1.8s ease-in-out infinite}
+.secret-shield[hidden]{display:none}
+.secret-bolt{position:absolute;left:35%;top:47%;width:11%;height:13px;border-radius:20px;background:#fff8ab;box-shadow:0 0 12px #fff,0 0 30px #ffc343;opacity:0;pointer-events:none}
+.secret-bolt.firing{animation:boltFly .55s ease-in forwards}
+.secret-flash{position:absolute;right:14%;top:44%;font-size:48px;opacity:0;pointer-events:none}
+.secret-flash.pop{animation:hitFlash .65s ease-out}
+.secret-energy{position:absolute;left:12%;bottom:10px;border-radius:13px;background:rgba(10,20,49,.8);border:1px solid rgba(154,225,255,.45);padding:8px 12px;font-size:15px;font-weight:900;color:#bcefff}
+.secret-energy.ready{color:#ffdf7a;box-shadow:0 0 18px rgba(255,213,98,.45)}
+.secret-dialogue{display:grid;grid-template-columns:76px minmax(0,1fr);gap:13px;align-items:center;min-height:116px;padding:12px 18px;border:2px solid #9eeaff;border-radius:20px;background:rgba(11,24,59,.94);box-shadow:0 0 0 4px rgba(55,144,206,.18)}
+.secret-dialogue img{width:72px;height:72px;object-fit:contain}.secret-dialogue strong{display:block;font-size:15px;color:#ffdb83;margin-bottom:4px}
+.secret-dialogue p{margin:0;font-size:20px;font-weight:800;line-height:1.42}.secret-dialogue em{display:block;font-style:normal;color:#b5d0f5;font-size:13px;margin-top:3px}
+@keyframes secretFloat{0%,100%{margin-top:7px}50%{margin-top:-8px}}
+@keyframes secretApproach{0%{right:7%;margin-top:7px}50%{margin-top:-8px}100%{right:76%;margin-top:7px}}
+@keyframes shieldPulse{0%,100%{opacity:.65;transform:scale(.97)}50%{opacity:1;transform:scale(1.04)}}
+@keyframes boltFly{0%{left:35%;opacity:0;transform:scale(.6)}15%{opacity:1}100%{left:73%;opacity:1;transform:scale(1.4)}}
+@keyframes targetHit{0%{opacity:1;transform:translateY(-50%) scale(1)}40%{filter:brightness(3);transform:translateY(-50%) scale(1.2)}100%{opacity:0;transform:translateY(-50%) scale(.25)}}
+@keyframes hitFlash{0%{opacity:0;transform:scale(.4)}35%{opacity:1;transform:scale(1.4)}100%{opacity:0;transform:scale(2)}}
+@media(min-width:801px){.app{min-height:calc(100vh - 24px);grid-template-rows:auto auto minmax(0,1fr)}#station{min-height:0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes crateBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(255,204,103,.17)}50%{box-shadow:0 0 0 6px rgba(255,204,103,.3)}}
+@keyframes launch{0%,100%{transform:translateY(16px) rotate(-3deg)}45%{transform:translateY(-15px) rotate(2deg)}70%{transform:translateY(-7px) rotate(0)}}
+@keyframes flame{from{filter:brightness(.9);transform:translateX(-50%) scale(.85)}to{filter:brightness(1.3);transform:translateX(-50%) scale(1.08)}}
+@keyframes sparkle{0%,100%{transform:scale(.7) rotate(-12deg);opacity:.5}50%{transform:scale(1.15) rotate(12deg);opacity:1}}
+@media(max-width:800px){
+ body{padding:8px}.app{gap:8px}.hero{grid-template-columns:56px minmax(0,1fr);gap:9px}
+ .mascot{width:56px;height:56px;border-radius:16px;font-size:32px}.speech{min-height:58px;padding:7px 10px}
+ .speech strong{font-size:16px}.speech span{font-size:12px}.route-card{grid-template-columns:1fr;gap:6px}
+ .route-steps{justify-content:stretch}.route-step{min-width:0;flex:1;padding:6px 3px;font-size:10px}
+ #station{min-height:0;padding:9px;gap:8px}.mission-head{padding:8px 9px}#missionTitle{font-size:18px}
+ #missionPrompt{width:100%;margin:0;font-size:13px}.stage-grid{grid-template-columns:minmax(0,1fr) 78px minmax(0,1fr);gap:6px;min-height:225px}
+ .bay,.ship{padding:8px;border-radius:14px}.bay-head,.ship-head{display:block;margin-bottom:6px}
+ .bay-head span,.ship-head span{display:block;margin-top:2px}.cargo-wrap{min-height:145px}
+ .cargo{min-height:130px;padding:7px 4px}.cargo-art{width:76px;height:65px}.cargo-name{font-size:13px}
+ .transfer{gap:5px}.transfer-arrow{font-size:24px}.pocket{min-height:72px;padding:5px}
+ .rocket-body{width:96%;min-height:115px}.ship-art{max-height:105px}
+ .delivery-slots{gap:4px}html.no-flexgap .delivery-slots>*:not(:last-child){margin-right:4px}
+ .delivery-slot{width:33px;height:33px;border-radius:9px;font-size:10px}.delivery-slot img{width:25px;height:25px}
+ .ship-frame{min-height:130px}.port{min-height:175px;padding:8px 7px}.port-title{font-size:12px;padding:5px 7px}.hint{min-height:100px;padding:9px 11px;gap:10px}
+ html.no-flexgap .hint>*:not(:last-child){margin-right:10px}.hint-portrait{width:66px;height:66px;flex-basis:66px}.hint-name{font-size:12px;margin-bottom:4px}#hintText{font-size:16px}
+ .lesson-key{padding:6px 8px;gap:4px}.lesson-key div{font-size:11px}
+ .launch-card{min-height:0;grid-template-columns:1fr;padding:18px;gap:0}.launch-copy{text-align:center}
+ .launch-copy h2{font-size:30px}.launch-copy p{font-size:15px}.launch-scene{min-height:175px}
+ .launch-rocket{max-width:230px}
+ .secret-head b{font-size:17px}.secret-head{padding:9px 12px}.secret-progress{font-size:13px}
+ .secret-game{gap:8px}.secret-dialogue{grid-template-columns:56px minmax(0,1fr);min-height:103px;padding:9px;gap:7px}
+ .secret-dialogue img{width:54px;height:54px}.secret-dialogue p{font-size:16px}.secret-dialogue em{font-size:11px}
+}
+@media(max-width:540px){
+ .stage-grid{grid-template-columns:1fr;gap:6px}.bay,.ship{min-height:130px}
+ .cargo-wrap{min-height:105px}.cargo{max-width:none;min-height:100px;grid-template-columns:50px 1fr;grid-template-rows:auto auto;justify-items:start;text-align:left}
+ .cargo-art{grid-row:1 / span 2;width:46px;height:52px}.cargo-name{margin-top:0}
+ .transfer{grid-template-columns:auto minmax(120px,1fr) auto;width:100%;gap:7px}
+ .transfer-arrow{transform:rotate(90deg);font-size:21px}.pocket{min-height:53px}
+ .pocket-emoji{font-size:20px}.rocket-body{width:70%;min-height:120px}
+ .route-label{text-align:center}.route-step .rs-num{margin-right:2px}#station{padding:7px}
+ .port{min-height:155px}.port-title{font-size:13px}
+ .hint{min-height:92px;padding:8px;gap:8px}.hint-portrait{width:55px;height:55px;flex-basis:55px}.hint-name{padding:2px 9px}#hintText{font-size:15px}
+}
+@media(max-height:700px) and (min-width:801px){
+ body{padding-top:6px;padding-bottom:6px}.app{gap:6px}#station{min-height:0;padding:8px;gap:6px}
+ .stage-grid{min-height:190px}.cargo-wrap{min-height:135px}.cargo{min-height:125px}
+ .ship-frame{min-height:125px}.rocket-body{min-height:118px}.port{min-height:220px}.hint{min-height:96px}
+ .lesson-key{padding:5px 10px}.launch-card{min-height:340px}.launch-scene{min-height:250px}
+}
+</style>
+<script>
+/* ===== 防误触兜底 =====
+   右键菜单只取消默认动作，页内右键逻辑继续收事件；原生拖拽被取消；
+   history 哨兵防止误按后退。输入框继续使用原生菜单。 */
+(function () {
+  function keepNative(el) {
+    return !!(el && el.closest &&
+      el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'));
+  }
+  document.addEventListener('contextmenu', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();
+  }, true);
+  document.addEventListener('dragstart', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();
+  }, true);
+  if (location.protocol === 'file:') return;
+  function guard() {
+    try { history.pushState({ mtSentinel: 1 }, '', location.href); } catch (e) {}
+  }
+  try {
+    guard(); guard();
+    window.addEventListener('popstate', guard);
+  } catch (e) {}
+})();
+</script>
+<script>
+/* ===== 兼容层：flex gap 能力探测 ===== */
+(function () {
+  try {
+    var box=document.createElement('div');
+    box.style.cssText='position:absolute;top:-9999px;left:-9999px;display:flex;gap:10px;width:auto;height:1px';
+    var a=document.createElement('i'),b=document.createElement('i');
+    a.style.cssText=b.style.cssText='display:block;width:10px;height:1px';
+    box.appendChild(a);box.appendChild(b);document.documentElement.appendChild(box);
+    var w=box.getBoundingClientRect().width||box.scrollWidth;
+    document.documentElement.removeChild(box);
+    if(!(w>=30))document.documentElement.className+=' no-flexgap';
+  }catch(e){}
+})();
+</script>
+<script>
+/* ===== 打开后尽量全屏 ===== */
+(function(){
+  var armed=true;
+  function removeListeners(){
+    var names=['pointerdown','mousedown','touchstart','keydown'];
+    for(var i=0;i<names.length;i++)document.removeEventListener(names[i],enter,true);
+  }
+  function enter(){
+    if(!armed)return;armed=false;
+    try{
+      var el=document.documentElement;
+      var fn=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
+      if(fn){var p=fn.call(el);if(p&&p.catch)p.catch(function(){});}
+    }catch(e){}
+    removeListeners();
+  }
+  window.addEventListener('load',function(){
+    try{
+      var el=document.documentElement;
+      var fn=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
+      if(fn){var p=fn.call(el);if(p&&p.catch)p.catch(function(){});}
+    }catch(e){}
+  });
+  var names=['pointerdown','mousedown','touchstart','keydown'];
+  for(var i=0;i<names.length;i++)document.addEventListener(names[i],enter,true);
+})();
+</script>
+</head>
+<body>
+<main class="app">
+  <header class="hero">
+    <div class="mascot" aria-hidden="true"><img src="assets/mousecamp4/daidai-astronaut.png" alt=""></div>
+    <div class="speech"><strong>袋袋的太空补给站</strong><span>照着订单装货，飞船就能起飞！</span></div>
+  </header>
+  <section class="route-card" aria-label="飞船补给进度">
+    <div class="route-label">🚀 飞船补给进度</div>
+    <div class="route-steps" id="routeSteps"></div>
+  </section>
+  <section id="station">
+    <div class="mission-head">
+      <span class="mission-counter" id="missionCounter">订单 1 / 3</span>
+      <h1 id="missionTitle">复制求救文字</h1>
+      <p id="missionPrompt"></p>
+    </div>
+    <div class="stage-grid">
+      <section class="bay" aria-label="货舱">
+        <div class="bay-head"><strong>📦 货舱</strong><span id="cargoHelp">对货物点右键</span></div>
+        <div class="cargo-wrap" id="cargoMount"></div>
+      </section>
+      <div class="transfer" aria-label="魔法口袋">
+        <div class="transfer-arrow" aria-hidden="true">➜</div>
+        <div class="pocket" id="pocket"><div><div class="pocket-emoji">🧺</div><div class="pocket-empty" id="pocketText">口袋空空</div></div></div>
+        <div class="transfer-arrow" aria-hidden="true">➜</div>
+      </div>
+      <section class="ship" aria-label="飞船">
+        <div class="ship-head"><strong>🚀 目的地</strong><span id="targetName">广播舱</span></div>
+        <div class="ship-frame">
+          <button type="button" class="port" id="port">
+            <span class="port-title" id="portLabel">⬇️ 投递口 · 右键粘贴</span>
+            <span class="rocket-body">
+              <img class="ship-art" src="assets/mousecamp4/cargo-ship.png" alt="">
+              <span class="delivery-slots" id="deliverySlots"></span>
+            </span>
+          </button>
+        </div>
+      </section>
+    </div>
+    <div class="hint" role="status" aria-live="polite">
+      <div class="hint-portrait" aria-hidden="true"><img src="assets/mousecamp4/daidai-astronaut.png" alt=""><span class="hint-icon" id="hintIcon">💡</span></div>
+      <div class="hint-body"><span class="hint-name">袋袋</span><div id="hintText">点左边货物，袋袋会告诉你下一步。</div></div>
+    </div>
+    <div class="lesson-key" aria-label="复制和剪切的区别">
+      <div>📋 <b>复制</b>：留下一份原件</div><div>✂️ <b>剪切</b>：把原件搬走</div>
+    </div>
+  </section>
+</main>
+<div class="mmenu" id="mmenu" hidden></div>
+<section class="finale" id="finale" aria-label="飞船发射成功">
+  <div class="launch-card">
+    <div class="launch-copy">
+      <div class="launch-kicker">补给任务全部完成</div><h2>飞船发射成功！</h2>
+      <p>求救信号、太空照片和电池都送到了。复制会留下原件，剪切会把东西搬走，粘贴会把口袋里的货物送进飞船。</p>
+      <div class="lesson">📡 刚进入太空，雷达突然响了：航道前方有陨石和飞碟！护航可以一直玩下去。</div>
+      <button type="button" class="launch-next" id="startSecret">🚀 开始隐藏任务：星际护航</button>
+    </div>
+    <div class="launch-scene" aria-hidden="true">
+      <span class="spark a">⭐</span><span class="spark b">✨</span><span class="spark c">🌟</span><span class="spark d">✦</span>
+      <div class="launch-rocket"><img src="assets/mousecamp4/cargo-ship.png" alt=""></div>
+    </div>
+  </div>
+  <div class="secret-game" id="secretGame" aria-label="隐藏关卡：星际护航">
+    <div class="secret-head"><div><small>隐藏关卡 · 无尽星际护航</small><b id="secretTitle">前方出现陨石！</b></div><div class="secret-progress" id="secretProgress">得分 0<span>第 1 关</span></div></div>
+    <div class="secret-arena" id="secretArena">
+      <div class="secret-ship"><img src="assets/mousecamp4/cargo-ship.png" alt="我们的补给飞船"></div>
+      <div class="secret-target asteroid" id="secretTarget"><img id="secretTargetArt" src="assets/mousecamp4/asteroid.png" alt="陨石"><div class="secret-shield" id="secretShield" hidden></div></div>
+      <div class="secret-bolt" id="secretBolt"></div><div class="secret-flash" id="secretFlash" aria-hidden="true">💥</div>
+      <div class="secret-energy" id="secretEnergy">能量舱：空</div>
+    </div>
+    <div class="secret-dialogue" role="status" aria-live="polite"><img src="assets/mousecamp4/daidai-astronaut.png" alt=""><div><strong>袋袋 · 航行提示</strong><p id="secretHint">按 Ctrl + C 复制能量弹。</p><em id="secretSubhint">目标会飞过航道；没打中也不扣分，下一个还会来。</em></div></div>
+  </div>
+</section>
+
+<script>
+(function(){
+  'use strict';
+  var PREVIEW=/[?&]finale=1/.test(location.search);
+  var SAVE_KEY='mousecamp4.progress.v2';
+  var TASKS=[
+    {id:'s1',title:'右键复制求救文字',order:'用鼠标右键复制求救信号，再用右键粘贴到飞船。',target:'广播舱',action:'copy',method:'menu',count:1,item:{id:'signal',name:'求救信号',word:'SOS！',type:'文字',art:'assets/mousecamp4/sos-signal.png'}},
+    {id:'s2',title:'快捷键复制两份照片',order:'这次用 Ctrl+C 和 Ctrl+V，把同一张照片送进去两次。',target:'照片舱',action:'copy',method:'keys',count:2,item:{id:'photo',name:'星球照片',word:'蓝色星球.jpg',type:'图片',art:'assets/mousecamp4/planet-photo.png'}},
+    {id:'s3',title:'右键剪切电池文件',order:'用鼠标右键剪切电池，再用右键粘贴到引擎舱。',target:'引擎舱',action:'cut',method:'menu',count:1,item:{id:'battery',name:'电池文件',word:'能量电池.png',type:'文件',art:'assets/mousecamp4/energy-battery.png'}}
+  ];
+  var save={v:2,cleared:{},secretCleared:false,secretScore:0,ts:0};
+  var S={index:0,selected:false,clip:null,targetSelected:false,delivered:0,sourceGone:false,completed:false,note:'',noteTimer:null,finale:false,secret:false};
+  var ENEMIES=['asteroid','asteroid','ufo','asteroid','ufo','ufo'];
+  var B={index:0,score:0,level:1,current:null,shield:false,charged:false,busy:false,escapeTimer:null,spawnTimer:null};
+  function $(id){return document.getElementById(id);}
+  function esc(text){return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function loadSave(){
+    try{
+      var raw=localStorage.getItem(SAVE_KEY);if(!raw)return;
+      var d=JSON.parse(raw);
+      if(d&&d.v===2&&d.cleared)save={v:2,cleared:{s1:!!d.cleared.s1,s2:!!d.cleared.s2,s3:!!d.cleared.s3},secretCleared:!!d.secretCleared,secretScore:Math.max(0,Math.floor(Number(d.secretScore)||0)),ts:d.ts||0};
+    }catch(e){}
+  }
+  function writeSave(){
+    if(PREVIEW)return;
+    try{save.ts=Date.now();localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}
+  }
+  function allDone(){return !!(save.cleared.s1&&save.cleared.s2&&save.cleared.s3);}
+  function task(){return TASKS[S.index]||null;}
+  function renderRoute(){
+    var labels=['求救信号','太空照片','能量电池'],html='';
+    for(var i=0;i<TASKS.length;i++){
+      var done=!!save.cleared[TASKS[i].id],cls='route-step'+(done?' done':(!S.finale&&i===S.index?' current':''));
+      html+='<span class="'+cls+'"><span class="rs-num">'+(done?'✓':String(i+1))+'</span>'+labels[i]+'</span>';
+    }
+    $('routeSteps').innerHTML=html;
+  }
+  function renderHint(){
+    if(S.finale||!task())return;
+    var t=task(),text='';
+    if(S.note)text=S.note;
+    else if(t.method==='menu'&&S.clip)text='货物装进口袋啦！在右边黄色投递口上点<b>鼠标右键</b>，选「粘贴」。';
+    else if(t.method==='menu')text='在左边「'+esc(t.item.name)+'」上点<b>鼠标右键</b>，选「'+(t.action==='copy'?'复制':'剪切')+'」。';
+    else if(S.clip&&!S.targetSelected)text='货物装进袋袋啦！点右边闪光的投递口，再按 <kbd>Ctrl</kbd> + <kbd>V</kbd> 粘贴。';
+    else if(S.clip&&S.targetSelected)text='投递口选好了，按 <kbd>Ctrl</kbd> + <kbd>V</kbd> 粘贴进去！';
+    else if(S.selected)text='货物选好了，按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 复制。';
+    else text='第 2 单：点左边的「'+esc(t.item.name)+'」，按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 复制。';
+    $('hintText').innerHTML=text;
+  }
+  function say(text,icon){
+    if(S.noteTimer)clearTimeout(S.noteTimer);
+    S.note=text;$('hintIcon').textContent=icon||'💡';renderHint();
+    S.noteTimer=setTimeout(function(){S.note='';$('hintIcon').textContent='💡';renderHint();},2100);
+  }
+  function renderGame(){
+    var t=task();if(!t)return;
+    $('missionCounter').textContent='订单 '+(S.index+1)+' / '+TASKS.length;
+    $('missionTitle').textContent=t.title;$('missionPrompt').textContent=t.order;
+    $('targetName').textContent=t.target;
+    $('cargoHelp').textContent=t.method==='menu'?'对货物点右键':'点货物后按 Ctrl + C';
+    $('portLabel').textContent=t.method==='menu'?'⬇️ 投递口 · 右键粘贴':S.targetSelected?'✅ 投递口已选中 · 按 Ctrl + V':'⬇️ 投递口 · 点击选中';
+    if(S.sourceGone)$('cargoMount').innerHTML='<div class="cargo-empty">✅ 货物已经搬进飞船</div>';
+    else{
+      var c='cargo'+(S.selected?' selected':'')+(S.clip&&S.clip.kind==='cut'?' is-cut':'');
+      var badge=S.clip&&S.clip.kind==='cut'?'<span class="cargo-badge">剪切中</span>':'';
+      $('cargoMount').innerHTML='<button type="button" class="'+c+'" id="cargo" data-id="'+esc(t.item.id)+'" aria-label="选择'+esc(t.item.name)+'">'+
+        '<img class="cargo-art" src="'+esc(t.item.art)+'" alt=""><span class="cargo-name">'+esc(t.item.word)+'</span>'+
+        '<span class="cargo-type">'+esc(t.item.type)+'</span>'+badge+'</button>';
+    }
+    var slots='';
+    for(var i=0;i<t.count;i++)slots+='<span class="delivery-slot'+(i<S.delivered?' is-filled':(i===S.delivered?' is-next':''))+'">'+(i<S.delivered?'<img src="'+esc(t.item.art)+'" alt="">':'…')+'</span>';
+    $('deliverySlots').innerHTML=slots;
+    if(S.clip){$('pocket').className='pocket full';$('pocketText').innerHTML='<b><img class="pocket-art" src="'+esc(t.item.art)+'" alt=""> '+esc(t.item.name)+'</b><br>'+(S.clip.kind==='copy'?'复制件':'待搬运');}
+    else{$('pocket').className='pocket';$('pocketText').textContent='口袋空空';}
+    $('port').className='port'+(S.clip?' ready':'')+(S.targetSelected?' targeted':'');
+    $('port').setAttribute('aria-label','选择投递到'+t.target);
+    renderRoute();renderHint();
+  }
+  function closeMenu(){$('mmenu').hidden=true;}
+  function setTask(index){
+    S.index=index;S.selected=false;S.clip=null;S.targetSelected=false;S.delivered=0;S.sourceGone=false;S.completed=false;S.note='';
+    if(S.noteTimer)clearTimeout(S.noteTimer);
+    closeMenu();renderGame();
+  }
+  function copyOrCut(kind,via){
+    if(S.finale||!task()||S.completed)return;
+    closeMenu();
+    if(S.clip){say('口袋里已经有货物啦，先把它贴进飞船。','🧺');return;}
+    if(via!==task().method){
+      say(task().method==='menu'?'这一单请在货物上点鼠标右键，再选「'+(task().action==='copy'?'复制':'剪切')+'」。':'这一单练快捷键，请按 Ctrl + C。','🖱️');return;
+    }
+    if(!S.selected){say(task().method==='menu'?'先在左边货物上点鼠标右键。':'先点一下左边的货物，再按 Ctrl + C。','👆');return;}
+    if(kind!==task().action){
+      say(task().action==='copy'?'这单要保留原件，请选「复制」。':'这单要把原件搬走，请选「剪切」。','🧭');return;
+    }
+    S.clip={kind:kind,via:via};S.selected=false;S.targetSelected=false;S.note='';
+    renderGame();
+    say(task().method==='menu'?(kind==='copy'?'复制成功，原件还在！':'剪切成功，货物准备搬家！')+'到右边黄色投递口点右键，选「粘贴」。':'复制成功！点右边黄色投递口，再按 Ctrl + V 粘贴。','✨');
+    renderGame();
+  }
+  function completeTask(){
+    if(S.completed)return;
+    S.completed=true;save.cleared[task().id]=true;writeSave();renderGame();
+    say('漂亮！'+task().target+'补给完成。','✅');renderGame();
+    setTimeout(function(){if(S.index+1<TASKS.length)setTask(S.index+1);else openFinale();},760);
+  }
+  function paste(via){
+    if(S.finale||!task()||S.completed)return;
+    closeMenu();
+    if(!S.clip){say(task().method==='menu'?'袋袋是空的，先在货物上点右键，选「'+(task().action==='copy'?'复制':'剪切')+'」。':'袋袋是空的，先点货物，再按 Ctrl + C。','🧺');return;}
+    if(via!==task().method){say(task().method==='menu'?'这一单请在黄色投递口上点鼠标右键，再选「粘贴」。':'这一单练快捷键，点投递口后按 Ctrl + V。','🖱️');return;}
+    if(!S.targetSelected){say('先点右边发光的投递口，再粘贴。','👇');return;}
+    S.delivered++;
+    if(S.clip.kind==='cut')S.sourceGone=true;
+    S.clip=null;S.selected=false;S.targetSelected=false;
+    if(S.delivered>=task().count){completeTask();return;}
+    renderGame();say('投递成功！再复制一份，原件仍在货舱。','🚀');renderGame();
+  }
+  function doAction(kind,via){if(kind==='copy'||kind==='cut')copyOrCut(kind,via);else if(kind==='paste')paste(via);}
+  function openMenu(x,y,kind){
+    var menu=$('mmenu'),html='<div class="menu-title">请选择一个操作</div>';
+    if(kind==='cargo')html+='<button type="button" data-act="copy"><span>📋 复制</span><small>留下原件</small></button><button type="button" data-act="cut"><span>✂️ 剪切</span><small>搬走原件</small></button>';
+    else html+='<button type="button" data-act="paste"><span>📌 粘贴</span><small>送进飞船</small></button>';
+    menu.innerHTML=html;menu.hidden=false;
+    var w=menu.offsetWidth||190,h=menu.offsetHeight||120;
+    menu.style.left=Math.max(6,Math.min(x,window.innerWidth-w-6))+'px';
+    menu.style.top=Math.max(6,Math.min(y,window.innerHeight-h-6))+'px';
+    say(kind==='cargo'?'菜单打开啦，点「'+(task().action==='copy'?'复制':'剪切')+'」。':'菜单打开啦，点「粘贴」把货物送进飞船。','🖱️');
+  }
+  document.addEventListener('click',function(e){
+    if(S.finale)return;
+    var el=e.target,cargo=el.closest?el.closest('#cargo'):null,port=el.closest?el.closest('#port'):null;
+    if(el.closest&&el.closest('#mmenu'))return;
+    if(cargo){
+      if(S.completed)return;
+      if(S.clip){say('袋袋里已经装着货物，先把它投递到飞船。','🧺');return;}
+      S.selected=true;S.targetSelected=false;S.note='';renderGame();return;
+    }
+    if(port){
+      if(S.completed)return;
+      if(!S.clip){say('先从货舱取一件货物，装进口袋。','📦');return;}
+      S.targetSelected=true;S.note='';renderGame();return;
+    }
+    closeMenu();
+  });
+  document.addEventListener('contextmenu',function(e){
+    if(S.finale||S.completed)return;
+    var el=e.target,cargo=el.closest?el.closest('#cargo, #cargoMount'):null,port=el.closest?el.closest('#port, .ship'):null;
+    if((cargo||port)&&task().method!=='menu'){
+      say('这单练快捷键：点货物按 Ctrl + C，点投递口按 Ctrl + V。','⌨️');return;
+    }
+    if(cargo){
+      if(S.clip){say('先把口袋里的货物贴进飞船。','🧺');return;}
+      S.selected=true;S.note='';renderGame();openMenu(e.clientX,e.clientY,'cargo');
+    }else if(port){
+      if(!S.clip){say('先从货舱取一件货物，装进口袋。','📦');return;}
+      S.targetSelected=true;S.note='';renderGame();openMenu(e.clientX,e.clientY,'port');
+    }
+  },true);
+  $('mmenu').addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('button[data-act]'):null;
+    if(b)doAction(b.getAttribute('data-act'),'menu');
+  });
+  function renderSecret(){
+    var ufo=B.current==='ufo';
+    $('secretTitle').textContent=ufo?'飞碟拦住了航道！':'前方出现陨石！';
+    $('secretProgress').innerHTML='得分 '+B.score+'<span>第 '+B.level+' 关 · 每 10 分升级</span>';
+    $('secretTarget').className='secret-target '+B.current;
+    $('secretTargetArt').src='assets/mousecamp4/'+(ufo?'ufo':'asteroid')+'.png';
+    $('secretTargetArt').alt=ufo?'飞碟':'陨石';
+    $('secretShield').hidden=!B.shield;
+    $('secretEnergy').className='secret-energy'+(B.charged?' ready':'');
+    $('secretEnergy').textContent=B.charged?'能量舱：已装弹 ✨':'能量舱：空';
+    $('secretHint').innerHTML=B.shield?'飞碟有护盾！先按 <kbd>Ctrl</kbd> + <kbd>X</kbd> 剪断护盾。':B.charged?'能量弹准备好了！按 <kbd>Ctrl</kbd> + <kbd>V</kbd> 粘贴发射。':'按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 复制一颗能量弹。';
+    $('secretSubhint').textContent=B.shield?'剪断后，才能装弹并开火。':B.charged?'瞄准已经自动完成，按键就能发射。':'目标会飞过航道；没打中也不扣分。';
+  }
+  function secretSay(message,sub){$('secretHint').innerHTML=message;if(sub)$('secretSubhint').textContent=sub;}
+  function startSecret(){
+    if(B.escapeTimer)clearTimeout(B.escapeTimer);
+    if(B.spawnTimer)clearTimeout(B.spawnTimer);
+    B.index=0;B.score=PREVIEW?0:save.secretScore;B.level=Math.floor(B.score/10)+1;
+    B.shield=false;B.charged=false;B.busy=true;S.secret=true;
+    $('finale').className='finale show battle';loadEnemy();
+  }
+  function enemySpeed(){return Math.round(2500+8000/(1+.18*(B.level-1)));}
+  function nextDelay(){return Math.round(120+580/(1+.14*(B.level-1)));}
+  function loadEnemy(){
+    B.current=B.index<ENEMIES.length?ENEMIES[B.index]:(Math.random()<Math.min(.75,.28+B.level*.035)?'ufo':'asteroid');
+    B.shield=B.current==='ufo';B.charged=false;B.busy=false;
+    $('secretBolt').className='secret-bolt';$('secretFlash').className='secret-flash';renderSecret();
+    var target=$('secretTarget');
+    B.speed=enemySpeed();B.gap=nextDelay();
+    target.style.animation='none';target.getBoundingClientRect();
+    target.style.animation='secretApproach '+B.speed+'ms linear forwards';
+    B.escapeTimer=setTimeout(function(){
+      if(!S.secret||B.busy)return;
+      B.busy=true;B.index++;
+      secretSay('目标飞过去了，没关系！下一个马上来。','没有扣分，继续护航。');
+      B.spawnTimer=setTimeout(loadEnemy,B.gap);
+    },B.speed);
+  }
+  function secretKey(k){
+    if(B.busy)return;
+    if(k==='x'){
+      if(!B.shield){secretSay('这里没有护盾，先按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 装弹。','飞碟出现时，再用 Ctrl + X 剪断护盾。');return;}
+      B.shield=false;renderSecret();secretSay('咔嚓！护盾断开啦。现在按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 装弹。','剪切成功，护盾消失了！');return;
+    }
+    if(k==='c'){
+      if(B.shield){secretSay('护盾还在！先按 <kbd>Ctrl</kbd> + <kbd>X</kbd> 剪断它。','飞碟的护盾会挡住能量弹。');return;}
+      if(B.charged){secretSay('能量舱已经有一颗弹了！按 <kbd>Ctrl</kbd> + <kbd>V</kbd> 发射。','发射后可以再复制下一颗。');return;}
+      B.charged=true;renderSecret();return;
+    }
+    if(k==='v'){
+      if(B.shield){secretSay('护盾挡住了！先按 <kbd>Ctrl</kbd> + <kbd>X</kbd>。','剪断护盾后再装弹、发射。');return;}
+      if(!B.charged){secretSay('能量舱还是空的！先按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 复制能量弹。','复制后，Ctrl + V 才能发射。');return;}
+      B.charged=false;B.busy=true;clearTimeout(B.escapeTimer);
+      $('secretEnergy').className='secret-energy';$('secretEnergy').textContent='能量舱：空';
+      $('secretBolt').className='secret-bolt firing';secretSay('发射！能量弹命中目标！','准备前往下一个目标……');
+      setTimeout(function(){
+        $('secretTarget').className+=' hit';$('secretTarget').style.animation='targetHit .6s ease-in forwards';
+        var earned=B.current==='ufo'?2:1,previousLevel=B.level;
+        B.score+=earned;B.level=Math.floor(B.score/10)+1;
+        save.secretScore=B.score;writeSave();
+        $('secretProgress').innerHTML='得分 '+B.score+'<span>第 '+B.level+' 关 · 每 10 分升级</span>';
+        $('secretFlash').textContent='＋'+earned+' ✨';$('secretFlash').className='secret-flash pop';
+        if(B.level>previousLevel)secretSay('升级啦！现在是第 '+B.level+' 关！','目标飞得更快，出现得更密了。');
+        setTimeout(function(){
+          B.index++;
+          B.spawnTimer=setTimeout(loadEnemy,B.gap);
+        },600);
+      },440);
+    }
+  }
+  $('startSecret').addEventListener('click',startSecret);
+  document.addEventListener('keydown',function(e){
+    if(S.finale){
+      if(S.secret&&(e.ctrlKey||e.metaKey)&&!e.repeat){
+        var sk=(e.key||'').toLowerCase();if(sk==='c'||sk==='v'||sk==='x'){e.preventDefault();secretKey(sk);return;}
+      }
+      if(e.target&&e.target.tagName==='BUTTON'&&(e.key==='Enter'||e.key===' '))return;
+      e.preventDefault();return;
+    }
+    if(!(e.ctrlKey||e.metaKey))return;
+    var k=(e.key||'').toLowerCase();
+    if(k==='c'){e.preventDefault();doAction('copy','keys');}
+    else if(k==='x'){e.preventDefault();doAction('cut','keys');}
+    else if(k==='v'){e.preventDefault();doAction('paste','keys');}
+  });
+  window.addEventListener('wheel',function(e){if(S.finale)e.preventDefault();},{passive:false});
+  document.addEventListener('touchmove',function(e){if(S.finale)e.preventDefault();},{passive:false});
+  function openFinale(){
+    S.finale=true;closeMenu();document.body.style.overflow='hidden';renderRoute();
+    $('startSecret').textContent=save.secretScore>0?'🚀 继续星际护航 · '+save.secretScore+' 分':'🚀 开始隐藏任务：星际护航';
+    $('finale').className='finale show';
+  }
+  loadSave();
+  var firstTodo=-1;
+  for(var i=0;i<TASKS.length;i++)if(!save.cleared[TASKS[i].id]){firstTodo=i;break;}
+  if(PREVIEW||firstTodo<0||allDone()){
+    if(PREVIEW){save.cleared={s1:true,s2:true,s3:true};save.secretCleared=false;}
+    openFinale();
+  }else setTask(firstTodo);
+  window.__mc4={save:save,state:S,battle:B};
+})();
+</script>
+</body>
+</html>

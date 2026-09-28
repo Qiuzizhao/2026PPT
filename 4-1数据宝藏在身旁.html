@@ -326,7 +326,7 @@ main.wide{max-width:1700px}   /* 旅行地这一关内容多，铺开用满整�
    1) 右键菜单：学生鼠标不熟练，乱按时很容易弹出系统右键菜单挡住画面。
       这里全局取消默认菜单，但只调 preventDefault、绝不 stopPropagation，
       页内自己监听 contextmenu 的功能照常收到事件。输入框除外，要用右键粘贴。
-   2) 拖拽：防止图片/文字被拖出页面。拖拽练习走 pointer 事件，不受影响。
+   2) 拖拽：防止图片/文字被拖出页面；只放行分类挑战的数据块原生拖放。
    3) 防误退：Edge 的鼠标手势（右键按住向左拖动）和误按后退键都会触发浏览器
       后退，把学生从练习页带走。压两层 history 哨兵，任何后退/前进都只会落回
       本页，popstate 一响立刻再压一层，页面始终留在原地。
@@ -337,12 +337,15 @@ main.wide{max-width:1700px}   /* 旅行地这一关内容多，铺开用满整�
     return !!(el && el.closest &&
       el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'));
   }
+  function keepCourseDrag(el) {
+    return !!(el && el.closest && el.closest('#pool-chips .chip[draggable="true"]'));
+  }
   document.addEventListener('contextmenu', function (e) {
     if (keepNative(e.target)) return;
     e.preventDefault();                    /* 只取消默认菜单，不阻断页内逻辑 */
   }, true);
   document.addEventListener('dragstart', function (e) {
-    if (keepNative(e.target)) return;
+    if (keepNative(e.target) || keepCourseDrag(e.target)) return;
     e.preventDefault();
   }, true);
 
@@ -1152,7 +1155,10 @@ function renderLedger(){
     tb.appendChild(tr);
   });
   tb.querySelectorAll("input.ans").forEach(inp=>{
-    inp.oninput=()=>{inp.classList.remove("right","wrong");};
+    inp.oninput=()=>{
+      inp.classList.remove("right","wrong");
+      document.getElementById("btn-save-ledger").disabled=true;
+    };
   });
 }
 renderLedger();
@@ -1707,12 +1713,16 @@ renderTravelWiki("");
 document.getElementById("btn-save-travel").onclick=async function(){
   const data={
     name:document.getElementById("t-name").value.trim(),
-    alt:document.getElementById("t-alt").value,
-    temp:document.getElementById("t-temp").value,
-    dist:document.getElementById("t-dist").value,
+    alt:document.getElementById("t-alt").value.trim(),
+    temp:document.getElementById("t-temp").value.trim(),
+    dist:document.getElementById("t-dist").value.trim(),
     fact:document.getElementById("t-fact").value.trim()
   };
   if(!data.name){toast("选一个或写一个地点吧","bad");return;}
+  const missing=[
+    ["alt","海拔 / 高度"],["temp","全年平均气温"],["dist","距离深圳大约"],["fact","想告诉同学的数据"]
+  ].filter(([key])=>!data[key]);
+  if(missing.length){toast("请补全"+missing.map(([,label])=>label).join("、"),"bad");return;}
   this.disabled=true;
   const r=await postData({type:"travel_recommend",student:state.student,klass:state.klass,avatar:state.avatar,...data});
   if(r.ok){state.done.travel=true;state.travel=data;saveState();buildSummary();go("done");}
