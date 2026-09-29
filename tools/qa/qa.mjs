@@ -1369,7 +1369,7 @@ add({
 /* 状态通道与提交都打到 qiuform.qiuzizhao.com，QA 全部拦截，不碰真实课堂数据 */
 add({
   name: '4-1-学生端-登录到教室寻宝',
-  page: '4-1数据宝藏在身旁.html',
+  page: '4.1数据宝藏在身边（学生端）.html',
   blockUrls: ['*qiuform.qiuzizhao.com*'],
   steps: [
     { label: '默认停在登录页', js: wrap(`
@@ -1440,7 +1440,7 @@ add({
 });
 add({
   name: '4-1-教师端-看板与任务开关',
-  page: '4-1教师端.html',
+  page: '4.1数据宝藏在身边（教师端）.html',
   blockUrls: ['*qiuform.qiuzizhao.com*'],
   steps: [
     { label: '看板渲染：KPI / 登录名单 / 猜人面板', js: wrap(`
@@ -1465,7 +1465,7 @@ add({
 });
 
 /* ============ 7.6 4-1 修复回归：拖放、复验、必填、批量状态、轮次统计 ============ */
-add({ name: '4-1-回归-学生端验证', page: '4-1数据宝藏在身旁.html', blockUrls: ['*qiuform.qiuzizhao.com*'], steps: [
+add({ name: '4-1-回归-学生端验证', page: '4.1数据宝藏在身边（学生端）.html', blockUrls: ['*qiuform.qiuzizhao.com*'], steps: [
   { label: '账本答案改动后提交必须重新验算', js: wrap(`
     window.fetch=async()=>({ok:true,status:200,json:async()=>({ok:true})});
     state.student='QA学生';state.klass='测试班';state.open={classroom:true,ledger:true,classify:true,self:true,guess:true,travel:true,quiz:true};
@@ -1497,7 +1497,7 @@ add({ name: '4-1-回归-学生端验证', page: '4-1数据宝藏在身旁.html',
     return JSON.stringify(result);
   `) }
 ]});
-add({ name: '4-1-回归-教师端统计与批量操作', page: '4-1教师端.html', blockUrls: ['*qiuform.qiuzizhao.com*'], steps: [
+add({ name: '4-1-回归-教师端统计与批量操作', page: '4.1数据宝藏在身边（教师端）.html', blockUrls: ['*qiuform.qiuzizhao.com*'], steps: [
   { label: '教师端名单含测试号和三个备用号', js: wrap(`
     const names=['测试','备用1','备用2','备用3'],result={41:names.every(n=>ROSTER['41'].filter(x=>x===n).length===1),410:names.every(n=>ROSTER['410'].filter(x=>x===n).length===1)};
     if(!result['41']||!result['410'])throw new Error('教师端测试/备用号名单不一致：'+JSON.stringify(result));
@@ -1540,7 +1540,7 @@ add({ name: '4-1-回归-教师端统计与批量操作', page: '4-1教师端.htm
 
 /* ============ 8. 多分辨率不溢出 ============ */
 for (const [w, h] of [[1024, 768], [1920, 1080]]) {
-  for (const page of ['index.html', '键盘练习营.html', '鼠标练习营.html', '鼠标练习营2.html', '鼠标反应力实验室.html', '数据自画像-猜猜我是谁.html', '数据自画像-教师端看板.html', '4-1数据宝藏在身旁.html', '4-1教师端.html']) {
+  for (const page of ['index.html', '键盘练习营.html', '鼠标练习营.html', '鼠标练习营2.html', '鼠标反应力实验室.html', '数据自画像-猜猜我是谁.html', '数据自画像-教师端看板.html', '4.1数据宝藏在身边（学生端）.html', '4.1数据宝藏在身边（教师端）.html']) {
     add({
       name: `${w}x${h}-${page.replace('.html', '')}`,
       page,
