@@ -161,6 +161,32 @@
     margin-top:12px;padding:10px 18px;border-radius:99px;border:none;
     background:var(--yellow);color:#1E2A4A;font-weight:800;cursor:pointer;
   }
+  .guess-zoom-trigger{margin-left:auto;padding:5px 9px;border:1px solid var(--line);border-radius:8px;background:#EEF3FF;color:var(--blue);font-size:12px;font-weight:800;cursor:pointer}
+  .guess-zoom-trigger:disabled{opacity:.5;cursor:not-allowed}
+  .guess-zoom{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.78)}
+  .guess-zoom[hidden]{display:none}
+  .guess-zoom-dialog{position:relative;width:94%;max-width:940px;max-height:92vh;overflow:auto;padding:30px 34px 24px;border-radius:22px;background:#fff;box-shadow:0 24px 80px rgba(0,0,0,.35)}
+  .guess-zoom-title{text-align:center;color:var(--ink);font-size:20px;font-weight:900;margin-bottom:14px}
+  .guess-zoom-close{position:absolute;top:10px;right:12px;width:38px;height:38px;border:0;border-radius:50%;background:#EEF2F7;color:#334155;font-size:24px;line-height:1;cursor:pointer}
+  .guess-zoom-content{padding:0}
+  .guess-zoom-content .card-mini{max-width:850px;margin:0 auto;padding:28px 32px;border-radius:22px}
+  .guess-zoom-content .card-mini .avatar{font-size:88px;line-height:1;margin:10px 0}
+  .guess-zoom-content .card-mini .name{font-size:30px;margin-top:8px}
+  .guess-zoom-content .card-mini .grid2{gap:12px;margin-top:18px}
+  .guess-zoom-content .card-mini .cell{padding:14px 10px;border-radius:10px;font-size:16px}
+  .guess-zoom-content .card-mini .cell b{font-size:24px;margin-top:4px}
+  .guess-zoom-content .card-animal{font-size:170px!important}
+  .guess-zoom-content > div:not(.card-mini){font-size:18px!important}
+  .guess-zoom-hint{text-align:center;margin-top:12px;color:var(--ink-soft);font-size:13px}
+  @media(max-width:600px){
+    .guess-zoom{padding:10px}
+    .guess-zoom-dialog{width:100%;padding:28px 14px 18px;border-radius:16px}
+    .guess-zoom-content .card-mini{padding:22px 14px}
+    .guess-zoom-content .card-mini .avatar{font-size:68px}
+    .guess-zoom-content .card-mini .name{font-size:24px}
+    .guess-zoom-content .card-mini .cell{padding:10px 5px;font-size:14px}
+    .guess-zoom-content .card-mini .cell b{font-size:19px}
+  }
 
   /* 底部三图 */
   .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
@@ -290,7 +316,7 @@
   </div>
 
   <div class="panel">
-    <h3><span class="bar"></span>猜猜我是谁 · 课堂游戏控制台</h3>
+    <h3><span class="bar"></span>猜猜我是谁 · 课堂游戏控制台<button id="btn-guess-zoom" class="guess-zoom-trigger" type="button" disabled>⛶ 放大展示</button></h3>
     <div class="guess" id="guess">
       <div class="empty">等同学提交自画像后，点下面按钮开始一轮游戏，全班平板同步看到这位同学的数据。</div>
     </div>
@@ -315,6 +341,15 @@
   <div class="panel">
     <h3><span class="bar"></span>分类挑战得分分布</h3>
     <div class="chart" id="chart-score"></div>
+  </div>
+</div>
+
+<div class="guess-zoom" id="guess-zoom" role="presentation" aria-hidden="true" hidden>
+  <div class="guess-zoom-dialog" role="dialog" aria-modal="true" aria-labelledby="guess-zoom-title">
+    <button id="guess-zoom-close" class="guess-zoom-close" type="button" aria-label="关闭放大卡片">×</button>
+    <div class="guess-zoom-title" id="guess-zoom-title">猜猜我是谁</div>
+    <div class="guess guess-zoom-content" id="guess-zoom-content"></div>
+    <div class="guess-zoom-hint">按 Esc 或点击卡片外区域关闭</div>
   </div>
 </div>
 
@@ -815,6 +850,7 @@ function render(subs){
     });
     const keys = Object.keys(bins).sort((a,b)=>a-b);
     setOpt("chart-height",{
+      title:{show:false},
       grid:{left:40,right:20,top:20,bottom:30},
       tooltip:{trigger:"axis", axisPointer:{type:"shadow"}},
       xAxis:{type:"category", data:keys.map(k=>k+"cm"),
@@ -838,6 +874,7 @@ function render(subs){
   if(subjKeys.length){
     const colors = ["#3B6FF6","#0891B2","#16A34A","#F59E0B","#DB2777","#7C3AED","#DC2626","#94A3B8"];
     setOpt("chart-subject",{
+      title:{show:false},
       tooltip:{trigger:"item"},
       legend:{bottom:0, textStyle:{color:"#5B6B84", fontSize:11}, type:"scroll"},
       series:[{
@@ -867,6 +904,7 @@ function render(subs){
       else scoreBins["满分"]++;
     });
     setOpt("chart-score",{
+      title:{show:false},
       grid:{left:40,right:20,top:20,bottom:30},
       tooltip:{trigger:"axis"},
       xAxis:{type:"category", data:Object.keys(scoreBins),
@@ -1010,6 +1048,33 @@ function renderLoginBoard(subs){
 /* 猜猜我是谁 */
 let currentRoundTarget = null;
 let answerRevealed = false;   // 大屏默认不显示答案，避免投影剧透
+const guessZoom = document.getElementById("guess-zoom");
+const guessZoomContent = document.getElementById("guess-zoom-content");
+let guessZoomOldOverflow = "";
+
+function syncGuessZoom(){
+  if(!guessZoom.hidden) guessZoomContent.innerHTML=document.getElementById("guess").innerHTML;
+}
+function openGuessZoom(){
+  if(!guessPool[guessIdx]) return;
+  guessZoomContent.innerHTML=document.getElementById("guess").innerHTML;
+  guessZoomOldOverflow=document.body.style.overflow;
+  guessZoom.hidden=false;
+  guessZoom.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+  document.getElementById("guess-zoom-close").focus();
+}
+function closeGuessZoom(){
+  if(guessZoom.hidden) return;
+  guessZoom.hidden=true;
+  guessZoom.setAttribute("aria-hidden","true");
+  document.body.style.overflow=guessZoomOldOverflow;
+  document.getElementById("btn-guess-zoom").focus();
+}
+document.getElementById("btn-guess-zoom").onclick=openGuessZoom;
+document.getElementById("guess-zoom-close").onclick=closeGuessZoom;
+guessZoom.addEventListener("click",function(e){if(e.target===guessZoom)closeGuessZoom();});
+window.addEventListener("keydown",function(e){if(e.key==="Escape")closeGuessZoom();});
 
 function pickGuess(){
   const g = document.getElementById("guess");
@@ -1018,6 +1083,7 @@ function pickGuess(){
     document.getElementById("btn-guess").style.display = "none";
     document.getElementById("btn-broadcast").style.display = "none";
     document.getElementById("btn-reveal").style.display = "none";
+    document.getElementById("btn-guess-zoom").disabled = true;
     return;
   }
   guessIdx = Math.floor(Math.random()*guessPool.length);
@@ -1026,6 +1092,7 @@ function pickGuess(){
   document.getElementById("btn-guess").style.display = "inline-block";
   document.getElementById("btn-broadcast").style.display = "inline-block";
   document.getElementById("btn-reveal").style.display = "inline-block";
+  document.getElementById("btn-guess-zoom").disabled = false;
   document.getElementById("btn-reveal").textContent = "👁 揭晓答案";
 }
 function renderGuessCard(showAnswer){
@@ -1042,7 +1109,7 @@ function renderGuessCard(showAnswer){
     : "";
   g.innerHTML = `
     <div class="card-mini" style="background:linear-gradient(135deg,${hex},#8B5CF6);position:relative;overflow:hidden">
-      <div style="position:absolute;right:-10px;bottom:-10px;font-size:100px;opacity:.15;line-height:1;transform:rotate(-15deg)">${animalEmoji}</div>
+      <div class="card-animal" style="position:absolute;right:-10px;bottom:-10px;font-size:100px;opacity:.15;line-height:1;transform:rotate(-15deg)">${animalEmoji}</div>
       <div class="avatar">${escapeHtml(s.avatar || "🧑")}</div>
       <div class="name">${show ? escapeHtml(s.student||"神秘同学") : "神秘同学"}</div>
       <div class="grid2" style="position:relative;z-index:1">
@@ -1057,6 +1124,7 @@ function renderGuessCard(showAnswer){
     <div style="margin-top:8px;font-size:12px;color:var(--ink-soft)">爱好：${escapeHtml(s.hobby || "—")} · 动物：${escapeHtml(s.fav_animal || "?")}</div>
     ${answerHtml}
   `;
+  syncGuessZoom();
 }
 document.getElementById("btn-guess").onclick = pickGuess;
 document.getElementById("btn-reveal").onclick = function(){

@@ -1503,6 +1503,39 @@ add({ name: '4-1-回归-教师端统计与批量操作', page: '4.1数据宝藏�
     if(!result['41']||!result['410'])throw new Error('教师端测试/备用号名单不一致：'+JSON.stringify(result));
     return JSON.stringify(result);
   `) },
+  { label: '空数据变为有数据后清除统计图提示', js: wrap(`
+    const ids=['chart-height','chart-subject','chart-score'];
+    const titleOf=id=>{const value=charts[id].getOption().title;return Array.isArray(value)?value[0]:value;};
+    render([]);
+    const emptyTitles=ids.map(id=>titleOf(id));
+    if(emptyTitles.some(t=>!t||t.text!=='暂无数据'||t.show===false))throw new Error('空图状态没有显示暂无数据：'+JSON.stringify(emptyTitles));
+    render([
+      {_id:81,type:'self_portrait',student:'图表回归学生',klass:'41',height:'145',fav_subject:'语文'},
+      {_id:82,type:'classify_game',student:'图表回归学生',klass:'41',score:80,total:11}
+    ]);
+    const populated=ids.map(id=>({id,title:titleOf(id),series:charts[id].getOption().series}));
+    const stuck=populated.filter(x=>!x.title||x.title.show!==false);
+    if(stuck.length||populated.some(x=>!x.series||!x.series.length))throw new Error('有数据后暂无数据标题仍可见或图表未更新：'+JSON.stringify(populated));
+    document.getElementById('chart-height').scrollIntoView({block:'start'});
+    return JSON.stringify({emptyShown:true,staleTitlesHidden:stuck.length===0,charts:ids});
+  `), shot:true },
+  { label: '放大展示当前卡片且维持答案隐藏', js: wrap(`
+    guessPool=[{_id:99,student:'放大测试对象',avatar:'🐳',age:'10',height:'145',weight:'56',birth:'9-10',fav_color:'黄色',fav_subject:'语文',fav_animal:'小猫',hobby:'游泳'}];
+    guessIdx=0;answerRevealed=false;pickGuess();
+    const trigger=document.getElementById('btn-guess-zoom');trigger.click();
+    const zoom=document.getElementById('guess-zoom'),content=document.getElementById('guess-zoom-content');
+    const opened=!zoom.hidden&&!!content.querySelector('.card-mini')&&content.querySelector('.name').textContent==='神秘同学'&&document.body.style.overflow==='hidden';
+    if(!opened)throw new Error('放大展示未打开或剧透答案');
+    return JSON.stringify({opened,hiddenAnswer:content.querySelector('.name').textContent==='神秘同学',cardScale:getComputedStyle(content.querySelector('.card-mini')).padding});
+  `), shot:true },
+  { label: '放大展示支持关闭按钮和 Esc', js: wrap(`
+    const trigger=document.getElementById('btn-guess-zoom'),zoom=document.getElementById('guess-zoom');
+    document.getElementById('guess-zoom-close').click();
+    trigger.click();window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    const closed=zoom.hidden&&document.body.style.overflow!== 'hidden';
+    if(!closed)throw new Error('放大展示不能关闭');
+    return JSON.stringify({closed});
+  `) },
   { label: '全部班级按轮次时间戳统计猜人结果', js: wrap(`
     await __wait(900);
     const at=localNow();selectedClass='__all__';stateMap={};localTcUntil=Date.now()+10000;
