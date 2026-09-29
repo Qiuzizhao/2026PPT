@@ -1524,15 +1524,34 @@ add({ name: '4-1-回归-教师端统计与批量操作', page: '4.1数据宝藏�
     guessIdx=0;answerRevealed=false;pickGuess();
     const trigger=document.getElementById('btn-guess-zoom');trigger.click();
     const zoom=document.getElementById('guess-zoom'),content=document.getElementById('guess-zoom-content');
-    const opened=!zoom.hidden&&!!content.querySelector('.card-mini')&&content.querySelector('.name').textContent==='神秘同学'&&document.body.style.overflow==='hidden';
+    const actions=document.getElementById('guess-zoom-actions');
+    const dialog=zoom.querySelector('.guess-zoom-dialog').getBoundingClientRect();
+    const controls=['btn-guess','btn-broadcast','btn-reveal'].every(id=>{
+      const button=document.getElementById(id),r=button.getBoundingClientRect();
+      return actions.contains(button)&&document.querySelectorAll('#'+id).length===1&&r.height>0&&r.top>=dialog.top&&r.bottom<=Math.min(dialog.bottom,window.innerHeight);
+    });
+    const opened=!zoom.hidden&&!!content.querySelector('.card-mini')&&content.querySelector('.name').textContent==='神秘同学'&&document.body.style.overflow==='hidden'&&controls;
     if(!opened)throw new Error('放大展示未打开或剧透答案');
-    return JSON.stringify({opened,hiddenAnswer:content.querySelector('.name').textContent==='神秘同学',cardScale:getComputedStyle(content.querySelector('.card-mini')).padding});
+    return JSON.stringify({opened,controlsVisible:controls,hiddenAnswer:content.querySelector('.name').textContent==='神秘同学',cardScale:getComputedStyle(content.querySelector('.card-mini')).padding});
   `), shot:true },
+  { label: '放大窗口内揭晓收起答案并换一位同学', js: wrap(`
+    dataCache={at:Date.now(),subs:guessPool.slice()};localTcUntil=Date.now()+10000;
+    const content=document.getElementById('guess-zoom-content'),reveal=document.getElementById('btn-reveal');
+    reveal.click();
+    if(content.querySelector('.name').textContent!=='放大测试对象'||!reveal.textContent.includes('收起答案'))throw new Error('放大窗口未揭晓答案');
+    reveal.click();
+    if(content.querySelector('.name').textContent!=='神秘同学'||!reveal.textContent.includes('揭晓答案'))throw new Error('放大窗口未收起答案');
+    guessPool=[{_id:100,type:'self_portrait',klass:'41',student:'换人测试对象',avatar:'🐼',height:'150'}];
+    dataCache={at:Date.now(),subs:guessPool.slice()};
+    document.getElementById('btn-guess').click();
+    if(!content.textContent.includes('150cm')||content.querySelector('.name').textContent!=='神秘同学'||document.getElementById('guess-zoom').hidden)throw new Error('放大窗口换人未更新卡片');
+    return JSON.stringify({reveal:true,hide:true,switch:true});
+  `) },
   { label: '放大展示支持关闭按钮和 Esc', js: wrap(`
     const trigger=document.getElementById('btn-guess-zoom'),zoom=document.getElementById('guess-zoom');
     document.getElementById('guess-zoom-close').click();
     trigger.click();window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
-    const closed=zoom.hidden&&document.body.style.overflow!== 'hidden';
+    const closed=zoom.hidden&&document.body.style.overflow!== 'hidden'&&document.getElementById('guess-actions-home').contains(document.getElementById('guess-actions'));
     if(!closed)throw new Error('放大展示不能关闭');
     return JSON.stringify({closed});
   `) },
@@ -1563,9 +1582,13 @@ add({ name: '4-1-回归-教师端统计与批量操作', page: '4.1数据宝藏�
     document.querySelector('#task-controls .tc-item').click();await __wait(50);
     const taskToast=document.getElementById('_toast').textContent;
     const taskMissing=!taskToast.includes('四(10)班')||!taskToast.includes('测试班');
-    window.__qaWrites=[];document.getElementById('btn-broadcast').click();await __wait(50);
+    window.__qaWrites=[];document.getElementById('btn-guess-zoom').click();
+    if(!document.getElementById('guess-zoom-actions').contains(document.getElementById('btn-broadcast')))throw new Error('广播按钮未进入放大窗口');
+    document.getElementById('btn-broadcast').click();await __wait(50);
     const roundToast=document.getElementById('_toast').textContent;
     const roundMissing=!roundToast.includes('四(10)班')||!roundToast.includes('测试班');
+    if(Number(document.getElementById('_toast').style.zIndex)<=1000)throw new Error('广播结果被放大窗口遮住');
+    document.getElementById('guess-zoom-close').click();
     if(taskMissing||roundMissing)throw new Error('部分失败没有准确报告：'+JSON.stringify({taskToast,roundToast,taskMissing,roundMissing}));
     return JSON.stringify({taskToast,roundToast,writes:window.__qaWrites});
   `) }
