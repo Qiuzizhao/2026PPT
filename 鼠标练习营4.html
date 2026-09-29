@@ -9,7 +9,7 @@
 :root{--ink:#182344;--muted:#697692;--navy:#101b3b;--cyan:#5de6ff;--pink:#ff6db0;--gold:#ffcc67;--line:#d6e1f3;--shadow:0 18px 50px rgba(3,10,32,.24)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%;font-family:"Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif}
-body{min-height:100vh;overflow-x:hidden;color:#f8fbff;padding:12px;background:#0b1430 url('assets/mousecamp4/space-background.png') center center / cover fixed no-repeat;user-select:none}
+body{min-height:100vh;overflow-x:hidden;color:#f8fbff;padding:12px;background:#0b1430 url('assets/mousecamp4/space-background.webp') center center / cover fixed no-repeat;user-select:none}
 body::before{content:"";position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:0;background:linear-gradient(180deg,rgba(8,18,49,.18),rgba(8,18,49,.42))}
 button{font:inherit}
 .app{width:100%;max-width:1160px;margin:0 auto;position:relative;z-index:1;display:grid;gap:11px}
@@ -26,7 +26,7 @@ html.no-flexgap .route-steps>*:not(:last-child){margin-right:8px}
 .route-step.done{background:#164e56;color:#baf9e6;border-color:#44d9b0}
 .route-step.current{background:#fff;color:#243665;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(93,230,255,.18)}
 .rs-num{display:inline-block;margin-right:4px;color:var(--gold)}.route-step.done .rs-num{color:#68f0c0}
-#station{min-height:490px;padding:14px;border-radius:23px;border:1px solid rgba(255,255,255,.7);background:#eef6ff;background-image:linear-gradient(150deg,rgba(250,253,255,.75),rgba(226,240,255,.82)),url('assets/mousecamp4/hangar-interior.png');background-position:center;background-size:cover;color:var(--ink);box-shadow:var(--shadow);display:grid;grid-template-rows:auto 1fr auto auto;gap:11px}
+#station{min-height:490px;padding:14px;border-radius:23px;border:1px solid rgba(255,255,255,.7);background:#eef6ff;background-image:linear-gradient(150deg,rgba(250,253,255,.75),rgba(226,240,255,.82)),url('assets/mousecamp4/hangar-interior.webp');background-position:center;background-size:cover;color:var(--ink);box-shadow:var(--shadow);display:grid;grid-template-rows:auto 1fr auto auto;gap:11px}
 .mission-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:10px 13px;border-radius:15px;background:#fff;border:1px solid var(--line)}
 html.no-flexgap .mission-head>*:not(:last-child){margin-right:12px}
 .mission-counter{border-radius:999px;background:#e8fbff;color:#087994;padding:6px 10px;font-size:13px;font-weight:900;white-space:nowrap}
@@ -85,7 +85,7 @@ kbd{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:1
 .mmenu[hidden]{display:none}.menu-title{padding:5px 9px 7px;font-size:12px;font-weight:900;color:#73809a}
 .mmenu button{width:100%;border:0;border-radius:9px;background:transparent;color:#26365e;text-align:left;padding:9px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
 .mmenu button:hover{background:#edf7ff}.mmenu small{font-size:11px;font-family:ui-monospace,Consolas,monospace;color:#71809b}
-.finale{position:fixed;top:0;right:0;bottom:0;left:0;z-index:30000;display:none;overflow:hidden;background:#0b1430 url('assets/mousecamp4/space-background.png') center / cover no-repeat;color:#fff;place-items:center;padding:18px}
+.finale{position:fixed;top:0;right:0;bottom:0;left:0;z-index:30000;display:none;overflow:hidden;background:#0b1430 url('assets/mousecamp4/space-background.webp') center / cover no-repeat;color:#fff;place-items:center;padding:18px}
 .finale.show{display:grid}
 .finale::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;background:radial-gradient(#fff 1px,transparent 1.4px);background-size:69px 69px;opacity:.38}
 .launch-card{position:relative;z-index:1;width:100%;max-width:800px;min-height:400px;border:1px solid rgba(255,255,255,.25);border-radius:28px;background:rgba(13,23,58,.76);box-shadow:0 24px 80px rgba(0,0,0,.3);display:grid;grid-template-columns:1.05fr .95fr;gap:12px;align-items:center;overflow:hidden;padding:22px}
@@ -95,7 +95,7 @@ kbd{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:1
 .launch-copy .lesson{margin-top:15px;border-radius:14px;background:rgba(255,255,255,.09);padding:12px 14px;font-size:14px;font-weight:800}
 .launch-next{margin-top:18px;border:0;border-radius:14px;background:#ffd36e;color:#1d2b50;padding:13px 22px;font-size:18px;font-weight:900;cursor:pointer;box-shadow:0 5px 0 #b78128}
 .launch-next:hover{filter:brightness(1.08)}
-.launch-scene{min-height:320px;position:relative;display:grid;place-items:center;overflow:hidden;border-radius:20px;background:#152756 url('assets/mousecamp4/launch-scene.png') center / cover no-repeat}
+.launch-scene{min-height:320px;position:relative;display:grid;place-items:center;overflow:hidden;border-radius:20px;background:#152756 url('assets/mousecamp4/launch-scene.webp') center / cover no-repeat}
 .launch-rocket{position:relative;width:95%;max-width:340px;filter:drop-shadow(0 16px 14px rgba(0,0,0,.35));animation:launch 2.4s ease-in-out infinite}
 .launch-rocket img{display:block;width:100%;height:auto}
 .spark{position:absolute;font-size:26px;animation:sparkle 2.2s ease-in-out infinite}
@@ -262,7 +262,7 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
 <body>
 <main class="app">
   <header class="hero">
-    <div class="mascot" aria-hidden="true"><img src="assets/mousecamp4/daidai-astronaut.png" alt=""></div>
+    <div class="mascot" aria-hidden="true"><img src="assets/mousecamp4/daidai-astronaut.webp" alt=""></div>
     <div class="speech"><strong>袋袋的太空补给站</strong><span>照着订单装货，飞船就能起飞！</span></div>
   </header>
   <section class="route-card" aria-label="飞船补给进度">
@@ -291,7 +291,7 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
           <button type="button" class="port" id="port">
             <span class="port-title" id="portLabel">⬇️ 投递口 · 右键粘贴</span>
             <span class="rocket-body">
-              <img class="ship-art" src="assets/mousecamp4/cargo-ship.png" alt="">
+              <img class="ship-art" src="assets/mousecamp4/cargo-ship.webp" alt="">
               <span class="delivery-slots" id="deliverySlots"></span>
             </span>
           </button>
@@ -299,7 +299,7 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
       </section>
     </div>
     <div class="hint" role="status" aria-live="polite">
-      <div class="hint-portrait" aria-hidden="true"><img src="assets/mousecamp4/daidai-astronaut.png" alt=""><span class="hint-icon" id="hintIcon">💡</span></div>
+      <div class="hint-portrait" aria-hidden="true"><img src="assets/mousecamp4/daidai-astronaut.webp" alt=""><span class="hint-icon" id="hintIcon">💡</span></div>
       <div class="hint-body"><span class="hint-name">袋袋</span><div id="hintText">点左边货物，袋袋会告诉你下一步。</div></div>
     </div>
     <div class="lesson-key" aria-label="复制和剪切的区别">
@@ -318,7 +318,7 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
     </div>
     <div class="launch-scene" aria-hidden="true">
       <span class="spark a">⭐</span><span class="spark b">✨</span><span class="spark c">🌟</span><span class="spark d">✦</span>
-      <div class="launch-rocket"><img src="assets/mousecamp4/cargo-ship.png" alt=""></div>
+      <div class="launch-rocket"><img loading="lazy" decoding="async" src="assets/mousecamp4/cargo-ship.webp" alt=""></div>
     </div>
   </div>
   <div class="secret-game" id="secretGame" aria-label="隐藏关卡：星际护航">
@@ -326,10 +326,10 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
     <div class="secret-arena" id="secretArena">
       <div class="secret-aim" id="secretAim"></div>
       <div id="secretEnemies"></div><div id="secretShots"></div><div id="secretEffects"></div>
-      <div class="secret-ship" id="secretShip"><img src="assets/mousecamp4/cargo-ship.png" alt="我们的补给飞船"></div>
+      <div class="secret-ship" id="secretShip"><img loading="lazy" decoding="async" src="assets/mousecamp4/cargo-ship.webp" alt="我们的补给飞船"></div>
       <div class="secret-energy" id="secretEnergy">碎岩弹 · 按住 Ctrl+C 连发</div>
     </div>
-    <div class="secret-dialogue" role="status" aria-live="polite"><img src="assets/mousecamp4/daidai-astronaut.png" alt=""><div><strong>袋袋 · 航行提示</strong><p id="secretHint">按住对应快捷键连发，移动鼠标扫射！</p><em class="weapon-legend" id="secretSubhint"><span class="weapon c active" id="weaponC">Ctrl+C · 碎岩弹 → 陨石</span><span class="weapon v" id="weaponV">Ctrl+V · 追击弹 → 飞碟</span><span class="weapon x" id="weaponX">Ctrl+X · 穿透弹 → 屏障</span></em></div></div>
+    <div class="secret-dialogue" role="status" aria-live="polite"><img loading="lazy" decoding="async" src="assets/mousecamp4/daidai-astronaut.webp" alt=""><div><strong>袋袋 · 航行提示</strong><p id="secretHint">按住对应快捷键连发，移动鼠标扫射！</p><em class="weapon-legend" id="secretSubhint"><span class="weapon c active" id="weaponC">Ctrl+C · 碎岩弹 → 陨石</span><span class="weapon v" id="weaponV">Ctrl+V · 追击弹 → 飞碟</span><span class="weapon x" id="weaponX">Ctrl+X · 穿透弹 → 屏障</span></em></div></div>
   </div>
 </section>
 
@@ -339,9 +339,9 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
   var PREVIEW=/[?&]finale=1/.test(location.search);
   var SAVE_KEY='mousecamp4.progress.v2';
   var TASKS=[
-    {id:'s1',title:'右键复制求救文字',order:'用鼠标右键复制求救信号，再用右键粘贴到飞船，共练习 5 次。',target:'广播舱',action:'copy',method:'menu',count:5,item:{id:'signal',name:'求救信号',word:'SOS！',type:'文字',art:'assets/mousecamp4/sos-signal.png'}},
-    {id:'s2',title:'快捷键复制太空照片',order:'这次用 Ctrl+C 和 Ctrl+V，把同一张照片复制并投递 5 次。',target:'照片舱',action:'copy',method:'keys',count:5,item:{id:'photo',name:'星球照片',word:'蓝色星球.jpg',type:'图片',art:'assets/mousecamp4/planet-photo.png'}},
-    {id:'s3',title:'右键剪切电池文件',order:'用鼠标右键剪切电池，再用右键粘贴到引擎舱，共搬运 5 块电池。',target:'引擎舱',action:'cut',method:'menu',count:5,item:{id:'battery',name:'电池文件',word:'能量电池.png',type:'文件',art:'assets/mousecamp4/energy-battery.png'}}
+    {id:'s1',title:'右键复制求救文字',order:'用鼠标右键复制求救信号，再用右键粘贴到飞船，共练习 5 次。',target:'广播舱',action:'copy',method:'menu',count:5,item:{id:'signal',name:'求救信号',word:'SOS！',type:'文字',art:'assets/mousecamp4/sos-signal.webp'}},
+    {id:'s2',title:'快捷键复制太空照片',order:'这次用 Ctrl+C 和 Ctrl+V，把同一张照片复制并投递 5 次。',target:'照片舱',action:'copy',method:'keys',count:5,item:{id:'photo',name:'星球照片',word:'蓝色星球.jpg',type:'图片',art:'assets/mousecamp4/planet-photo.webp'}},
+    {id:'s3',title:'右键剪切电池文件',order:'用鼠标右键剪切电池，再用右键粘贴到引擎舱，共搬运 5 块电池。',target:'引擎舱',action:'cut',method:'menu',count:5,item:{id:'battery',name:'电池文件',word:'能量电池.png',type:'文件',art:'assets/mousecamp4/energy-battery.webp'}}
   ];
   var save={v:2,cleared:{},rounds:{},secretCleared:false,secretScore:0,secretLevel:1,ts:0};
   var S={index:0,selected:false,clip:null,targetSelected:false,delivered:0,sourceGone:false,completed:false,note:'',noteTimer:null,finale:false,secret:false};
@@ -530,7 +530,7 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
     if(!type){var roll=Math.random();type=roll<.25?'barrier':roll<.6?'ufo':'asteroid';}
     var el=document.createElement('div');el.className='secret-target '+type;
     var weapon=type==='asteroid'?'c':type==='ufo'?'v':'x';
-    el.innerHTML=(type==='barrier'?'<span class="barrier-core" aria-label="能量屏障"></span>':'<img src="assets/mousecamp4/'+type+'.png" alt="'+(type==='ufo'?'敌方飞碟':'陨石')+'">')+'<span class="enemy-key">'+weapon.toUpperCase()+'</span>';
+    el.innerHTML=(type==='barrier'?'<span class="barrier-core" aria-label="能量屏障"></span>':'<img src="assets/mousecamp4/'+type+'.webp" alt="'+(type==='ufo'?'敌方飞碟':'陨石')+'">')+'<span class="enemy-key">'+weapon.toUpperCase()+'</span>';
     $('secretEnemies').appendChild(el);
     var enemy={el:el,type:type,weapon:weapon,x:x==null ? .08+Math.random()*.84 : x,y:y==null?-.1:y,width:type==='ufo'?80:type==='barrier'?74:66,height:type==='barrier'?74:66};
     B.enemies.push(enemy);B.spawned++;placeEntity(enemy);
