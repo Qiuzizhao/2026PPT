@@ -177,10 +177,26 @@
   .guess-zoom-content .card-mini .cell b{font-size:24px;margin-top:4px}
   .guess-zoom-content .card-animal{font-size:170px!important}
   .guess-zoom-content > div:not(.card-mini){font-size:18px!important}
-  .guess-zoom-actions .hrow{margin-top:16px!important;flex-wrap:wrap}
+  #guess-actions{flex-wrap:wrap}
+  html.no-flexgap #guess-actions > *{margin-bottom:8px}
+  .guess-zoom-actions .hrow{margin-top:16px!important}
   .guess-zoom-actions button{font-size:16px}
   .guess-zoom-title,.guess-zoom-actions,.guess-zoom-hint{flex-shrink:0}
   .guess-zoom-hint{text-align:center;margin-top:12px;color:var(--ink-soft);font-size:13px}
+  .lottery-window{z-index:1200}
+  .lottery-dialog{max-width:860px}
+  .lottery-class{display:block;margin:0 auto 16px;font-size:16px;padding:8px;border:1px solid var(--line);border-radius:8px}
+  .lottery-class[hidden]{display:none}
+  .lottery-status{text-align:center;color:var(--ink-soft);font-size:16px;margin-bottom:18px}
+  .lottery-results{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;overflow:auto;min-height:0}
+  .lottery-name{padding:34px 12px;border:2px solid #DDD6FE;border-radius:18px;background:#F5F3FF;color:var(--purple);font-size:34px;font-weight:900;text-align:center;word-break:break-word}
+  .lottery-name.waiting{color:#94A3B8;font-size:24px}
+  .lottery-draw{display:block;margin:22px auto 0;padding:12px 30px;border:0;border-radius:99px;background:var(--purple);color:#fff;font-size:18px;font-weight:800;cursor:pointer;flex-shrink:0}
+  .lottery-draw:disabled{opacity:.5;cursor:not-allowed}
+  @media(max-width:600px){
+    .lottery-results{grid-template-columns:1fr;gap:10px}
+    .lottery-name{padding:14px;font-size:28px}
+  }
   @media(max-height:800px){
     .guess-zoom-content .card-mini{padding:20px 24px}
     .guess-zoom-content .card-mini .avatar{font-size:64px;margin:6px 0}
@@ -336,6 +352,7 @@
       <button id="btn-guess" style="padding:10px 18px;border-radius:99px;border:none;background:var(--yellow);color:#1E2A4A;font-weight:800;cursor:pointer;display:none">换一位同学</button>
       <button id="btn-broadcast" style="padding:10px 18px;border-radius:99px;border:none;background:var(--cyan);color:#FFFFFF;font-weight:800;cursor:pointer">广播给全班猜</button>
       <button id="btn-reveal" title="默认不显示答案，需要时点这里" style="padding:10px 18px;border-radius:99px;border:none;background:#94A3B8;color:#FFFFFF;font-weight:800;cursor:pointer;display:none">👁 揭晓答案</button>
+      <button id="btn-lottery" type="button" style="padding:10px 18px;border-radius:99px;border:none;background:var(--purple);color:#FFFFFF;font-weight:800;cursor:pointer">🎲 抽签</button>
     </div></div>
   </div>
 </div>
@@ -362,6 +379,18 @@
     <div class="guess guess-zoom-content" id="guess-zoom-content"></div>
     <div class="guess-zoom-actions" id="guess-zoom-actions"></div>
     <div class="guess-zoom-hint">按 Esc 或点击卡片外区域关闭</div>
+  </div>
+</div>
+
+<div class="guess-zoom lottery-window" id="lottery-window" role="presentation" aria-hidden="true" hidden>
+  <div class="guess-zoom-dialog lottery-dialog" role="dialog" aria-modal="true" aria-labelledby="lottery-title">
+    <button id="lottery-close" class="guess-zoom-close" type="button" aria-label="关闭抽签窗口">×</button>
+    <div class="guess-zoom-title" id="lottery-title">课堂抽签</div>
+    <select id="lottery-class" class="lottery-class" aria-label="选择抽签班级" hidden></select>
+    <div class="lottery-status" id="lottery-status" role="status"></div>
+    <div class="lottery-results" id="lottery-results" aria-live="polite"></div>
+    <button id="lottery-draw" class="lottery-draw" type="button">抽三位同学</button>
+    <div class="guess-zoom-hint">每次抽签的名字不重复 · 按 Esc 关闭</div>
   </div>
 </div>
 
@@ -1088,7 +1117,79 @@ function closeGuessZoom(){
 document.getElementById("btn-guess-zoom").onclick=openGuessZoom;
 document.getElementById("guess-zoom-close").onclick=closeGuessZoom;
 guessZoom.addEventListener("click",function(e){if(e.target===guessZoom)closeGuessZoom();});
-window.addEventListener("keydown",function(e){if(e.key==="Escape")closeGuessZoom();});
+window.addEventListener("keydown",function(e){
+  if(e.key==="Escape"){
+    if(!lotteryWindow.hidden) closeLottery();
+    else closeGuessZoom();
+  }
+});
+
+/* 抽签只取一个班本堂课已登录的人，心跳和登录记录按姓名去重。 */
+function lotteryCandidates(klass){
+  const now=Date.now(),last=new Map();
+  function put(name,ms){if(name && (!last.has(name) || ms>last.get(name)))last.set(name,ms);}
+  ["hb:","login:"].forEach(prefix=>{
+    statesWithPrefix(prefix).forEach(x=>{if(x.klass===klass)put(x.name,x.ms);});
+  });
+  if(!last.size){
+    dataCache.subs.forEach(s=>{
+      const c=(!s.klass || s.klass==="测试")?"测试班":s.klass;
+      if(c===klass && s.type!=="task_control")put(s.student,atTime(s));
+    });
+  }
+  const roster=ROSTER[klass];
+  return Array.from(last.keys()).filter(n=>{
+    const ms=last.get(n);
+    return ms>0 && now-ms<TASK_TTL && (!roster || roster.includes(n));
+  });
+}
+const lotteryWindow=document.getElementById("lottery-window");
+const lotteryClassSelect=document.getElementById("lottery-class");
+let lotteryClass="41",lotteryOldOverflow="";
+function renderLottery(names){
+  const pool=lotteryCandidates(lotteryClass),count=pool.length;
+  document.getElementById("lottery-title").textContent="课堂抽签 · "+(CLASS_LABEL[lotteryClass]||lotteryClass);
+  document.getElementById("lottery-status").textContent=count===0
+    ? "这个班还没有已登录的学生"
+    : "本堂课已登录 "+count+" 人"+(count<3?" · 不足三位，将抽出全部 "+count+" 位":" · 随机抽出三位同学");
+  document.getElementById("lottery-results").innerHTML=names
+    ? names.map(n=>'<div class="lottery-name">'+escapeHtml(n)+'</div>').join("")
+    : [1,2,3].map(()=>'<div class="lottery-name waiting">待抽签</div>').join("");
+  const button=document.getElementById("lottery-draw");
+  button.disabled=count===0;
+  button.textContent=names && names.length?"再抽一次":(count && count<3?"抽出 "+count+" 位同学":"抽三位同学");
+}
+function openLottery(){
+  if(!lotteryWindow.hidden)return;
+  lotteryClass=selectedClass==="__all__"?CLASSES[0]:selectedClass;
+  lotteryClassSelect.innerHTML=CLASSES.map(c=>'<option value="'+escapeHtml(c)+'">'+escapeHtml(CLASS_LABEL[c]||c)+'</option>').join("");
+  lotteryClassSelect.value=lotteryClass;
+  lotteryClassSelect.hidden=selectedClass!=="__all__";
+  renderLottery();
+  lotteryOldOverflow=document.body.style.overflow;
+  lotteryWindow.hidden=false;
+  lotteryWindow.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+  document.getElementById("lottery-close").focus();
+}
+function closeLottery(){
+  if(lotteryWindow.hidden)return;
+  lotteryWindow.hidden=true;
+  lotteryWindow.setAttribute("aria-hidden","true");
+  document.body.style.overflow=lotteryOldOverflow;
+  document.getElementById("btn-lottery").focus();
+}
+document.getElementById("btn-lottery").onclick=openLottery;
+document.getElementById("lottery-close").onclick=closeLottery;
+lotteryWindow.addEventListener("click",function(e){if(e.target===lotteryWindow)closeLottery();});
+lotteryClassSelect.onchange=function(){lotteryClass=this.value;renderLottery();};
+document.getElementById("lottery-draw").onclick=function(){
+  const pool=lotteryCandidates(lotteryClass);
+  for(let i=pool.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1)),value=pool[i];pool[i]=pool[j];pool[j]=value;
+  }
+  renderLottery(pool.slice(0,3));
+};
 
 function pickGuess(){
   const g = document.getElementById("guess");

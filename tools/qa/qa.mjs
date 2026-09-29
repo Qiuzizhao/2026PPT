@@ -1526,7 +1526,7 @@ add({ name: '4-1-回归-教师端统计与批量操作', page: '4.1数据宝藏�
     const zoom=document.getElementById('guess-zoom'),content=document.getElementById('guess-zoom-content');
     const actions=document.getElementById('guess-zoom-actions');
     const dialog=zoom.querySelector('.guess-zoom-dialog').getBoundingClientRect();
-    const controls=['btn-guess','btn-broadcast','btn-reveal'].every(id=>{
+    const controls=['btn-guess','btn-broadcast','btn-reveal','btn-lottery'].every(id=>{
       const button=document.getElementById(id),r=button.getBoundingClientRect();
       return actions.contains(button)&&document.querySelectorAll('#'+id).length===1&&r.height>0&&r.top>=dialog.top&&r.bottom<=Math.min(dialog.bottom,window.innerHeight);
     });
@@ -1553,6 +1553,8 @@ add({ name: '4-1-回归-教师端统计与批量操作', page: '4.1数据宝藏�
     trigger.click();window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
     const closed=zoom.hidden&&document.body.style.overflow!== 'hidden'&&document.getElementById('guess-actions-home').contains(document.getElementById('guess-actions'));
     if(!closed)throw new Error('放大展示不能关闭');
+    const actions=document.getElementById('guess-actions'),panel=actions.closest('.panel').getBoundingClientRect();
+    if(Array.from(actions.querySelectorAll('button')).some(b=>{const r=b.getBoundingClientRect();return r.left<panel.left||r.right>panel.right;}))throw new Error('新增抽签按钮后普通卡片的操作栏溢出');
     return JSON.stringify({closed});
   `) },
   { label: '全部班级按轮次时间戳统计猜人结果', js: wrap(`
@@ -1595,6 +1597,64 @@ add({ name: '4-1-回归-教师端统计与批量操作', page: '4.1数据宝藏�
 ]});
 
 /* ============ 8. 多分辨率不溢出 ============ */
+add({ name:'4-1-抽签-当前班级已登录学生',page:'4.1数据宝藏在身边（教师端）.html',blockUrls:['*qiuform.qiuzizhao.com*'],steps:[
+  {label:'放大窗口内抽出三位本班已登录学生且不重复',js:wrap(`
+    selectedClass='41';stateMap={};dataCache={at:Date.now(),subs:[]};localTcUntil=Date.now()+10000;
+    window.__qaLotteryEligible=ROSTER['41'].slice(0,5);
+    const at=localNow();
+    window.__qaLotteryEligible.forEach((name,i)=>{stateMap['login:41:'+name]={updated_at:i===4?new Date(Date.now()-5*60000).toISOString():at};});
+    stateMap['hb:41:'+ROSTER['41'][0]]={updated_at:at};
+    stateMap['login:41:'+ROSTER['41'][5]]={updated_at:new Date(Date.now()-TASK_TTL-1000).toISOString()};
+    stateMap['login:410:'+ROSTER['41'][6]]={updated_at:at};
+    stateMap['login:41:不在名单的名字']={updated_at:at};
+    guessPool=[{_id:101,student:'抽签卡片对象',height:'145'}];pickGuess();
+    document.getElementById('btn-guess-zoom').click();document.getElementById('btn-lottery').click();
+    const modal=document.getElementById('lottery-window');
+    if(modal.hidden||lotteryCandidates('41').length!==5)throw new Error('抽签名单混入未登录、过期或别班学生');
+    for(let i=0;i<20;i++){
+      document.getElementById('lottery-draw').click();
+      const names=Array.from(modal.querySelectorAll('.lottery-name')).map(el=>el.textContent);
+      if(names.length!==3||new Set(names).size!==3||names.some(n=>!window.__qaLotteryEligible.includes(n)))throw new Error('抽签结果不满足本班已登录且三人不重复：'+JSON.stringify(names));
+    }
+    const button=document.getElementById('lottery-draw').getBoundingClientRect();
+    if(button.bottom>window.innerHeight||button.top<0)throw new Error('抽签按钮不在可视区');
+    return JSON.stringify({eligible:5,draws:20,names:Array.from(modal.querySelectorAll('.lottery-name')).map(el=>el.textContent)});
+  `),shot:true},
+  {label:'Esc 只关闭抽签窗口并保留放大卡片',js:wrap(`
+    window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    if(!lotteryWindow.hidden||guessZoom.hidden||document.body.style.overflow!=='hidden')throw new Error('关闭抽签时误关放大卡片或解除滚动锁定');
+    document.getElementById('guess-zoom-close').click();
+    if(document.body.style.overflow==='hidden')throw new Error('关闭窗口后滚动锁定未解除');
+    return JSON.stringify({lotteryClosed:true,zoomPreserved:true});
+  `)},
+  {label:'人数不足三位及无人登录时不制造名字',js:wrap(`
+    stateMap={};dataCache={at:Date.now(),subs:[]};
+    ROSTER['41'].slice(0,2).forEach(name=>{stateMap['login:41:'+name]={updated_at:localNow()};});
+    document.getElementById('btn-lottery').click();document.getElementById('lottery-draw').click();
+    if(document.querySelectorAll('#lottery-results .lottery-name').length!==2||!document.getElementById('lottery-status').textContent.includes('不足三位'))throw new Error('不足三位处理错误');
+    stateMap={};document.getElementById('lottery-draw').click();
+    if(document.querySelectorAll('#lottery-results .lottery-name').length||!document.getElementById('lottery-draw').disabled||!document.getElementById('lottery-status').textContent.includes('没有已登录'))throw new Error('无人登录时仍显示中奖学生');
+    document.getElementById('lottery-close').click();
+    return JSON.stringify({twoStudents:true,noStudents:true});
+  `)},
+  {label:'旧版登录记录及全部视图仍按单个班级抽签',js:wrap(`
+    stateMap={};selectedClass='__all__';
+    dataCache={at:Date.now(),subs:[
+      {type:'self_portrait',klass:'41',student:ROSTER['41'][0],_at:localNow()},
+      {type:'classify_game',klass:'410',student:ROSTER['410'][0],_at:localNow()},
+      {type:'classify_game',klass:'41',student:ROSTER['41'][1],_at:new Date(Date.now()-TASK_TTL-1000).toISOString()}
+    ]};
+    document.getElementById('btn-lottery').click();
+    if(lotteryClassSelect.hidden)throw new Error('全部班级抽签没有班级选择');
+    lotteryClassSelect.value='410';lotteryClassSelect.dispatchEvent(new Event('change'));
+    document.getElementById('lottery-draw').click();
+    const names=Array.from(document.querySelectorAll('#lottery-results .lottery-name')).map(el=>el.textContent);
+    if(names.length!==1||names[0]!==ROSTER['410'][0])throw new Error('切班后抽签名单没有隔离：'+JSON.stringify(names));
+    document.getElementById('lottery-close').click();
+    return JSON.stringify({classIsolated:true,legacyLogin:true});
+  `)}
+]});
+
 for (const [w, h] of [[1024, 768], [1920, 1080]]) {
   for (const page of ['index.html', '键盘练习营.html', '鼠标练习营.html', '鼠标练习营2.html', '鼠标反应力实验室.html', '数据自画像-猜猜我是谁.html', '数据自画像-教师端看板.html', '4.1数据宝藏在身边（学生端）.html', '4.1数据宝藏在身边（教师端）.html']) {
     add({
