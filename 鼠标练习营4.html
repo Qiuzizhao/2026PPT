@@ -22,7 +22,8 @@ button{font:inherit}
 .route-label{font-size:13px;font-weight:800;letter-spacing:.08em;color:#c0cff1}
 .route-steps{display:flex;gap:8px;align-items:center}
 html.no-flexgap .route-steps>*:not(:last-child){margin-right:8px}
-.route-step{min-width:112px;padding:6px 9px;border-radius:999px;background:rgba(6,14,38,.32);color:#b7c4e4;border:1px solid rgba(207,221,255,.23);font-size:12px;font-weight:800;text-align:center}
+.route-step{cursor:pointer;min-height:36px;min-width:112px;padding:6px 9px;border-radius:999px;background:rgba(6,14,38,.32);color:#b7c4e4;border:1px solid rgba(207,221,255,.23);font-size:12px;font-weight:800;text-align:center}
+.route-step:hover{filter:brightness(1.12)}.route-step:focus{outline:2px solid #5de6ff;outline-offset:3px}
 .route-step.done{background:#164e56;color:#baf9e6;border-color:#44d9b0}
 .route-step.current{background:#fff;color:#243665;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(93,230,255,.18)}
 .rs-num{display:inline-block;margin-right:4px;color:var(--gold)}.route-step.done .rs-num{color:#68f0c0}
@@ -235,10 +236,12 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
 (function(){
   var armed=true;
   function removeListeners(){
-    var names=['pointerdown','mousedown','touchstart','keydown'];
+    var names=['pointerdown','mousedown','touchstart','keydown','click'];
     for(var i=0;i<names.length;i++)document.removeEventListener(names[i],enter,true);
   }
-  function enter(){
+  function enter(e){
+    /* 关卡按钮先完成点击，再全屏，避免按下与松开之间移动按钮。 */
+    if(e&&e.type!=='click'&&e.type!=='keydown'&&e.target&&e.target.closest&&e.target.closest('button[data-task]'))return;
     if(!armed)return;armed=false;
     try{
       var el=document.documentElement;
@@ -254,7 +257,7 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
       if(fn){var p=fn.call(el);if(p&&p.catch)p.catch(function(){});}
     }catch(e){}
   });
-  var names=['pointerdown','mousedown','touchstart','keydown'];
+  var names=['pointerdown','mousedown','touchstart','keydown','click'];
   for(var i=0;i<names.length;i++)document.addEventListener(names[i],enter,true);
 })();
 </script>
@@ -266,7 +269,7 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
     <div class="speech"><strong>袋袋的太空补给站</strong><span>照着订单装货，飞船就能起飞！</span></div>
   </header>
   <section class="route-card" aria-label="飞船补给进度">
-    <div class="route-label">🚀 飞船补给进度</div>
+    <div class="route-label">🖱️ 点击关卡，随时切换</div>
     <div class="route-steps" id="routeSteps"></div>
   </section>
   <section id="station">
@@ -344,7 +347,7 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
     {id:'s3',title:'右键剪切电池文件',order:'用鼠标右键剪切电池，再用右键粘贴到引擎舱，共搬运 5 块电池。',target:'引擎舱',action:'cut',method:'menu',count:5,item:{id:'battery',name:'电池文件',word:'能量电池.png',type:'文件',art:'assets/mousecamp4/energy-battery.webp'}}
   ];
   var save={v:2,cleared:{},rounds:{},secretCleared:false,secretScore:0,secretLevel:1,ts:0};
-  var S={index:0,selected:false,clip:null,targetSelected:false,delivered:0,sourceGone:false,completed:false,note:'',noteTimer:null,finale:false,secret:false};
+  var S={visit:0,index:0,selected:false,clip:null,targetSelected:false,delivered:0,sourceGone:false,completed:false,note:'',noteTimer:null,finale:false,secret:false};
   var B={score:0,level:1,weapon:'c',held:[],fireClock:0,fired:0,bumpUntil:0,x:.5,y:.84,enemies:[],bullets:[],effects:[],spawned:0,escaped:0,hits:0,frame:0,last:0,spawnClock:0,width:1,height:1};
   function $(id){return document.getElementById(id);}
   function esc(text){return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -369,15 +372,16 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
   function renderRoute(){
     var labels=['求救信号','太空照片','能量电池'],html='';
     for(var i=0;i<TASKS.length;i++){
-      var done=!!save.cleared[TASKS[i].id],cls='route-step'+(done?' done':(!S.finale&&i===S.index?' current':''));
-      html+='<span class="'+cls+'"><span class="rs-num">'+(done?'✓':String(i+1))+'</span>'+labels[i]+'</span>';
+      var done=!!save.cleared[TASKS[i].id],cls='route-step'+(done?' done':'')+(!S.finale&&i===S.index?' current':'');
+      html+='<button type="button" class="'+cls+'" data-task="'+i+'"'+(!S.finale&&i===S.index?' aria-current="step"':'')+'><span class="rs-num">'+(done?'✓':String(i+1))+'</span>'+labels[i]+' '+(done?5:(save.rounds[TASKS[i].id]||0))+'/5</button>';
     }
     $('routeSteps').innerHTML=html;
   }
   function renderHint(){
     if(S.finale||!task())return;
     var t=task(),text='';
-    if(S.note)text=S.note;
+    if(S.completed)text='本关 5 轮已完成！点击上方其他关卡，继续补给任务。';
+    else if(S.note)text=S.note;
     else if(t.method==='menu'&&S.clip)text='货物装进口袋啦！在右边黄色投递口上点<b>鼠标右键</b>，选「粘贴」。';
     else if(t.method==='menu')text='在左边「'+esc(t.item.name)+'」上点<b>鼠标右键</b>，选「'+(t.action==='copy'?'复制':'剪切')+'」。';
     else if(S.clip&&!S.targetSelected)text='货物装进袋袋啦！点右边闪光的投递口，再按 <kbd>Ctrl</kbd> + <kbd>V</kbd> 粘贴。';
@@ -393,7 +397,7 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
   }
   function renderGame(){
     var t=task();if(!t)return;
-    $('missionCounter').textContent='第 '+(S.index+1)+' 关 · 第 '+Math.min(t.count,S.delivered+1)+' / '+t.count+' 轮';
+    $('missionCounter').textContent='第 '+(S.index+1)+' 关 · '+(S.completed?'已完成 5 / 5 轮':'第 '+Math.min(t.count,S.delivered+1)+' / '+t.count+' 轮');
     $('missionTitle').textContent=t.title;$('missionPrompt').textContent=t.order;
     $('targetName').textContent=t.target;
     $('cargoHelp').textContent=t.method==='menu'?'对货物点右键':'点货物后按 Ctrl + C';
@@ -417,12 +421,14 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
   }
   function closeMenu(){$('mmenu').hidden=true;}
   function setTask(index){
-    S.index=index;S.selected=false;S.clip=null;S.targetSelected=false;S.delivered=save.rounds[TASKS[index].id]||0;S.sourceGone=false;S.completed=false;S.note='';
+    if(S.finale||index<0||index>=TASKS.length)return;
+    S.visit++;S.index=index;S.selected=false;S.clip=null;S.targetSelected=false;S.completed=!!save.cleared[TASKS[index].id];S.delivered=S.completed?5:(save.rounds[TASKS[index].id]||0);S.sourceGone=S.completed&&task().action==='cut';S.note='';
+    $('hintIcon').textContent='💡';
     if(S.noteTimer)clearTimeout(S.noteTimer);
     closeMenu();renderGame();
   }
   function copyOrCut(kind,via){
-    if(S.finale||!task()||S.completed)return;
+    if(S.finale||!task()||S.completed||S.sourceGone)return;
     closeMenu();
     if(S.clip){say('口袋里已经有货物啦，先把它贴进飞船。','🧺');return;}
     if(via!==task().method){
@@ -441,7 +447,13 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
     if(S.completed)return;
     S.completed=true;save.cleared[task().id]=true;writeSave();renderGame();
     say('漂亮！'+task().target+'补给完成。','✅');renderGame();
-    setTimeout(function(){if(S.index+1<TASKS.length)setTask(S.index+1);else openFinale();},760);
+    var visit=S.visit;
+    setTimeout(function(){
+      if(S.finale)return;
+      if(allDone()){openFinale();return;}
+      if(S.visit!==visit)return;
+      for(var step=1;step<=TASKS.length;step++){var next=(S.index+step)%TASKS.length;if(!save.cleared[TASKS[next].id]){setTask(next);return;}}
+    },760);
   }
   function paste(via){
     if(S.finale||!task()||S.completed)return;
@@ -456,8 +468,8 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
     renderGame();
     if(S.sourceGone){
       say('第 '+S.delivered+' 块电池已经搬走！下一块电池马上送来。','🚀');
-      var index=S.index,round=S.delivered;
-      setTimeout(function(){if(S.index!==index||S.delivered!==round||S.finale)return;S.sourceGone=false;renderGame();say('新电池到啦！继续右键剪切，再右键粘贴。','🔋');},600);
+      var visit=S.visit,index=S.index,round=S.delivered;
+      setTimeout(function(){if(S.visit!==visit||S.index!==index||S.delivered!==round||S.finale)return;S.sourceGone=false;renderGame();say('新电池到啦！继续右键剪切，再右键粘贴。','🔋');},600);
     }else say('已完成 '+S.delivered+' / '+task().count+' 轮！再复制一份，原件仍在货舱。','🚀');
     renderGame();
   }
@@ -472,6 +484,12 @@ html.no-flexgap .secret-head>*:not(:last-child){margin-right:15px}
     menu.style.top=Math.max(6,Math.min(y,window.innerHeight-h-6))+'px';
     say(kind==='cargo'?'菜单打开啦，点「'+(task().action==='copy'?'复制':'剪切')+'」。':'菜单打开啦，点「粘贴」把货物送进飞船。','🖱️');
   }
+  $('routeSteps').addEventListener('click',function(e){
+    var button=e.target.closest?e.target.closest('button[data-task]'):null;
+    if(!button||S.finale)return;
+    var index=Number(button.getAttribute('data-task'));
+    if(index!==S.index)setTask(index);
+  });
   document.addEventListener('click',function(e){
     if(S.finale)return;
     var el=e.target,cargo=el.closest?el.closest('#cargo'):null,port=el.closest?el.closest('#port'):null;

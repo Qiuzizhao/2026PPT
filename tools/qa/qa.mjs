@@ -2165,6 +2165,38 @@ add({ name: '鼠标练习营3-界面修正', page: '鼠标练习营3.html', step
   `), shot:true }
 ]});
 const userDir = join(tmpdir(), 'cdp-qa-' + Date.now());
+add({name:'鼠标练习营4-自由切关种档',page:'index.html',steps:[
+  {label:'准备各关不同轮数',js:wrap(`localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{},rounds:{s1:4,s2:1,s3:0},ts:Date.now()}));return 'ok';`)}
+]});
+add({name:'鼠标练习营4-自由切关',page:'鼠标练习营4.html',steps:[
+  {label:'未完成即可切换，轮数保留，口袋不串关',nativeClicks:[{selector:'#routeSteps button[data-task="2"]',button:'left'}],js:wrap(k4Helpers+`
+    if(window.__mc4.state.index!==2)throw new Error('真实点击不能切换到第三关');
+    const nav=i=>__k4click('#routeSteps button[data-task="'+i+'"]');
+    nav(2);if(window.__mc4.state.index!==2)throw new Error('不能直接进入第三关');
+    nav(1);if(window.__mc4.state.delivered!==1)throw new Error('第二关轮数丢失');
+    __k4click('#cargo');__k4key('c');nav(2);
+    if(window.__mc4.state.clip)throw new Error('口袋货物跨关');
+    __k4menu('#cargo','cut');__k4menu('#port','paste');nav(1);await __wait(800);
+    if(window.__mc4.state.index!==1||!__$('#cargo[data-id="photo"]'))throw new Error('旧回调干扰切关');
+    nav(2);if(window.__mc4.state.delivered!==1||!__$('#cargo'))throw new Error('第三关无法续练');
+    return JSON.stringify({switchable:true,roundsKept:true,pocketReset:true});
+  `)},
+  {label:'先完成第三关不提前发射，手动切换不被自动切关覆盖',js:wrap(k4Helpers+`
+    for(let i=1;i<5;i++){__k4menu('#cargo','cut');__k4menu('#port','paste');if(i<4)await __wait(700);}
+    __k4click('#routeSteps button[data-task="1"]');await __wait(900);
+    if(window.__mc4.state.index!==1||__$('#finale').classList.contains('show'))throw new Error('提前发射或覆盖手动切关');
+    __k4click('#routeSteps button[data-task="0"]');
+    __k4menu('#cargo','copy');__k4menu('#port','paste');
+    __k4click('#routeSteps button[data-task="1"]');await __wait(900);
+    __k4click('#routeSteps button[data-task="0"]');
+    if(!window.__mc4.state.completed||window.__mc4.state.delivered!==5)throw new Error('已完成关卡没有显示完成状态');
+    __k4click('#routeSteps button[data-task="1"]');
+    for(let i=1;i<5;i++)await __k4deliver('photo','c');await __wait(900);
+    if(!__$('#finale').classList.contains('show')||!window.__mc4.save.cleared.s3)throw new Error('乱序完成三关后没有解锁');
+    return JSON.stringify({outOfOrder:true,manualSwitchKept:true,completeState:true,finale:true});
+  `)}
+]});
+
 const chrome = spawn(CHROME, [
   '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
   '--remote-debugging-port=9335', '--user-data-dir=' + userDir,
