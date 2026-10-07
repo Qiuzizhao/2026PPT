@@ -2000,8 +2000,7 @@
       const ic=iconById(g.id);
       label='单击「'+(ic?ic.label:'图标')+'」';
     } else if(g.k==='winOpen'){
-      if(g.id.indexOf('win-app-')===0) label='点「开始」';
-      else {
+      if(g.id.indexOf('win-app-')!==0){
         const ic=iconById(g.id.slice(4));
         label='双击「'+(ic?ic.label:'图标')+'」';
       }
