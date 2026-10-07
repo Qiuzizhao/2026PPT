@@ -2260,6 +2260,42 @@ for(const part of [1,2])add({name:'鼠标练习营3-'+part+'-旧存档继承',pa
 `)}]});
 for(const part of [1,2])add({name:'鼠标练习营3-'+part+'-旧存档清空后刷新',page:'鼠标练习营3-'+part+'.html',steps:[{label:'清空后不再次继承旧进度',js:wrap(`if(window.__mt.total()!==0)throw new Error('旧进度复活');return 'ok';`)}]});
 
+
+/* 任务文字不能被星数牌遮住，也不能被续练或完成提示替换。 */
+for(const part of [1,2])for(const viewport of [[1024,768],[1920,1080]]){
+  const page='鼠标练习营3-'+part+'.html',key='mousecamp3-'+part+'.progress.v1',id=part===1?'l1':'l5';
+  add({name:'鼠标练习营3-'+part+'-任务提示种档-'+viewport[0],page:'index.html',steps:[{label:'准备续练状态',js:wrap(`
+    localStorage.setItem('${key}',JSON.stringify({v:1,best:{${id}:1},cleared:{},stage:{${id}:{round:1,stars:1}},ts:Date.now()}));return 'ok';
+  `)}]});
+  add({name:'鼠标练习营3-'+part+'-任务提示-'+viewport[0],page,viewport,steps:[
+    {label:'续练提示出现后，完整任务仍可见且不和星数牌重叠',nativeClicks:['#nav button[data-mode="home"]'],js:wrap(`
+      __$('#nav button[data-mode="${id}"]').click();await __wait(1700);
+      const task=window.__mt.levels[0].rounds[1].tip;
+      if(__$('.task-requirement').textContent!==task||!__$('.task-feedback').textContent.includes('接着上次继续'))throw new Error('续练提示替换了任务');
+      function visible(){
+        const b=__$('#bubble').getBoundingClientRect(),t=__$('.task-requirement').getBoundingClientRect(),s=__$('.star-total').getBoundingClientRect(),i=__$('.bubble-inner').getBoundingClientRect();
+        if(i.top<b.top||i.bottom>b.bottom||t.left<s.right&&t.right>s.left&&t.top<s.bottom&&t.bottom>s.top)throw new Error('任务被裁切或星数遮挡');
+        if(document.documentElement.scrollWidth>innerWidth)throw new Error('横向溢出');
+      }
+      visible();return JSON.stringify({task,resumeKept:true,width:innerWidth});
+    `),shot:true},
+    {label:'本页24轮任务和辅助文字均完整显示',js:wrap(`
+      for(let l=0;l<4;l++)for(let r=0;r<6;r++){
+        window.__mt.goto(l,r);await __wait(320);
+        const round=window.__mt.levels[l].rounds[r],node=__$('.task-requirement'),b=__$('#bubble').getBoundingClientRect(),i=__$('.bubble-inner').getBoundingClientRect(),s=__$('.star-total').getBoundingClientRect();
+        if(node.textContent!==round.tip||round.hint&&__$('.task-hint').textContent!==round.hint||i.bottom>b.bottom||i.top<b.top||i.right>s.left)throw new Error('任务显示不完整：'+round.tip);
+      }
+      return JSON.stringify({rounds:24,width:innerWidth});
+    `),shot:true},
+    {label:'正确操作反馈不覆盖任务',js:wrap(`
+      window.__mt.goto(${part===1?'0,0':'1,1'});
+      const task=__$('.task-requirement').textContent;
+      ${part===1?"__$('#play .micon[data-id=\"pc\"]').click();":"__$('#play .wb.min').click();__$('#play .mtask .mtbtn[data-win=\"win-photo\"]').click();"}
+      if(!window.__mt.state.done||__$('.task-requirement').textContent!==task||!__$('.task-feedback').textContent.includes('得到一颗星'))throw new Error('完成反馈覆盖任务');return 'ok';
+    `),shot:true}
+  ]});
+}
+
 const userDir = join(tmpdir(), 'cdp-qa-' + Date.now());
 add({name:'鼠标练习营4-自由切关种档',page:'index.html',steps:[
   {label:'准备各关不同轮数',js:wrap(`localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{},rounds:{s1:4,s2:1,s3:0},ts:Date.now()}));return 'ok';`)}
