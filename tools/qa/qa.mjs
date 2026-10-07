@@ -5,6 +5,7 @@ import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+const QA_PORT = Number(process.env.QA_PORT || 9335);
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const baseUrl = process.argv[2];
 const outDir = process.argv[3];
@@ -1963,7 +1964,7 @@ add({ name:'鼠标练习营4-隐藏关-1024',page:'鼠标练习营4.html?finale=
 /* ================= CDP 驱动 ================= */
 add({
   name: '鼠标练习营3-语文后音乐',
-  page: '鼠标练习营3.html',
+  page: '鼠标练习营3-1.html',
   steps: [
     { label: '进入第五次练习', nativeClicks: ['#nav button[data-mode="home"]'], js: wrap(`
       window.__mt.goto(0, 4);
@@ -1991,7 +1992,7 @@ add({
 });
 add({
   name: '鼠标练习营3-拖动图标-同列任意行',
-  page: '鼠标练习营3.html',
+  page: '鼠标练习营3-1.html',
   steps: [
     { label: '同列的第1、2、4行可以通关，但仍限定第1列', js: wrap(`
       window.__mt.goto(3, 5);
@@ -2018,22 +2019,22 @@ add({
 });
 add({ name: '鼠标练习营3-进度存档-清档', page: 'index.html', steps: [
   { label: '清掉此前的练习营3进度', js: wrap(`
-    localStorage.removeItem('mousecamp3.progress.v1');
-    return JSON.stringify({ cleared: !localStorage.getItem('mousecamp3.progress.v1') });
+    localStorage.removeItem('mousecamp3-1.progress.v1');
+    return JSON.stringify({ cleared: !localStorage.getItem('mousecamp3-1.progress.v1') });
   `) }
 ]});
-add({ name: '鼠标练习营3-进度存档-前半', page: '鼠标练习营3.html', steps: [
+add({ name: '鼠标练习营3-进度存档-前半', page: '鼠标练习营3-1.html', steps: [
   { label: '完成第一课第一轮并写入进度', js: wrap(`
     __$('#nav button[data-mode="l1"]').click();
     __$('#play .micon[data-id="pc"]').click();
     await __wait(1350);
-    const saved = JSON.parse(localStorage.getItem('mousecamp3.progress.v1') || 'null');
+    const saved = JSON.parse(localStorage.getItem('mousecamp3-1.progress.v1') || 'null');
     if (!saved || !saved.stage || !saved.stage.l1 || saved.stage.l1.round !== 1 || saved.stage.l1.stars !== 1)
       throw new Error('第一轮没有正确存档：' + JSON.stringify(saved));
     return JSON.stringify({ saved: saved.stage.l1, best: saved.best.l1 });
   `) }
 ]});
-add({ name: '鼠标练习营3-进度存档-后半', page: '鼠标练习营3.html', steps: [
+add({ name: '鼠标练习营3-进度存档-后半', page: '鼠标练习营3-1.html', steps: [
   { label: '新页面显示已有星数并从第二轮接着练', js: wrap(`
     const home = __$('#play .home-card[data-mode="l1"]').textContent;
     __$('#nav button[data-mode="l1"]').click();
@@ -2044,9 +2045,9 @@ add({ name: '鼠标练习营3-进度存档-后半', page: '鼠标练习营3.html
     return JSON.stringify(result);
   `), shot: true }
 ]});
-add({ name: '鼠标练习营3-进度存档-预览不写档', page: '鼠标练习营3.html?finale=1', steps: [
+add({ name: '鼠标练习营3-进度存档-预览不写档', page: '鼠标练习营3-1.html?finale=1', steps: [
   { label: '预览通关页不覆盖原进度', js: wrap(`
-    const saved = JSON.parse(localStorage.getItem('mousecamp3.progress.v1') || 'null');
+    const saved = JSON.parse(localStorage.getItem('mousecamp3-1.progress.v1') || 'null');
     const result = { finale: __$('#finale').classList.contains('show'), saved: saved && saved.stage && saved.stage.l1 };
     if (!result.finale || !result.saved || result.saved.round !== 1)
       throw new Error('预览污染了进度：' + JSON.stringify(result));
@@ -2055,24 +2056,24 @@ add({ name: '鼠标练习营3-进度存档-预览不写档', page: '鼠标练习
 ]});
 add({ name: '鼠标练习营3-通关存档-种进度', page: 'index.html', steps: [
   { label: '准备第一课最后一轮的真实存档', js: wrap(`
-    localStorage.setItem('mousecamp3.progress.v1', JSON.stringify({
+    localStorage.setItem('mousecamp3-1.progress.v1', JSON.stringify({
       v:1, best:{l1:5}, cleared:{}, stage:{l1:{round:5,stars:5}}, ts:Date.now()
     }));
     return JSON.stringify({ seeded:true });
   `) }
 ]});
-add({ name: '鼠标练习营3-通关存档-完成', page: '鼠标练习营3.html', steps: [
+add({ name: '鼠标练习营3-通关存档-完成', page: '鼠标练习营3-1.html', steps: [
   { label: '从第六轮接着做，完成后立即标记通关', js: wrap(`
     __$('#nav button[data-mode="l1"]').click();
     const started = {round:window.__mt.round(),stars:window.__mt.stars()};
     for(const id of ['pc','bin','paint']) __$('#play .micon[data-id="'+id+'"]').click();
-    const saved = JSON.parse(localStorage.getItem('mousecamp3.progress.v1') || 'null');
+    const saved = JSON.parse(localStorage.getItem('mousecamp3-1.progress.v1') || 'null');
     if(started.round !== 5 || started.stars !== 5 || !saved || !saved.cleared.l1 || saved.best.l1 !== 6 || saved.stage.l1)
       throw new Error('最后一轮未正确通关落盘：' + JSON.stringify({started,saved}));
     return JSON.stringify({started,cleared:saved.cleared.l1,best:saved.best.l1,stage:saved.stage.l1||null});
   `) }
 ]});
-add({ name: '鼠标练习营3-通关存档-新页面', page: '鼠标练习营3.html', steps: [
+add({ name: '鼠标练习营3-通关存档-新页面', page: '鼠标练习营3-1.html', steps: [
   { label: '刷新后已完成标记和总星数保留', js: wrap(`
     const card = __$('#play .home-card[data-mode="l1"]');
     const result = {done:card.classList.contains('done'),stars:__$('#starNum').textContent.trim(),text:card.textContent};
@@ -2080,25 +2081,25 @@ add({ name: '鼠标练习营3-通关存档-新页面', page: '鼠标练习营3.h
     return JSON.stringify(result);
   `) }
 ]});
-add({ name: '鼠标练习营3-通关存档-清空', page: '鼠标练习营3.html', steps: [
+add({ name: '鼠标练习营3-通关存档-清空', page: '鼠标练习营3-1.html', steps: [
   { label: '确认清空后成绩归零', js: wrap(`
     window.confirm = () => true;
     __$('#play .home-actions button:last-child').click();
-    const result = {save:localStorage.getItem('mousecamp3.progress.v1'),
+    const result = {save:localStorage.getItem('mousecamp3-1.progress.v1'),
       stars:__$('#starNum').textContent.trim(),done:__$('#play .home-card[data-mode="l1"]').classList.contains('done')};
-    if (result.save || result.stars !== '0' || result.done) throw new Error('清空失败：' + JSON.stringify(result));
+    if (Object.keys(JSON.parse(result.save).best).length || result.stars !== '0' || result.done) throw new Error('清空失败：' + JSON.stringify(result));
     return JSON.stringify(result);
   `) }
 ]});
 add({ name: '鼠标练习营3-全通后入口-种进度', page: 'index.html', steps: [
-  { label: '八课全部通关', js: wrap(`
+  { label: '四课全部通关', js: wrap(`
     const cleared={}, best={};
-    for(let i=1;i<=8;i++){ cleared['l'+i]=true; best['l'+i]=6; }
-    localStorage.setItem('mousecamp3.progress.v1',JSON.stringify({v:1,best,cleared,stage:{},ts:Date.now()}));
+    for(let i=1;i<=4;i++){ cleared['l'+i]=true; best['l'+i]=6; }
+    localStorage.setItem('mousecamp3-1.progress.v1',JSON.stringify({v:1,best,cleared,stage:{},ts:Date.now()}));
     return JSON.stringify({seeded:true});
   `) }
 ]});
-add({ name: '鼠标练习营3-全通后入口-验证', page: '鼠标练习营3.html', steps: [
+add({ name: '鼠标练习营3-全通后入口-验证', page: '鼠标练习营3-1.html', steps: [
   { label: '刷新后从首页进入通关页', js: wrap(`
     const btn=__$('#play .home-finale');
     const total=__$('#starNum').textContent.trim();
@@ -2109,7 +2110,7 @@ add({ name: '鼠标练习营3-全通后入口-验证', page: '鼠标练习营3.h
     return JSON.stringify(result);
   `) }
 ]});
-add({ name: '鼠标练习营3-界面修正', page: '鼠标练习营3.html', steps: [
+add({ name: '鼠标练习营3-界面修正', page: '鼠标练习营3-1.html', steps: [
   { label: '右键后选择显示设置即过关', js: wrap(`
     window.__mt.goto(2, 3);
     const tip = __$('#bubble').textContent;
@@ -2120,8 +2121,10 @@ add({ name: '鼠标练习营3-界面修正', page: '鼠标练习营3.html', step
       throw new Error('显示设置题目仍不明确：'+JSON.stringify(result));
     return JSON.stringify(result);
   `) },
+]});
+add({ name: '鼠标练习营3-2-窗口提示', page: '鼠标练习营3-2.html', steps: [
   { label: '摆窗口第二次只提示最小化按钮', js: wrap(`
-    window.__mt.goto(5, 1);
+    window.__mt.goto(1, 1);
     await __wait(380);
     const tags=__$$('#play .tag-here');
     const result={tags:tags.map(x=>x.textContent),target:!!__$('#play .wb.min.hintring'),done:window.__mt.state.done};
@@ -2140,7 +2143,7 @@ add({ name: '鼠标练习营3-界面修正', page: '鼠标练习营3.html', step
     return JSON.stringify({result,done:window.__mt.state.done});
   `) },
   { label: '摆窗口第五次停在第五次，待学生主动点照片窗口', js: wrap(`
-    window.__mt.goto(5, 4);
+    window.__mt.goto(1, 4);
     await __wait(400);
     const before={round:window.__mt.round(),done:window.__mt.state.done,active:window.__mt.state.active};
     if(before.round!==4 || before.done || before.active!=='win-essay')
@@ -2155,7 +2158,7 @@ add({ name: '鼠标练习营3-界面修正', page: '鼠标练习营3.html', step
     return JSON.stringify({before,after,next});
   `), shot:true },
   { label: '窗口贴边第一次只提示按住标题栏拖', js: wrap(`
-    window.__mt.goto(6, 0);
+    window.__mt.goto(2, 0);
     await __wait(380);
     const tags=__$$('#play .tag-here');
     const result={tags:tags.map(x=>x.textContent),target:!!__$('#play .mwin .tbar.hintring'),done:window.__mt.state.done};
@@ -2164,6 +2167,99 @@ add({ name: '鼠标练习营3-界面修正', page: '鼠标练习营3.html', step
     return JSON.stringify(result);
   `), shot:true }
 ]});
+
+/* 两份课件都必须独立全通，并保留切切乐。 */
+for (const part of [1,2]) {
+  const ids=part===1?['l1','l2','l3','l4']:['l5','l6','l7','l8'];
+  const key='mousecamp3-'+part+'.progress.v1';
+  add({name:'鼠标练习营3-'+part+'-拆分种档',page:'index.html',steps:[
+    {label:'前三关完成、最后一关剩一轮',js:wrap(`
+      const ids=${JSON.stringify(ids)},best={},cleared={},stage={};
+      ids.slice(0,3).forEach(id=>{best[id]=6;cleared[id]=true;});
+      best[ids[3]]=5;stage[ids[3]]={round:5,stars:5};
+      localStorage.setItem('${key}',JSON.stringify({v:1,best,cleared,stage,ts:Date.now()}));return 'ok';
+    `)}
+  ]});
+  const finish=part===1?{
+    label:'真实拖拽最后三个图标到第1列',
+    nativeDrags:['pc','bin','paint'].map((id,i)=>({from:'#play .micon[data-id="'+id+'"]',to:'#play .slot-cell:nth-child('+(i*8+1)+')'})),
+    js:wrap(`await __wait(1400);if(!__$('#finale').classList.contains('show'))throw new Error('四关完成未解锁庆典');return 'ok';`)
+  }:{
+    label:'新建文件夹',js:wrap(`
+      __mouse(__$('#play .stage'),'contextmenu');
+      __$('#play .mi[data-label="新建文件夹"]').click();return 'ok';
+    `)
+  };
+  const steps=[
+    {label:'四关内容与存档正确、未全通时不进入庆典',nativeClicks:['#nav button[data-mode="home"]'],js:wrap(`
+      await __wait(300);
+      const ids=${JSON.stringify(ids)};
+      if(JSON.stringify(window.__mt.levels.map(l=>l.id))!==JSON.stringify(ids)||window.__mt.total()!==23)
+        throw new Error('关卡或进度错误');
+      if(__$('#finale').classList.contains('show')||__$('#play .home-finale'))throw new Error('提前解锁庆典');
+      __$('#nav button[data-mode="'+ids[3]+'"]').click();
+      if(window.__mt.round()!==5)throw new Error('续练失败');return 'ok';
+    `),shot:true},finish
+  ];
+  if(part===2) steps.push({label:'真实拖拽两个图标进文件夹完成第8关',nativeDrags:['cn','paint'].map(id=>({from:'#play .micon[data-id="'+id+'"]',to:'#play .micon[data-id="newfolder1"]'})),js:wrap(`await __wait(1400);if(!__$('#finale').classList.contains('show'))throw new Error('四关完成未解锁庆典');return 'ok';`)});
+  steps.push({label:'全通后切切乐能加分升关并持续刷新',js:wrap(`
+    await __wait(2400);
+    if(window.__mt.total()!==24||__$$('#certSkills span').length!==4)throw new Error('通关统计错误');
+    const saved=JSON.parse(localStorage.getItem('${key}'));
+    if(Object.keys(saved.cleared).length!==4||Object.keys(saved.stage).length)throw new Error('通关存档错误');
+    const otherKey='mousecamp3-${part===1?2:1}.progress.v1',other=localStorage.getItem(otherKey);
+    const area=__$('#sliceArea');
+    for(let n=0;n<45 && Number(__$('#sliceScore').textContent)<15;n++){
+      for(const fruit of __$$('#sliceArea .slice-item:not(.hit)')){
+        const r=fruit.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
+        __pd(area,'pointerdown',x-45,y);__pd(area,'pointermove',x+45,y);__pd(area,'pointerup',x+45,y);
+      }
+      await __wait(100);
+    }
+    const score=Number(__$('#sliceScore').textContent),level=Number(__$('#sliceLevel').textContent);
+    if(score<10||level<2)throw new Error('小游戏不能加分升关：'+score);
+    await __wait(900);
+    if(!__$('#finale').classList.contains('show')||!__$$('#sliceArea .slice-item:not(.hit)').length)throw new Error('小游戏未持续运行');
+    if(localStorage.getItem(otherKey)!==other)throw new Error('串改另一份课件进度');
+    window.__probe='kept';const path=location.pathname;history.back();await __wait(180);
+    if(window.__probe!=='kept'||location.pathname!==path)throw new Error('防误退失效');
+    return JSON.stringify({score,level,total:window.__mt.total(),historyKept:true,independentSave:true});
+  `),shot:true});
+  add({name:'鼠标练习营3-'+part+'-拆分通关与小游戏',page:'鼠标练习营3-'+part+'.html',steps});
+  for(const size of [[1024,768],[1920,1080]]) add({name:'鼠标练习营3-'+part+'-拆分布局-'+size[0],page:'鼠标练习营3-'+part+'.html',viewport:size,steps:[
+    {label:'四张卡片可见、防误触事件正常',js:wrap(`
+      if(__$$('#play .home-card').length!==4||document.documentElement.scrollWidth>innerWidth)throw new Error('布局错误');
+      window.__probe='kept';const path=location.pathname;history.back();await __wait(150);
+      if(window.__probe!=='kept'||location.pathname!==path)throw new Error('防误退失效');
+      let bubbled=false;document.body.addEventListener('contextmenu',()=>bubbled=true,{once:true});
+      const e=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});document.body.dispatchEvent(e);
+      if(!e.defaultPrevented||!bubbled)throw new Error('右键防护错误');
+      const input=document.createElement('input');document.body.appendChild(input);
+      const native=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});input.dispatchEvent(native);input.remove();
+      if(native.defaultPrevented)throw new Error('输入框未放行');
+      return JSON.stringify({width:innerWidth,cards:4,historyKept:true,contextMenu:true,inputNative:true});
+    `),shot:true}
+  ]});
+}
+
+
+add({name:'鼠标练习营3-旧存档继承-种档',page:'index.html',steps:[{label:'原八关存档中两半都有成绩',js:wrap(`
+  localStorage.removeItem('mousecamp3-1.progress.v1');localStorage.removeItem('mousecamp3-2.progress.v1');
+  localStorage.setItem('mousecamp3.progress.v1',JSON.stringify({v:1,best:{l1:6,l2:2,l5:2,l6:6},cleared:{l1:true,l6:true},stage:{l2:{round:2,stars:2},l5:{round:2,stars:2}},ts:Date.now()}));return 'ok';
+`)}]});
+for(const part of [1,2])add({name:'鼠标练习营3-'+part+'-旧存档继承',page:'鼠标练习营3-'+part+'.html',steps:[{label:'只继承本半关卡，清空不影响另一半或旧档',js:wrap(`
+  const key='mousecamp3-${part}.progress.v1',otherKey='mousecamp3-${part===1?2:1}.progress.v1';
+  const old=localStorage.getItem('mousecamp3.progress.v1'),other=localStorage.getItem(otherKey);
+  const saved=JSON.parse(localStorage.getItem(key));
+  if(window.__mt.total()!==8||Object.keys(saved.best).length!==2)throw new Error('未继承本半成绩');
+  __$('#nav button[data-mode="${part===1?'l2':'l5'}"]').click();
+  if(window.__mt.round()!==2||window.__mt.stars()!==2)throw new Error('未继承中途进度');
+  __$('#nav button[data-mode="home"]').click();window.confirm=()=>true;__$('#play .home-actions button:last-child').click();
+  if(window.__mt.total()!==0||Object.keys(JSON.parse(localStorage.getItem(key)).best).length)throw new Error('清空失败');
+  if(localStorage.getItem('mousecamp3.progress.v1')!==old||localStorage.getItem(otherKey)!==other)throw new Error('影响其他存档');return 'ok';
+`)}]});
+for(const part of [1,2])add({name:'鼠标练习营3-'+part+'-旧存档清空后刷新',page:'鼠标练习营3-'+part+'.html',steps:[{label:'清空后不再次继承旧进度',js:wrap(`if(window.__mt.total()!==0)throw new Error('旧进度复活');return 'ok';`)}]});
+
 const userDir = join(tmpdir(), 'cdp-qa-' + Date.now());
 add({name:'鼠标练习营4-自由切关种档',page:'index.html',steps:[
   {label:'准备各关不同轮数',js:wrap(`localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{},rounds:{s1:4,s2:1,s3:0},ts:Date.now()}));return 'ok';`)}
@@ -2198,15 +2294,15 @@ add({name:'鼠标练习营4-自由切关',page:'鼠标练习营4.html',steps:[
 ]});
 
 const chrome = spawn(CHROME, [
-  '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-  '--remote-debugging-port=9335', '--user-data-dir=' + userDir,
+  '--headless=new', '--disable-gpu', '--disable-extensions', '--no-first-run', '--no-default-browser-check',
+  '--remote-debugging-port=' + QA_PORT, '--user-data-dir=' + userDir,
   '--window-size=1366,768', '--hide-scrollbars', '--force-device-scale-factor=1', 'about:blank'
 ], { stdio: 'ignore' });
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function getJson(path) {
   for (let i = 0; i < 80; i++) {
-    try { const r = await fetch('http://127.0.0.1:9335' + path); if (r.ok) return await r.json(); } catch (e) {}
+    try { const r = await fetch('http://127.0.0.1:' + QA_PORT + path); if (r.ok) return await r.json(); } catch (e) {}
     await sleep(250);
   }
   throw new Error('devtools not reachable');

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🖥️ 鼠标练习营 3 · 电脑小课堂</title>
+<title>🖥️ 鼠标练习营 3-1 · 电脑小课堂</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230f6cbd'/><rect x='5' y='7' width='22' height='15' rx='2' fill='%23f3f3f3'/><circle cx='16' cy='14' r='3.2' fill='%230f6cbd'/><path d='M11 26h10' stroke='%23f3f3f3' stroke-width='2' stroke-linecap='round'/></svg>">
 <meta name="theme-color" content="#f4f7fb">
 <style>
@@ -1829,128 +1829,13 @@
       { tip:'把三个图标都摆到第1列', hint:'不用排在指定的行，只要三个图标都在第1列就可以。',
         scene:{i:[['pc',3,0],['bin',4,0],['paint',5,0]]},
         goal:{k:'slotsAny',ids:['pc','bin','paint'],col:0}, star:true }
-     ] },
-
-   { id:'l5', name:'开始菜单与滚轮', emoji:'🌀', color:'#0b7285',
-     line:'滚轮能翻页，开始菜单里能找到所有软件。',
-     rounds:[
-      { tip:'点「开始」，滚一滚，打开「记事本」', hint:'滚轮往下转，列表往下走。',
-        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-note'}, star:true, guided:2,
-        steps:['① 点开始','② 滚到记事本','③ 点一下打开'],
-        demo:[{at:'#play .mtbtn.start',act:'click',msg:'① 点左下角的「开始」'},
-              {at:'#play .mstart .app[data-app="note"]',msg:'② 滚轮往下滚，找到「记事本」'},
-              {at:'#play .mstart .app[data-app="note"]',act:'click',msg:'③ 点它就打开了'}] },
-      { tip:'点「开始」，滚到下面，打开「相机」', hint:'相机在下面，要滚一滚。',
-        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-camera'}, star:true, guided:1,
-        steps:['① 点开始','② 滚到相机','③ 点一下打开'] },
-      { tip:'点「开始」，滚到最下面，打开「天气」', hint:'天气是列表最底下那个。',
-        scene:{i:[],bar:true}, goal:{k:'winOpen',id:'win-app-weather'}, star:true },
-      { tip:'双击打开「作文」，用滚轮找到「早上好」那一行', hint:'往下滚一点点。',
-        scene:{i:[['essay',0,0]],bar:true},
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-hello'}]}, star:true },
-      { tip:'双击打开「作文」，一直滚到最后一行（2026）', hint:'滚到底。',
-        scene:{i:[['essay',0,0]],bar:true},
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-end'}]}, star:true },
-      { tip:'点任务栏上的「照片」，把它叫到最前面', hint:'照片窗口被作文挡住了，点任务栏上的「照片」。',
-        scene:{i:[['photo',0,0]],bar:true,
-          w:[{id:'win-essay',title:'作文',icon:'📝',essay:true,size:[420,280],at:[0.42,0.34],active:true},
-             {id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[360,240],at:[0.14,0.5]}]},
-        goal:{k:'active',id:'win-photo'}, star:true }
-     ] },
-
-   { id:'l6', name:'摆窗口', emoji:'🪟', color:'#c2410c',
-     line:'窗口能拖、能最小化、能最大化、能关掉。',
-     rounds:[
-      { tip:'把窗口拖开，露出下面的 🐟，再点它', hint:'按住窗口最上面的标题栏。',
-        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>这个窗口挡住东西了。</p><p>把它拖到一边看看。</p><p>按住最上面的标题栏拖。</p>',size:[420,280],at:[0.34,0.3]}],
-               hid:{emoji:'🐟',at:[0.74,0.62],size:86}},
-        goal:{k:'seq',steps:[{k:'uncover'},{k:'flag',name:'hidclick'}]}, star:true, guided:2,
-        steps:['① 按住标题栏','② 拖到一边','③ 点露出来的东西'],
-        demo:[{at:'#play .mwin .tbar',msg:'① 按住窗口最上面的标题栏'},
-              {run:function(next){ demoWinMove('win-essay',190,40,next); }},
-              {run:function(next){ const c=centerOf(S.hid); const pr=play.getBoundingClientRect();
-                 ghostTo(pr.left+c.x-pr.left,pr.top+c.y-pr.top,420);
-                 DT(470,function(){ rip(S.hid); S.flags.hidclick=true; say('③ 点它，就完成啦'); DT(520,next); }); }}] },
-      { tip:'点「—」把照片窗口最小化，再从任务栏点回来', hint:'最小化以后，任务栏上还有它。',
-        scene:{w:[{id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[400,260],at:[0.3,0.4],active:true}],bar:true},
-        goal:{k:'seq',steps:[{k:'state',id:'win-photo',value:'min'},{k:'active',id:'win-photo'}]}, star:true, guided:1,
-        steps:['① 点「—」','② 从任务栏点回来'] },
-      { tip:'把画图窗口放到最大，再点「❐」还原', hint:'标题栏右边的 □ 是最大化；放大后会变成 ❐。',
-        scene:{w:[{id:'win-draw',title:'画图',icon:'🎨',html:APPS.draw.body,size:[400,260],at:[0.32,0.32],active:true}],bar:true},
-        goal:{k:'seq',steps:[{k:'snap',id:'win-draw',zone:'max'},{k:'snap',id:'win-draw',zone:null}]}, star:true },
-      { tip:'点 ✕ 关掉挡住 🎈 的窗口', hint:'看看哪个窗口盖住了 🎈，点它的 ✕。',
-        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>把挡住东西的窗口关掉吧。</p>',size:[420,270],at:[0.3,0.26],active:true}],
-               hid:{emoji:'🎈',at:[0.58,0.5],size:80}},
-        goal:{k:'winClosed',id:'win-essay'}, star:true },
-      { tip:'点一下下面那个「照片」窗口，把它叫到前面', hint:'点照片窗口的标题栏或内容区，就能把它叫到前面。',
-        scene:{bar:true,
-          w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>我在上面。</p>',size:[420,270],at:[0.3,0.28],active:true},
-             {id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[380,250],at:[0.14,0.46]}]},
-        goal:{k:'active',id:'win-photo'}, star:true },
-      { tip:'把两个窗口都最小化，露出干净的桌面', hint:'把两个窗口的「—」都点一次。',
-        scene:{bar:true,
-          w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>把我收起来。</p>',size:[400,250],at:[0.2,0.26],active:true},
-             {id:'win-photo',title:'照片',icon:'🖼',html:APPS.photo.body,size:[360,230],at:[0.5,0.44]}]},
-        goal:{k:'allMin'}, star:true }
-     ] },
-
-   { id:'l7', name:'窗口贴边', emoji:'🧲', color:'#7c3aed',
-     line:'拖到屏幕边缘，窗口会自动贴边排布。',
-     rounds:[
-      { tip:'把窗口拖到左边缘，松手占左半边', hint:'拖到最左边，会先出现一个方框。',
-        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>把我拖到屏幕最左边试试。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
-        goal:{k:'snap',id:'win-essay',zone:'left'}, star:true, guided:2,
-        steps:['① 按住标题栏','② 拖到最左边','③ 松手'],
-        demo:[{at:'#play .mwin .tbar',msg:'① 按住标题栏，一直拖到最左边'},
-              {run:function(next){ demoWinSnap('win-essay','left',next); }}] },
-      { tip:'把窗口拖到右边缘，松手占右半边', hint:'按住标题栏往右拖，贴住右边再松手。',
-        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>这次拖到最右边。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
-        goal:{k:'snap',id:'win-essay',zone:'right'}, star:true, guided:1,
-        steps:['① 按住标题栏','② 拖到最右边'] },
-      { tip:'拖到左上角，占四分之一', hint:'按住标题栏拖到左上角，再松手。',
-        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>试试左上角。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
-        goal:{k:'snap',id:'win-essay',zone:'tl'}, star:true },
-      { tip:'拖到右上角', hint:'按住标题栏拖到右上角，再松手。',
-        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>这次右上角。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
-        goal:{k:'snap',id:'win-essay',zone:'tr'}, star:true },
-      { tip:'拖到最上面，让它变大', hint:'贴着顶部松手。',
-        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>拖到顶部会变大。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
-        goal:{k:'snap',id:'win-essay',zone:'max'}, star:true },
-      { tip:'先把窗口拖到顶部放大，再把它拖到左下角', hint:'放大以后，从标题栏往下拖到左下角。',
-        scene:{w:[{id:'win-essay',title:'作文',icon:'📝',html:'<p>先变大，再拖到左下角。</p>',size:[380,240],at:[0.34,0.3],active:true}]},
-        goal:{k:'seq',steps:[{k:'snap',id:'win-essay',zone:'max'},{k:'snap',id:'win-essay',zone:'bl'}]}, star:true }
-     ] },
-
-   { id:'l8', name:'综合小任务', emoji:'🏁', color:'#b45309',
-     line:'把学过的连起来，就是平时用电脑做的事。',
-     rounds:[
-      { tip:'在空白处右键新建一个文件夹，再把「语文作业」拖进去', hint:'先建文件夹，再把图标拖到文件夹上。',
-        scene:{i:[['cn',0,0]]},
-        goal:{k:'seq',steps:[{k:'folders',n:1},{k:'folder',icon:'cn',folder:'anyNew'}]}, star:true },
-      { tip:'双击打开「美术作业」，再把它拖到左边缘占左半边', hint:'按住窗口标题栏拖到最左边。',
-        scene:{i:[['paint',0,0]]},
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-paint'},{k:'snap',id:'win-paint',zone:'left'}]}, star:true },
-      { tip:'双击打开「作文」，滚到最后一行，再点 ✕ 关掉', hint:'滚到底，再点右上角 ✕。',
-        scene:{i:[['essay',0,0]]},
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'marker',win:'win-essay',marker:'mk-end'},{k:'winClosed',id:'win-essay'}]}, star:true },
-      { tip:'双击打开「作文」拖到左边，再双击打开「照片」拖到右边', hint:'两个窗口各占一半。',
-        scene:{i:[['essay',6,0],['photo',7,0]]},   /* 图标放右边，左边贴上窗口后还看得见 */
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-essay'},{k:'snap',id:'win-essay',zone:'left'},
-                             {k:'winOpen',id:'win-photo'},{k:'snap',id:'win-photo',zone:'right'}]}, star:true },
-      { tip:'右键点「音乐」图标，选「打开」，最小化后再从任务栏点回来', hint:'先右键打开，再点「—」，最后点任务栏。',
-        scene:{i:[['music',0,0]],bar:true},
-        goal:{k:'seq',steps:[{k:'winOpen',id:'win-music'},{k:'state',id:'win-music',value:'min'},{k:'active',id:'win-music'}]}, star:true },
-      { tip:'在空白处右键新建文件夹，把两个图标拖进去', hint:'整理好桌面就完成。',
-        scene:{i:[['cn',0,0],['paint',1,0]]},
-        goal:{k:'seq',steps:[{k:'folders',n:1},{k:'folder',icon:'cn',folder:'newfolder1'},
-                             {k:'folder',icon:'paint',folder:'newfolder1'}]}, star:true }
      ] }
   ];
 
   /* ================= 每一关的流程 ================= */
   let L=0, RI=0, stars=0, TOTAL=0, mode='home';
   const cleared={}, best={}, stage={};
-  const SAVE_KEY='mousecamp3.progress.v1';
+  const SAVE_KEY='mousecamp3-1.progress.v1';
   const previewFinale=/[?&]finale=1\b/.test(location.search);
   let navs=[];
   function curRound(){ const lv=LEVELS[L]; return lv&&lv.rounds[RI]; }
@@ -1968,7 +1853,8 @@
   }
   function restoreSave(){
     let d=null;
-    try{ d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null'); }catch(e){}
+    /* 首次打开拆分课件时，继承原练习营3中属于这四课的进度。 */
+    try{ d=JSON.parse(localStorage.getItem(SAVE_KEY)||localStorage.getItem('mousecamp3.progress.v1')||'null'); }catch(e){}
     if(!d||d.v!==1||typeof d!=='object') return;
     LEVELS.forEach(function(lv){
       const id=lv.id, max=levelStars(lv);
@@ -1986,13 +1872,14 @@
       }
     });
     refreshTotal();
+    writeSave();
   }
   function clearSave(){
-    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
     for(const k in best) delete best[k];
     for(const k in cleared) delete cleared[k];
     for(const k in stage) delete stage[k];
     refreshTotal();
+    writeSave(); /* 留下空存档，清空后不再重复继承旧课件进度。 */
   }
   function allCleared(){ return LEVELS.every(function(lv){ return !!cleared[lv.id]; }); }
   function markNav(id){
@@ -2172,7 +2059,7 @@
     const navBtns=document.querySelectorAll('#nav button');
     for(let i=0;i<navBtns.length;i++) navBtns[i].disabled=true;
     $('#certSkills').innerHTML=LEVELS.map(function(l){ return '<span>'+l.emoji+' '+l.name+'</span>'; }).join('');
-    $('#certSub').innerHTML='图标、双击、右键、拖动、滚轮、窗口，你都会啦！<br>一共拿到 <b>⭐ '+TOTAL+'</b> 颗星。';
+    $('#certSub').innerHTML='图标、双击、右键、拖动，你都会啦！<br>一共拿到 <b>⭐ '+TOTAL+'</b> 颗星。';
     $('#finale').classList.add('show');
     scheduleSliceGame();
     for(let i=0;i<60;i++){
@@ -2256,7 +2143,7 @@
     }
     const reset=el('button',null,'清空进度');
     on(reset,'click',function(){
-      if(!window.confirm('确定要清空练习营3的所有进度吗？清空后八课要重新开始。')) return;
+      if(!window.confirm('确定要清空练习营3-1的所有进度吗？清空后四课要重新开始。')) return;
       clearSave(); enterHome();
     });
     actions.appendChild(reset);
