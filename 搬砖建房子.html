@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>搬砖建房子 · 字母指法练习</title>
+<style>
+*{box-sizing:border-box}body{margin:0;color:#283c3a;background:#fafbf8;font-family:"Microsoft YaHei",system-ui,sans-serif}button,input{font:inherit}button{cursor:pointer}button:focus{outline:3px solid #e4ae4c;outline-offset:3px}.app{width:1180px;max-width:100%;margin:auto;padding:26px 32px 20px}header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.brand{display:flex;align-items:center}.brand-icon{width:46px;height:46px;display:grid;place-items:center;background:#e9f0e6;border-radius:14px;margin-right:14px;font-size:25px}h1{font-size:25px;margin:0 0 5px;font-weight:800}.subtitle{font-size:13px;color:#7c8982;margin:0}.count{font-size:14px;color:#697a70}.count strong{font-size:22px;color:#365d4a;margin-right:5px}.workspace{display:grid;grid-template-columns:1fr 285px;background:#fff;border:1px solid #e6ebe3;border-radius:24px;overflow:hidden;box-shadow:0 10px 36px rgba(43,66,44,.035)}.scene{padding:24px 22px 10px;position:relative}.scene-label{display:flex;align-items:center;justify-content:space-between;color:#7b8a80;font-size:13px}.phase{color:#47664e;background:#f0f5eb;border-radius:20px;padding:6px 12px}.drawing{display:block;width:100%;height:355px}.outline{fill:#fbfcf9;stroke:#c5d1c1;stroke-width:3;stroke-linejoin:round;stroke-dasharray:7 6}.piece{opacity:0;transition:opacity .18s ease}.piece.built{opacity:1}.edge{fill:none;stroke:#8b6a4d;stroke-width:4;stroke-linejoin:round;pointer-events:none}.detail{opacity:0;transition:opacity .25s}.complete .detail{opacity:1}.scene-note{text-align:center;font-size:13px;color:#8b968c;margin:0 0 15px}.task{padding:30px 24px;background:#f6f8f2;border-left:1px solid #e6ebe3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.eyebrow{font-size:12px;letter-spacing:2px;color:#788878;margin-bottom:10px}.letter{font-family:Arial,sans-serif;font-size:106px;line-height:1.15;font-weight:700;color:#365c47;margin:0 0 12px}.finger{font-size:18px;font-weight:700;margin:0 0 8px}.message{font-size:13px;line-height:1.7;color:#7f8b7d;min-height:45px;margin:0}.tip{font-size:12px;line-height:1.7;color:#919a8b;margin-top:24px}.progress-wrap{margin-top:20px;width:100%;text-align:left;font-size:12px;color:#7c8c7a}.track{background:#e4eadd;height:7px;border-radius:8px;overflow:hidden;margin-top:8px}.bar{height:100%;width:0;background:#81a16d;border-radius:8px;transition:width .2s}.next{display:none;border:0;background:#365c47;color:white;padding:12px 23px;border-radius:12px;margin-top:18px}.finished .next{display:block}.finished .letter{font-size:55px}.keyboard-panel{margin:22px auto 0;max-width:780px}.keyboard-heading{display:flex;justify-content:space-between;font-size:13px;margin-bottom:12px;color:#758174}.keyboard-heading strong{color:#4d6550}.key-row{display:flex;justify-content:center;margin-bottom:7px}.key{width:49px;height:39px;margin:0 3px;border:1px solid #e0e6d9;border-bottom:3px solid #d9e1d2;background:white;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#819078;font-family:Arial,sans-serif;font-size:15px;position:relative}.key.home:after{content:"";position:absolute;bottom:5px;width:10px;height:2px;background:#c6cebc}.key.active{background:#365c47;color:#fff;border-color:#365c47;box-shadow:0 3px 12px #365c4720}.hint{text-align:center;color:#8d9885;font-size:12px;margin-top:12px}.mobile-input{display:none;margin:15px auto 0;width:100%;max-width:300px;border:1px solid #d0dcc8;border-radius:10px;background:white;padding:12px;text-align:center}.shake{animation:nudge .2s ease}@keyframes nudge{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}@media(max-width:760px){.app{padding:18px 14px}.workspace{grid-template-columns:1fr}.task{border-left:0;border-top:1px solid #e6ebe3;padding:16px;display:grid;grid-template-columns:100px 1fr;text-align:left}.task .eyebrow{display:none}.letter{font-size:76px;grid-row:1/4;margin:0;text-align:center}.finger,.message{margin-left:15px}.message{min-height:0}.tip{display:none}.progress-wrap{grid-column:1/3;margin-top:10px}.next{grid-column:1/3}.drawing{height:290px}.scene{padding:16px 12px 0}.scene-note{margin-bottom:12px}h1{font-size:21px}.count{font-size:12px}.count strong{font-size:18px}.key{width:8%;max-width:45px;height:35px;margin:0 2px}.keyboard-heading{font-size:12px}.mobile-input{display:block}.hint{line-height:1.7}}@media(max-height:700px) and (min-width:761px){.app{padding-top:16px}header{margin-bottom:14px}.drawing{height:280px}.keyboard-panel{margin-top:16px}}@media(max-width:430px){header{flex-wrap:wrap}.count{margin:12px 0 0 60px}.keyboard-heading{font-size:11px}.scene-label{font-size:12px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<script>
+/* ===== 防误触兜底 =====
+   1) 右键菜单：学生鼠标不熟练，乱按时很容易弹出系统右键菜单挡住画面。
+      这里全局取消默认菜单，但只调 preventDefault、绝不 stopPropagation，
+      页内自己监听 contextmenu 的功能照常收到事件。输入框除外，要用右键粘贴。
+   2) 拖拽：防止图片/文字被拖出页面。拖拽练习走 pointer 事件，不受影响。
+   3) 防误退：Edge 的鼠标手势（右键按住向左拖动）和误按后退键都会触发浏览器
+      后退，把学生从练习页带走。压两层 history 哨兵，任何后退/前进都只会落回
+      本页，popstate 一响立刻再压一层，页面始终留在原地。
+   本页不使用 hash / history 导航，以上都不影响页内功能。 */
+(function () {
+  /* 输入框里保留原生右键菜单，方便右键粘贴 */
+  function keepNative(el) {
+    return !!(el && el.closest &&
+      el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'));
+  }
+  document.addEventListener('contextmenu', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();                    /* 只取消默认菜单，不阻断页内逻辑 */
+  }, true);
+  document.addEventListener('dragstart', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();
+  }, true);
+
+  /* 防误退 */
+  if (location.protocol === 'file:') return;      /* file:// 下浏览器禁止 pushState */
+  function guard() {
+    try { history.pushState({ mtSentinel: 1 }, '', location.href); } catch (e) {}
+  }
+  try {
+    guard(); guard();
+    window.addEventListener('popstate', guard);
+  } catch (e) {}
+})();
+</script>
+<script>
+/* ===== 兼容层 A：flex gap 能力探测 =====
+   老内核（Edge 84 以前、EdgeHTML）的 flex 布局不支持 gap，间距会全部塌掉。
+   这里用真实布局量一次宽度来判断，支持就用原样，不支持就给 <html> 挂上
+   no-flexgap，样式表里预置的 margin 规则接管间距。
+   不用 CSS.supports('gap') 判断：gap 在 Chrome 66 起就作为 grid-gap 的别名存在，
+   老版本会误报"支持"。 */
+(function () {
+  try {
+    var box = document.createElement('div');
+    box.style.cssText = 'position:absolute;top:-9999px;left:-9999px;display:flex;gap:10px;width:auto;height:1px';
+    var a = document.createElement('i');
+    var b = document.createElement('i');
+    a.style.cssText = b.style.cssText = 'display:block;width:10px;height:1px';
+    box.appendChild(a); box.appendChild(b);
+    document.documentElement.appendChild(box);
+    var w = box.getBoundingClientRect().width || box.scrollWidth;
+    document.documentElement.removeChild(box);
+    if (!(w >= 30)) document.documentElement.className += ' no-flexgap';
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+<main class="app">
+<header><div class="brand"><div class="brand-icon" aria-hidden="true">⌂</div><div><h1>搬砖建房子</h1><p class="subtitle">一个字母，一块砖。用双手盖一栋小房子。</p></div></div><div class="count">已完成 <strong id="builtCount">0</strong><span id="totalCount"></span> 块</div></header>
+<section class="workspace" aria-label="建房练习">
+<div class="scene"><div class="scene-label"><span>我的小小工地</span><span class="phase" id="phase">正在砌墙</span></div>
+<svg class="drawing" id="house" viewBox="0 0 800 560" role="img" aria-label="逐块建造的卡通房子">
+<defs><clipPath id="roofClip"><path d="M155 250 L400 75 L645 250 Z"/></clipPath></defs>
+<ellipse cx="400" cy="504" rx="250" ry="12" fill="#eff3e9"/>
+<path class="outline" d="M515 180 V100 H570 V220 Z"/><rect class="outline" x="205" y="250" width="390" height="240" rx="2"/><path class="outline" d="M155 250 L400 75 L645 250 Z"/>
+<g id="walls"></g><g id="door"></g><g id="windows"></g><g id="chimney"></g><g id="roof" clip-path="url(#roofClip)"></g>
+<rect class="outline" style="fill:none" x="267" y="308" width="75" height="75" rx="4"/><rect class="outline" style="fill:none" x="458" y="308" width="75" height="75" rx="4"/><rect class="outline" style="fill:none" x="365" y="370" width="70" height="120" rx="4"/>
+<g class="detail"><path class="edge" d="M205 250 V490 H595 V250 M155 250 L400 75 L645 250 Z M515 155 V100 H570 V195"/><rect class="edge" x="267" y="308" width="75" height="75" rx="4"/><rect class="edge" x="458" y="308" width="75" height="75" rx="4"/><rect class="edge" x="365" y="370" width="70" height="120" rx="4"/><path d="M305 308 V383 M267 345 H342 M495 308 V383 M458 345 H533" stroke="#8b6a4d" stroke-width="4"/><circle cx="421" cy="432" r="5" fill="#f8dc78"/><path d="M240 490 Q220 450 208 478 Q190 457 185 490 M560 490 Q570 447 584 481 Q606 461 617 490" fill="#88aa73"/><path d="M400 276 L408 291 L424 294 L412 306 L414 323 L400 315 L386 323 L388 306 L376 294 L392 291 Z" fill="#e0a753"/></g>
+</svg><p class="scene-note" id="sceneNote">跟着轮廓，从第一块砖开始。</p></div>
+<div class="task" id="task"><div class="eyebrow">敲一下这个字母</div><div class="letter" id="letter" aria-label="当前字母">a</div><p class="finger" id="finger"></p><p class="message" id="message" role="status" aria-live="polite">找到按键，轻轻敲一下。</p><div class="tip">双手放在基本键位<br>左手 a s d f · 右手 j k l ;</div><div class="progress-wrap"><span id="progressText">小房子完成 0%</span><div class="track" role="progressbar" id="progress" aria-label="建房进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar" id="bar"></div></div></div><button class="next" id="next" type="button">再建一栋小房子</button></div>
+</section>
+<section class="keyboard-panel" aria-label="键位提示"><div class="keyboard-heading"><strong>手指各就各位</strong><span>亮起的按键就是目标</span></div><div id="keyboard"></div><p class="hint">看字母 → 用对应手指敲键 → 添一块砖。按错也没关系，继续试。</p><input class="mobile-input" id="touchInput" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" aria-label="触屏设备字母输入" placeholder="触屏设备点这里，打开键盘"></section>
+</main>
+<script>
+(function(){
+'use strict';
+var NS='http://www.w3.org/2000/svg', parts=[], done=0, target='', bag=[], saveKey='brickHouse.progress.v1';
+var letters='abcdefghijklmnopqrstuvwxyz';
+var fingers=[['qaz','左手小指'],['wsx','左手无名指'],['edc','左手中指'],['rfvtgb','左手食指'],['yuhjnm','右手食指'],['ik','右手中指'],['ol','右手无名指'],['p','右手小指']];
+function el(id){return document.getElementById(id);}
+function rect(group,x,y,w,h,color){var node=document.createElementNS(NS,'rect');node.setAttribute('x',x);node.setAttribute('y',y);node.setAttribute('width',w);node.setAttribute('height',h);node.setAttribute('fill',color);node.setAttribute('rx','2');node.setAttribute('class','piece');el(group).appendChild(node);parts.push({node:node,group:group});}
+for(var r=0;r<6;r++){for(var c=0;c<8;c++){rect('walls',206+c*48.5,251+r*39.5,47,38,r%2?'#e8bd8d':'#f0cca1');}}
+for(var d=0;d<4;d++)rect('door',366,371+d*29.5,68,29,'#83a78c');
+for(var win=0;win<2;win++){for(var pane=0;pane<4;pane++)rect('windows',268+win*191+(pane%2)*37,309+Math.floor(pane/2)*37,36,36,pane%2?'#d4e9ec':'#b9d9df');}
+for(var ch=0;ch<4;ch++)rect('chimney',516,101+ch*29,53,28,'#b98264');
+/* 梯形瓦片沿屋顶轮廓铺开，保证每次输入都能看见新增的一块。 */
+var roofRows=[2,4,6,6];
+for(var rr=0;rr<4;rr++){
+  var topY=75+rr*43.75,bottomY=topY+43.75;
+  var topLeft=400-rr*61.25,bottomLeft=topLeft-61.25;
+  var topWidth=rr*122.5,bottomWidth=(rr+1)*122.5;
+  for(var cc=0;cc<roofRows[rr];cc++){
+    var count=roofRows[rr],tile=document.createElementNS(NS,'polygon');
+    tile.setAttribute('points',[
+      [topLeft+topWidth*cc/count,topY].join(','),
+      [topLeft+topWidth*(cc+1)/count,topY].join(','),
+      [bottomLeft+bottomWidth*(cc+1)/count,bottomY].join(','),
+      [bottomLeft+bottomWidth*cc/count,bottomY].join(',')
+    ].join(' '));
+    tile.setAttribute('fill',rr%2?'#cf8268':'#db9477');
+    tile.setAttribute('stroke','#fff8ed');tile.setAttribute('stroke-width','1.5');
+    tile.setAttribute('class','piece');el('roof').appendChild(tile);
+    parts.push({node:tile,group:'roof'});
+  }
+}
+var total=parts.length;
+['qwertyuiop','asdfghjkl','zxcvbnm'].forEach(function(row){var wrap=document.createElement('div');wrap.className='key-row';row.split('').forEach(function(k){var key=document.createElement('span');key.className='key'+(k==='f'||k==='j'?' home':'');key.id='key-'+k;key.textContent=k;wrap.appendChild(key);});el('keyboard').appendChild(wrap);});
+function save(){try{localStorage.setItem(saveKey,JSON.stringify({v:1,done:done}));}catch(e){}}
+try{var stored=JSON.parse(localStorage.getItem(saveKey));if(stored&&stored.v===1&&Number.isInteger(stored.done)&&stored.done>=0&&stored.done<=total)done=stored.done;}catch(e){}
+function nextLetter(){if(!bag.length){bag=letters.split('');for(var i=bag.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=bag[i];bag[i]=bag[j];bag[j]=t;}if(bag[bag.length-1]===target){var swap=bag[0];bag[0]=bag[bag.length-1];bag[bag.length-1]=swap;}}target=bag.pop();el('letter').textContent=target;var finger='';fingers.forEach(function(f){if(f[0].indexOf(target)!==-1)finger=f[1];});el('finger').textContent=finger;var keys=document.querySelectorAll('.key');for(var n=0;n<keys.length;n++)keys[n].classList.remove('active');el('key-'+target).classList.add('active');}
+function render(){parts.forEach(function(p,i){p.node.setAttribute('class','piece'+(i<done?' built':''));});el('builtCount').textContent=done;el('totalCount').textContent='/ '+total;var percent=Math.floor(done/total*100);el('progressText').textContent='小房子完成 '+percent+'%';el('bar').style.width=percent+'%';el('progress').setAttribute('aria-valuenow',percent);var names={walls:'正在砌墙',door:'装上小门',windows:'装上窗户',chimney:'搭起烟囱',roof:'铺好屋顶'};el('phase').textContent=done===total?'小房子建好啦':names[parts[done].group];if(done===total){el('house').classList.add('complete');el('task').classList.add('finished');el('letter').textContent='⌂';el('finger').textContent='小小建筑师，真棒！';el('message').textContent='每一块砖，都是你亲手敲出来的。';el('sceneNote').textContent='阳光、窗户、屋顶，还有你盖的小房子。';el('touchInput').disabled=true;var active=document.querySelector('.key.active');if(active)active.classList.remove('active');}}
+function accept(key){if(done===total||!key||!/^[a-zA-Z]$/.test(key))return;if(key!==target){el('message').textContent=key!==key.toLowerCase()?'请用小写字母，松开 Shift 或关闭大写锁定。':'再找一找 '+target+'，这块砖等着你。';el('letter').classList.remove('shake');void el('letter').offsetWidth;el('letter').classList.add('shake');return;}done++;save();render();if(done<total){nextLetter();el('message').textContent='添好一块！继续盖起来。';}}
+document.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;if(e.isComposing||e.key==='Process'){el('message').textContent='请切换到英文键盘，再敲小写字母。';return;}if(e.key==='Backspace'&&e.target!==el('touchInput'))e.preventDefault();if(!/^[a-zA-Z]$/.test(e.key))return;e.preventDefault();if(e.repeat)return;accept(e.key);});
+el('touchInput').addEventListener('input',function(e){if(e.isComposing)return;var value=this.value;this.value='';if(value.length===1)accept(value);});el('touchInput').addEventListener('compositionend',function(){this.value='';el('message').textContent='请切换到英文键盘，再敲小写字母。';});
+el('next').addEventListener('click',function(){done=0;save();el('house').classList.remove('complete');el('task').classList.remove('finished');el('sceneNote').textContent='新的小工地，等你再盖一栋。';el('touchInput').disabled=false;el('message').textContent='找到按键，轻轻敲一下。';nextLetter();render();this.blur();});
+nextLetter();render();
+})();
+</script>
+</body>
+</html>
