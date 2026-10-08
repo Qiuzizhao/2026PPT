@@ -13,6 +13,9 @@
 
 .opening{fill:none;stroke:#d6ddce;stroke-width:2}.house-detail{opacity:0;transition:opacity .2s}.house-detail.installed{opacity:1}.piece.arriving{animation:brickDrop .24s ease-out}@keyframes brickDrop{0%{opacity:0;transform:translateY(-18px)}75%{opacity:1;transform:translateY(2px)}100%{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.piece.arriving{animation:none}}
+
+.level-nav{display:flex;background:#eef2e9;border-radius:12px;padding:4px}.level-btn{border:0;border-radius:9px;background:transparent;color:#7c8a75;padding:9px 12px;font-size:13px;margin-right:4px;white-space:nowrap}.level-btn:last-child{margin-right:0}.level-btn.active{background:#fff;color:#365c47;box-shadow:0 2px 5px #324b3810;font-weight:700}.level-btn.done:after{content:' ✓';color:#71905e}.level-btn:focus{outline-offset:0}
+@media(max-width:900px){header{flex-wrap:wrap}.level-nav{order:3;margin-top:12px;width:100%;justify-content:center}.level-btn{flex:1}.drawing{height:245px}.hands{height:110px}}
 </style>
 <script>
 /* ===== 防误触兜底 =====
@@ -75,7 +78,7 @@
 </head>
 <body>
 <main class="app">
-<header><div class="brand"><div class="brand-icon" aria-hidden="true">⌂</div><div><h1>搬砖建房子</h1></div></div><div class="count">已完成 <strong id="builtCount">0</strong><span id="totalCount"></span> 块</div></header>
+<header><div class="brand"><div class="brand-icon" aria-hidden="true">⌂</div><div><h1>搬砖建房子</h1></div></div><nav class="level-nav" id="levelNav" aria-label="建筑关卡"><button class="level-btn" type="button" data-level="0">1 田园小屋</button><button class="level-btn" type="button" data-level="1">2 海边灯塔</button><button class="level-btn" type="button" data-level="2">3 童话城堡</button></nav><div class="count">已完成 <strong id="builtCount">0</strong><span id="totalCount"></span> 块</div></header>
 <section class="workspace" aria-label="建房练习">
 <div class="scene"><div class="scene-label"><span class="phase" id="phase">正在砌墙</span></div>
 <svg class="drawing" id="house" viewBox="120 55 560 465" role="img" aria-label="逐块建造的卡通房子">
@@ -168,7 +171,10 @@
 <script>
 (function(){
 'use strict';
-var NS='http://www.w3.org/2000/svg', parts=[], done=0, target='', bag=[], saveKey='brickHouse.progress.v1';
+var NS='http://www.w3.org/2000/svg', parts=[], done=0, target='', bag=[];
+var saveKey='brickHouse.progress.v2',level=0,progress=[0,0,0],total=82;
+var cottageSVG=document.getElementById('house').innerHTML;
+var levels=[{name:'田园小屋',build:buildCottage},{name:'海边灯塔',build:buildLighthouse},{name:'童话城堡',build:buildCastle}];
 var letters='abcdefghijklmnopqrstuvwxyz';
 var fingers=[['qaz','左手小指'],['wsx','左手无名指'],['edc','左手中指'],['rfvtgb','左手食指'],['yuhjnm','右手食指'],['ik','右手中指'],['ol','右手无名指'],['p','右手小指']];
 function el(id){return document.getElementById(id);}
@@ -183,6 +189,8 @@ function rect(group,x,y,w,h,color){
   node.setAttribute('fill',color);node.setAttribute('rx','3');
   addPart(group,node);return node;
 }
+function buildCottage(){
+el('house').innerHTML=cottageSVG;
 /* 六层错缝砖，从地基向上砌。边缘用半砖收口，共 51 块。 */
 var brickColors=['#f2d8a8','#f6dfb7','#eed0a0','#f4ddb2'];
 for(var r=0;r<6;r++){
@@ -229,10 +237,140 @@ for(var rr=2;rr>=0;rr--){
     addPart('roof',tile);
   }
 }
-var total=parts.length;
+}
+
+function pathPart(group,d,color,stroke){
+  var node=document.createElementNS(NS,'path');node.setAttribute('d',d);node.setAttribute('fill',color);
+  if(stroke){node.setAttribute('stroke',stroke);node.setAttribute('stroke-width','1.2');}
+  addPart(group,node);return node;
+}
+function buildLighthouse(){
+  el('house').innerHTML=`
+  <defs><clipPath id="towerDoor"><path d="M371 480 V421 A29 29 0 0 1 429 421 V480 Z"/></clipPath>
+  <clipPath id="lanternClip"><rect x="320" y="151" width="160" height="66" rx="5"/></clipPath>
+  <clipPath id="capClip"><path d="M299 151 L389 94 Q400 87 411 94 L501 151 Z"/></clipPath></defs>
+  <ellipse cx="400" cy="493" rx="215" ry="18" fill="#eaf0ed"/>
+  <path class="outline" d="M330 218 H470 L550 480 H250 Z"/>
+  <rect class="outline" x="320" y="151" width="160" height="66" rx="5"/>
+  <path class="outline" d="M299 151 L389 94 Q400 87 411 94 L501 151 Z"/>
+  <g id="foundation"></g><g id="walls"></g>
+  <path class="opening" d="M371 480 V421 A29 29 0 0 1 429 421 V480 Z"/>
+  <g id="door" clip-path="url(#towerDoor)"></g><g id="windows" clip-path="url(#lanternClip)"></g>
+  <g id="trim"></g><g id="roof" clip-path="url(#capClip)"></g>
+  <g class="house-detail" data-after="56"><path d="M368 480 V421 A32 32 0 0 1 432 421 V480" stroke="#fff4dc" stroke-width="7" fill="none"/><circle cx="418" cy="450" r="4" fill="#e6b75b"/></g>
+  <g class="house-detail" data-after="64"><path d="M332 160 L346 176 M454 163 L470 180" stroke="#fff8df" stroke-width="4" opacity=".8"/><circle cx="400" cy="183" r="15" fill="#fff1b6"/></g>
+  <g class="detail"><path d="M330 222 L253 476 M470 222 L547 476" stroke="#7193a0" stroke-width="3" fill="none"/>
+  <path d="M301 152 H499" stroke="#9e6655" stroke-width="7" stroke-linecap="round"/>
+  <path d="M310 220 V241 M330 220 V241 M470 220 V241 M490 220 V241 M305 241 H495" stroke="#617f8a" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M175 501 Q202 485 230 501 T285 501 M515 501 Q543 485 570 501 T625 501 M300 513 Q330 500 360 513 T420 513 T480 513" stroke="#b4d4d8" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M203 127 Q213 116 223 127 Q233 116 243 127" stroke="#9daea7" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M383 95 V78" stroke="#9e6655" stroke-width="3"/><circle cx="400" cy="91" r="5" fill="#c47c62"/></g>`;
+  for(var base=0;base<4;base++)rect('foundation',244+base*78,479,77,13,'#d9d9ce');
+  // 白蓝相间的塔身，从宽地基逐层收窄，共 48 块。
+  for(var r=0;r<12;r++){
+    var by=480-r*(262/12),ty=by-262/12;
+    var bl=250+r*(80/12),tl=bl+80/12;
+    var bw=300-r*(160/12),tw=bw-160/12;
+    for(var c=0;c<4;c++){
+      var color=Math.floor(r/3)%2?['#9cc3d1','#a7cad5'][c%2]:['#f7f5e9','#eeeede'][c%2];
+      pathPart('walls','M'+(tl+tw*c/4)+' '+ty+' L'+(tl+tw*(c+1)/4)+' '+ty+' L'+(bl+bw*(c+1)/4)+' '+by+' L'+(bl+bw*c/4)+' '+by+' Z',color,color);
+    }
+  }
+  for(var d=0;d<4;d++)rect('door',371+d*14.5,392,14.5,88,d%2?'#678c9c':'#7296a4');
+  for(var pane=0;pane<8;pane++)rect('windows',320+(pane%4)*40,151+Math.floor(pane/4)*33,40,33,pane%2?'#f7e7b1':'#eee1b6');
+  for(var post=0;post<5;post++)rect('trim',318+post*40,150,5,68,'#6b8790');
+  rect('trim',310,217,180,9,'#6b8790');
+  var counts=[2,4,6];
+  for(var rr=2;rr>=0;rr--){
+    var ty=92+rr*20,by=ty+20,tl=400-rr*34,bl=tl-34,tw=rr*68,bw=(rr+1)*68;
+    for(var cc=0;cc<counts[rr];cc++){
+      var n=counts[rr];
+      pathPart('roof','M'+(tl+tw*cc/n)+' '+ty+' L'+(tl+tw*(cc+1)/n)+' '+ty+' L'+(bl+bw*(cc+1)/n)+' '+by+' L'+(bl+bw*cc/n)+' '+by+' Z',cc%2?'#d68a70':'#df987f','#b77660');
+    }
+  }
+}
+function buildCastle(){
+  el('house').innerHTML=`
+  <defs><clipPath id="castleDoor"><path d="M365 480 V411 A35 35 0 0 1 435 411 V480 Z"/></clipPath></defs>
+  <ellipse cx="400" cy="493" rx="249" ry="18" fill="#efeee6"/>
+  <rect class="outline" x="250" y="310" width="300" height="170" rx="5"/>
+  <rect class="outline" x="195" y="245" width="90" height="235" rx="4"/>
+  <rect class="outline" x="515" y="245" width="90" height="235" rx="4"/>
+  <rect class="outline" x="350" y="195" width="100" height="140" rx="4"/>
+  <path class="outline" d="M181 245 L240 130 L299 245 Z M501 245 L560 130 L619 245 Z M315 195 L400 85 L485 195 Z"/>
+  <g id="walls"></g><path class="opening" d="M365 480 V411 A35 35 0 0 1 435 411 V480 Z"/>
+  <g id="door" clip-path="url(#castleDoor)"></g><g id="windows"></g><g id="roof"></g>
+  <g class="house-detail" data-after="64"><path d="M197 474 V257 M283 257 V474 M517 474 V257 M603 257 V474" stroke="#c7bda0" stroke-width="3" fill="none"/>
+  <path d="M294 310 V296 H315 V310 H334 V296 H355 V310 M445 310 V296 H466 V310 H485 V296 H506 V310" stroke="#dfd7bc" stroke-width="8" fill="none"/>
+  <path d="M355 327 H445" stroke="#c5ba9a" stroke-width="5" stroke-linecap="round"/></g>
+  <g class="house-detail" data-after="68"><path d="M361 480 V411 A39 39 0 0 1 439 411 V480" stroke="#e1d2ae" stroke-width="9" fill="none"/>
+  <path d="M378 468 V418 M391 468 V406 M404 468 V404 M417 468 V412" stroke="#99725e" stroke-width="2" opacity=".5"/>
+  <circle cx="420" cy="448" r="5" fill="#ecc170"/><path d="M361 486 H439" stroke="#c9ba99" stroke-width="9" stroke-linecap="round"/></g>
+  <g class="detail"><path d="M181 245 H299 M501 245 H619 M315 195 H485" stroke="#807299" stroke-width="7" stroke-linecap="round"/>
+  <path d="M400 88 V58 M240 130 V105 M560 130 V105" stroke="#9e8c76" stroke-width="3"/>
+  <path d="M402 59 L436 67 L402 80 Z" fill="#d6a0aa"/><path d="M242 106 L265 113 L242 120 Z M562 106 L585 113 L562 120 Z" fill="#d9bc73"/>
+  <path d="M178 483 Q169 464 159 482 Q166 494 192 487 M612 487 Q628 468 640 484 Q630 495 607 489" fill="#a2b486"/>
+  <path d="M382 493 H418 L429 510 H371 Z" fill="#dfd6bd"/>
+  <path d="M292 475 H357 M443 475 H508" stroke="#d2c8ab" stroke-width="3"/></g>`;
+  // 中间城墙 36 块，两侧塔楼 20 块，中央高塔 8 块。
+  for(var r=0;r<6;r++)for(var c=0;c<6;c++)rect('walls',251+c*50,480-(r+1)*28.33,48,27,['#eee6cc','#e8dec2','#f3ecd6'][(r+c)%3]);
+  for(var side=0;side<2;side++){
+    for(var r=0;r<5;r++)for(var c=0;c<2;c++)rect('walls',196+side*320+c*45,480-(r+1)*47,43,45,r%2?'#e7dec6':'#f0e8d1');
+  }
+  for(var r=0;r<4;r++)for(var c=0;c<2;c++)rect('walls',351+c*50,335-(r+1)*35,48,33,r%2?'#f0e7d0':'#e7dcc1');
+  for(var d=0;d<4;d++)rect('door',365+d*17.5,376,17.5,104,d%2?'#b58a72':'#c3977e');
+  var positions=[[221,275,38,62],[541,275,38,62],[383,225,34,62]];
+  for(var win=0;win<3;win++){
+    var pos=positions[win],x=pos[0],y=pos[1],w=pos[2],h=pos[3];
+    for(var pane=0;pane<2;pane++)rect('windows',x+pane*w/2,y,w/2-1,h,pane?'#a8c6cf':'#b8d6dd');
+    var frame=document.createElementNS(NS,'g');frame.setAttribute('class','house-detail');frame.setAttribute('data-after',70+win*2);
+    frame.innerHTML='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="5" fill="none" stroke="#fff2d6" stroke-width="5"/><path d="M'+(x+w/2)+' '+y+' V'+(y+h)+' M'+x+' '+(y+h/2)+' H'+(x+w)+'" stroke="#fff2d6" stroke-width="3"/>';
+    el('windows').appendChild(frame);
+  }
+  var roofs=[[181,299,240,130,245,3],[501,619,560,130,245,3],[315,485,400,85,195,2]];
+  for(var roof=0;roof<roofs.length;roof++){
+    var a=roofs[roof];
+    for(var tile=0;tile<a[5];tile++){
+      var l=a[0]+(a[1]-a[0])*tile/a[5],r=l+(a[1]-a[0])/a[5];
+      pathPart('roof','M'+a[2]+' '+a[3]+' L'+r+' '+a[4]+' L'+l+' '+a[4]+' Z',roof===2?(tile?'#c39eaf':'#d1adbb'):(tile%2?'#a495bb':'#b1a4c5'),'#9485ab');
+    }
+  }
+}
 ['qwertyuiop','asdfghjkl','zxcvbnm'].forEach(function(row){var wrap=document.createElement('div');wrap.className='key-row';row.split('').forEach(function(k){var key=document.createElement('span');key.className='key'+(k==='f'||k==='j'?' home':'');key.id='key-'+k;key.textContent=k;wrap.appendChild(key);});el('keyboard').appendChild(wrap);});
-function save(){try{localStorage.setItem(saveKey,JSON.stringify({v:1,done:done}));}catch(e){}}
-try{var stored=JSON.parse(localStorage.getItem(saveKey));if(stored&&stored.v===1&&Number.isInteger(stored.done)&&stored.done>=0&&stored.done<=total)done=stored.done;}catch(e){}
+function save(){
+  progress[level]=done;
+  try{localStorage.setItem(saveKey,JSON.stringify({v:2,level:level,progress:progress}));}catch(e){}
+}
+try{
+  var stored=JSON.parse(localStorage.getItem(saveKey));
+  if(stored&&stored.v===2&&Array.isArray(stored.progress)){
+    for(var i=0;i<3;i++){
+      var n=stored.progress[i];
+      progress[i]=Number.isInteger(n)&&n>=0&&n<=82?n:0;
+    }
+    if(Number.isInteger(stored.level)&&stored.level>=0&&stored.level<3)level=stored.level;
+  }else{
+    var legacy=JSON.parse(localStorage.getItem('brickHouse.progress.v1'));
+    if(legacy&&legacy.v===1&&Number.isInteger(legacy.done)&&legacy.done>=0&&legacy.done<=82)progress[0]=legacy.done;
+  }
+}catch(e){}
+function selectLevel(index){
+  level=index;done=progress[level];parts=[];bag=[];
+  el('house').classList.remove('complete');el('task').classList.remove('finished');
+  el('message').textContent='';
+  levels[level].build();total=parts.length;
+  el('house').setAttribute('aria-label',levels[level].name+'，逐块建造');
+  nextLetter();render();save();
+}
+function updateLevelNav(){
+  var buttons=el('levelNav').querySelectorAll('button');
+  for(var i=0;i<buttons.length;i++){
+    buttons[i].classList.toggle('active',i===level);
+    buttons[i].classList.toggle('done',progress[i]===82);
+    buttons[i].setAttribute('aria-label','第'+(i+1)+'关 '+levels[i].name+(progress[i]===82?'，已完成':''));
+    if(i===level)buttons[i].setAttribute('aria-current','step');else buttons[i].removeAttribute('aria-current');
+  }
+}
 function lightFinger(name){
   var digits=document.querySelectorAll('.hand-finger');
   for(var i=0;i<digits.length;i++){
@@ -246,11 +384,24 @@ function render(animate){
 parts.forEach(function(p,i){p.node.setAttribute('class','piece'+(i<done?' built':'')+(animate&&i===done-1?' arriving':''));});
 var finishes=document.querySelectorAll('.house-detail');
 for(var f=0;f<finishes.length;f++)finishes[f].classList.toggle('installed',done>=Number(finishes[f].getAttribute('data-after')));
-el('builtCount').textContent=done;el('totalCount').textContent='/ '+total;var percent=Math.floor(done/total*100);el('progressText').textContent='完成 '+percent+'%';el('bar').style.width=percent+'%';el('progress').setAttribute('aria-valuenow',percent);var names={walls:'正在砌墙',door:'装上小门',windows:'装上窗户',chimney:'搭起烟囱',roof:'铺好屋顶'};el('phase').textContent=done===total?'已建成':names[parts[done].group];if(done===total){el('house').classList.add('complete');el('task').classList.add('finished');el('letter').textContent='⌂';el('finger').textContent='已建成';lightFinger('');el('message').textContent='';var active=document.querySelector('.key.active');if(active)active.classList.remove('active');}}
+el('builtCount').textContent=done;el('totalCount').textContent='/ '+total;var percent=Math.floor(done/total*100);el('progressText').textContent='完成 '+percent+'%';el('bar').style.width=percent+'%';el('progress').setAttribute('aria-valuenow',percent);var names={foundation:'铺好地基',walls:'正在砌墙',door:'装上小门',windows:level===1?'装上灯室':'装上窗户',chimney:'搭起烟囱',trim:'装好护栏',roof:'铺好屋顶'};updateLevelNav();el('phase').textContent=done===total?'已建成':names[parts[done].group];if(done===total){el('house').classList.add('complete');el('task').classList.add('finished');el('next').textContent=level<2?'下一关':(progress.some(function(n){return n<82;})?'继续练习':'再练三关');el('letter').textContent='⌂';el('finger').textContent='已建成';lightFinger('');el('message').textContent='';var active=document.querySelector('.key.active');if(active)active.classList.remove('active');}}
 function accept(key){if(done===total||!key||!/^[a-zA-Z]$/.test(key))return;if(key!==target){el('message').textContent=key!==key.toLowerCase()?'请松开 Shift 或关闭大写锁定。':'请按 '+target;el('letter').classList.remove('shake');void el('letter').offsetWidth;el('letter').classList.add('shake');return;}done++;save();render(true);if(done<total){nextLetter();el('message').textContent='';}}
 document.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;if(e.isComposing||e.key==='Process'){el('message').textContent='请切换到英文输入。';return;}if(e.key==='Backspace')e.preventDefault();if(!/^[a-zA-Z]$/.test(e.key))return;e.preventDefault();if(e.repeat)return;accept(e.key);});
-el('next').addEventListener('click',function(){done=0;save();el('house').classList.remove('complete');el('task').classList.remove('finished');el('message').textContent='';nextLetter();render();this.blur();});
-nextLetter();render();
+el('next').addEventListener('click',function(){
+  if(level<2)selectLevel(level+1);
+  else{
+    var unfinished=progress.findIndex(function(n){return n<82;});
+    if(unfinished>=0)selectLevel(unfinished);
+    else{progress=[0,0,0];selectLevel(0);}
+  }
+  this.blur();
+});
+el('levelNav').addEventListener('click',function(e){
+  var button=e.target.closest('button[data-level]');
+  if(!button)return;
+  selectLevel(Number(button.getAttribute('data-level')));button.blur();
+});
+selectLevel(level);
 })();
 </script>
 </body>
