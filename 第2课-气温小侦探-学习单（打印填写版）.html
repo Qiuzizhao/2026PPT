@@ -44,13 +44,13 @@
     padding:12px 10px;font-size:14.5px;border-top:1px solid var(--line);vertical-align:top;
     min-height:48px;
   }
-  table.record td.blank{padding-top:22px;}
+  table.record td.blank{padding:5px 6px;border-bottom:1.5px solid var(--ink);vertical-align:bottom;height:26px;}
   table.record tr.demo td{
     color:var(--ink-soft);font-style:italic;font-size:13.5px;
-    border-top:1px dashed var(--line);
+    border-top:1px dashed var(--line);vertical-align:middle;
   }
   table.record tr.demo .tag{font-style:normal;font-weight:700;color:var(--gold);font-size:12px;margin-right:6px;}
-  .fillline{display:inline-block;min-width:70px;border-bottom:1.5px solid var(--ink);height:18px;}
+  .fillline{display:inline-block;min-width:60px;border-bottom:1.5px solid var(--ink);height:20px;vertical-align:bottom;}
   .rate{display:flex;gap:14px;font-size:13px;flex-wrap:wrap;}
   .rate label{display:inline-flex;align-items:center;gap:5px;cursor:pointer;}
   .rate input{width:15px;height:15px;accent-color:var(--teal);}
@@ -86,21 +86,21 @@
     .sec-desc{margin-bottom:6px;font-size:11px;}
     table.record th{padding:5px 6px;font-size:11px;}
     table.record td{padding:5px 6px;font-size:11px;min-height:0;vertical-align:middle;}
-    table.record td.blank{padding-top:7px;padding-bottom:7px;}
+    table.record td.blank{padding:3px 6px;border-bottom:1.5px solid var(--ink);vertical-align:bottom;height:24px;}
     table.record tr{break-inside:avoid;}
-    table.record tr.demo td{font-size:11px;padding:4px 6px;}
-    .fillline{height:14px;min-width:44px;}
+    table.record tr.demo td{font-size:11px;padding:4px 6px;vertical-align:middle;}
+    .fillline{height:22px;min-width:44px;}
     .rate{font-size:11px;gap:8px;}
     .rate input{width:12px;height:12px;}
     .case{padding:9px 12px;margin-top:12px;break-inside:avoid;}
     .case h3{font-size:14px;margin-bottom:2px;}
-    .qa{margin:6px 0;}
-    .qa p{font-size:12px;margin:0 0 3px;}
-    .qa .ans{min-height:28px;padding:4px 8px;font-size:11px;}
+    .qa{margin:8px 0;}
+    .qa p{font-size:12px;margin:0 0 4px;}
+    .qa .ans{min-height:46px;padding:5px 8px;font-size:11px;}
     .think{margin-top:10px;gap:10px;}
     .think .box{padding:7px 10px;break-inside:avoid;}
-    .think .box b{font-size:12px;margin-bottom:2px;}
-    .think .box .ans{min-height:26px;padding:4px 8px;font-size:11px;}
+    .think .box b{font-size:12px;margin-bottom:3px;}
+    .think .box .ans{min-height:46px;padding:5px 8px;font-size:11px;}
     footer{margin-top:11px;padding-top:6px;font-size:10.5px;}
   }
 </style>
@@ -135,18 +135,18 @@
     <tbody>
       <tr class="demo">
         <td><span class="tag">示例</span>中央广场 · 摇扇子的奶奶</td>
-        <td class="blank">35 ℃</td>
-        <td class="blank">凭感觉说的</td>
-        <td class="blank">不太信</td>
+        <td>35℃</td>
+        <td>凭感觉说的</td>
+        <td>不太信</td>
       </tr>
-      <tr><td class="blank"><span class="fillline" style="width:100%"></span></td><td class="blank"><span class="fillline"></span></td><td class="blank"><span class="fillline" style="width:100%"></span></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
-      <tr><td class="blank"><span class="fillline" style="width:100%"></span></td><td class="blank"><span class="fillline"></span></td><td class="blank"><span class="fillline" style="width:100%"></span></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
-      <tr><td class="blank"><span class="fillline" style="width:100%"></span></td><td class="blank"><span class="fillline"></span></td><td class="blank"><span class="fillline" style="width:100%"></span></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
-      <tr><td class="blank"><span class="fillline" style="width:100%"></span></td><td class="blank"><span class="fillline"></span></td><td class="blank"><span class="fillline" style="width:100%"></span></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
-      <tr><td class="blank"><span class="fillline" style="width:100%"></span></td><td class="blank"><span class="fillline"></span></td><td class="blank"><span class="fillline" style="width:100%"></span></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
-      <tr><td class="blank"><span class="fillline" style="width:100%"></span></td><td class="blank"><span class="fillline"></span></td><td class="blank"><span class="fillline" style="width:100%"></span></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
-      <tr><td class="blank"><span class="fillline" style="width:100%"></span></td><td class="blank"><span class="fillline"></span></td><td class="blank"><span class="fillline" style="width:100%"></span></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
-      <tr><td class="blank"><span class="fillline" style="width:100%"></span></td><td class="blank"><span class="fillline"></span></td><td class="blank"><span class="fillline" style="width:100%"></span></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
+      <tr><td class="blank"></td><td class="blank"></td><td class="blank"></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
+      <tr><td class="blank"></td><td class="blank"></td><td class="blank"></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
+      <tr><td class="blank"></td><td class="blank"></td><td class="blank"></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
+      <tr><td class="blank"></td><td class="blank"></td><td class="blank"></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
+      <tr><td class="blank"></td><td class="blank"></td><td class="blank"></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
+      <tr><td class="blank"></td><td class="blank"></td><td class="blank"></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
+      <tr><td class="blank"></td><td class="blank"></td><td class="blank"></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
+      <tr><td class="blank"></td><td class="blank"></td><td class="blank"></td><td><span class="rate"><label><input type="checkbox">很可信</label><label><input type="checkbox">还行</label><label><input type="checkbox">不太信</label></span></td></tr>
     </tbody>
   </table>
   <p class="sec-desc" style="margin-top:10px">找不到线索？去小镇里找：奶奶、电话亭、天气大屏、网吧、手机、音箱、气象站、公告栏。</p>
@@ -155,15 +155,15 @@
   <div class="case">
     <h3>侦探结案</h3>
     <div class="qa">
-      <p>1. 8 个线索都找到了，请你说出今天的结论：我认为今天大约是 ____℃。</p>
-      <div class="ans">我信 <span class="fillline"></span> 告诉我的，因为 ________________________</div>
+      <p>1. 8 个线索都找到了，今天到底多少度？我认为大约是 ______ ℃。</p>
+      <div class="ans">我信 ______ 告诉我的，因为 ________________________</div>
     </div>
     <div class="qa">
-      <p>2. 奶奶说感觉有 35 度，我觉得那是因为 ______________________________</p>
+      <p>2. 奶奶说感觉有 35 度，我觉得那是因为</p>
       <div class="ans"></div>
     </div>
     <div class="qa">
-      <p>3. 公告栏写着 26 度，我觉得那是因为 ______________________________</p>
+      <p>3. 公告栏写着 26 度，我觉得那是因为</p>
       <div class="ans"></div>
     </div>
   </div>
