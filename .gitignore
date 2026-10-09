@@ -7,3 +7,6 @@ _oldsim/
 .qa-art*/
 .qa-secret*/
 .qa-port*/
+
+# 自检截图（非交付产物）
+_shots/
