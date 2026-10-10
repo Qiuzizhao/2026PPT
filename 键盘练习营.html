@@ -182,6 +182,7 @@
 .k-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;flex-shrink:0}.k-head h2{margin:0;font-size:26px;color:#385647}.k-stats{display:grid;grid-template-columns:repeat(3,1fr);grid-gap:12px}.k-stat{padding:7px 16px;background:#fffaf0;border:1px solid #e4ddce;border-radius:13px;text-align:center;min-width:110px}.k-stat small{display:block;color:#8b8975;font-size:12px;margin-bottom:3px}.k-stat strong{font-size:22px;color:#506e56}
 .k-board{display:grid;grid-template-columns:1fr 345px;grid-gap:20px;flex:1;min-height:0;background:#fffdf7;border:1px solid #e5dfd0;border-radius:23px;padding:18px 24px;overflow:hidden}.k-scene{display:flex;flex-direction:column;min-height:0}.k-scene h3{margin:0;font-size:22px;color:#685343}.k-policy{font-size:13px;color:#939481;margin:6px 0 0}.k-food{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}.k-food svg{display:block;width:100%;height:100%;max-height:360px}.k-orderside{display:flex;flex-direction:column;justify-content:center;min-height:0}.k-tokens{display:grid;grid-template-columns:repeat(2,1fr);grid-gap:10px}.k-token{position:relative;border:2px solid #ece7db;border-radius:14px;background:#f8f7f0;padding:10px;text-align:center;color:#9fa899}.k-token small{display:block;font-size:12px;color:#999984;margin-bottom:6px}.k-token b{display:inline-block;font-family:Arial,sans-serif;font-size:31px;line-height:1.15;margin:0 3px;color:#adb5a5;border-bottom:3px solid transparent}.k-token.ready{border-color:#90ab7d;background:#f1f5e7}.k-token b.current{color:#365b45;border-color:#d4b968}.k-token b.typed{color:#83a46e}.k-token.done{background:#edf2e6;border-color:#d8e3cc;opacity:.7}.k-token i{position:absolute;right:8px;top:7px;font-style:normal;font-size:13px;color:#729360}.k-status{height:22px;line-height:22px;margin-top:12px;text-align:center;color:#a37b47;font-size:13px}
 .k-bottom{flex-shrink:0;margin-top:12px}.k-keyboard{margin:auto;width:640px;max-width:100%}.k-key-row{display:flex;justify-content:center;margin-bottom:4px}.k-key{display:flex;align-items:center;justify-content:center;width:43px;height:25px;margin:0 3px;border-radius:6px;border:1px solid #e0decf;border-bottom-width:2px;background:#fffdf8;color:#a1a792;font:14px Arial,sans-serif}.k-key.active{background:#5b7a58;border-color:#5b7a58;color:#fff}.k-hands{display:block;width:500px;max-width:100%;height:96px;margin:3px auto 0}.k-hands .hand-palm,.k-hands .digit{fill:#e5e7dc;stroke:#bbc4af;stroke-width:2}.k-hands .nail{fill:#fffcf3}.k-hands .active .digit{fill:#8baa7b;stroke:#53734f;stroke-width:3}.k-hands .hand-label{font-size:14px;fill:#8b947d;text-anchor:middle}.k-food-piece.k-new{animation:k-drop .22s ease-out}@keyframes k-drop{from{transform:translateY(-12px)}to{transform:translateY(0)}}
+.k-letter-l{display:inline-block;position:relative}.k-letter-l svg{width:.48em;height:.82em;vertical-align:-.02em;overflow:visible}.k-letter-l .k-letter-text{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 @media(max-height:700px){.finale.kitchen-on{padding:12px}.k-head{margin-bottom:10px}.k-head h2{font-size:22px}.k-stat{padding:5px 13px}.k-stat strong{font-size:18px}.k-board{padding:12px 18px}.k-token{padding:6px}.k-token b{font-size:24px}.k-token small{margin-bottom:3px}.k-key{height:21px}.k-hands{height:70px}.k-bottom{margin-top:8px}}
 @media(max-width:1000px){.k-board{grid-template-columns:1fr 280px;grid-gap:12px}.k-stat{min-width:90px;padding-left:10px;padding-right:10px}.k-stats{grid-gap:7px}}
 @media(prefers-reduced-motion:reduce){.k-food-piece.k-new{animation:none}}
@@ -818,6 +819,10 @@ body.kitchen-playing .cf{display:none}
       layers.forEach(function(svg,i){const t=o.tokens[i];const opacity=t.pos===t.text.length?1:(t.pos?0.3+0.7*t.pos/t.text.length:0);art+='<g class="k-food-piece '+(i===lastChanged?'k-new':'')+'" opacity="'+opacity+'">'+svg+'</g>';});
       return '<svg viewBox="130 70 340 245" role="img" aria-label="'+dishes[kind].name+'制作进度">'+art+'</svg>';
     }
+    // Keep the real lowercase letter for accessibility; draw a clear hooked l.
+    function kitchenLetter(c){
+      return c==='l'?'<span class="k-letter-l"><span class="k-letter-text">l</span><svg viewBox="0 0 14 24" aria-hidden="true" focusable="false"><path d="M4 2 V18 Q4 23 11 21" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>':c;
+    }
     function render(){
       const o=state.order,choices=candidates(),policy=dishes[o.kind].policy;
       $('#k-score').textContent=state.score;$('#k-level').textContent=state.level;$('#k-orders').textContent=state.orders+' / 5';
@@ -834,7 +839,7 @@ body.kitchen-playing .cf{display:none}
       });
       $('#k-tokens').innerHTML=o.tokens.map(function(t,i){
         const finished=t.pos===t.text.length;
-        const chars=t.text.split('').map((c,n)=>'<b class="'+(n<t.pos?'typed':(n===t.pos&&choices.indexOf(i)>=0?'current':''))+'">'+c+'</b>').join('');
+        const chars=t.text.split('').map((c,n)=>'<b class="'+(n<t.pos?'typed':(n===t.pos&&choices.indexOf(i)>=0?'current':''))+'">'+kitchenLetter(c)+'</b>').join('');
         return '<div class="k-token '+(finished?'done':(choices.indexOf(i)>=0?'ready':''))+'"><small>'+dishes[o.kind].labels[i]+'</small><div>'+chars+'</div>'+(finished?'<i>✓</i>':'')+'</div>';
       }).join('');
       const next=choices.map(i=>o.tokens[i].text[o.tokens[i].pos]);
@@ -878,7 +883,7 @@ body.kitchen-playing .cf{display:none}
     });
     ['1234567890','qwertyuiop','asdfghjkl','zxcvbnm'].forEach(row=>{
       const line=document.createElement('div');line.className='k-key-row';
-      row.split('').forEach(c=>{const key=document.createElement('span');key.className='k-key';key.setAttribute('data-key',c);key.textContent=c;line.appendChild(key);});
+      row.split('').forEach(c=>{const key=document.createElement('span');key.className='k-key';key.setAttribute('data-key',c);key.innerHTML=kitchenLetter(c);line.appendChild(key);});
       $('#k-keyboard').appendChild(line);
     });
     $('#k-enter').onclick=enter;
