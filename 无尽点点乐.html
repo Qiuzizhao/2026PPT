@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>无尽点点乐 · 鼠标小游戏</title>
+<meta name="theme-color" content="#2c2356">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  body{
+    font-family:"Comic Sans MS","Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    color:#fff;user-select:none;
+    background:radial-gradient(circle at 50% 36%,#4b3a8c 0%,#2c2356 48%,#16122f 100%);
+  }
+  .game{height:100%;display:flex;flex-direction:column;align-items:center;padding:20px 14px 14px}
+  .intro{flex:none;text-align:center;padding:0 0 18px}
+  h1{margin:0 0 8px;color:#ffd23f;font-size:36px;font-size:clamp(24px,4vw,36px)}
+  .intro p{margin:0;line-height:1.7;color:#e4dcff;font-size:16px;font-size:clamp(13px,2vw,16px)}
+  .ep{
+    position:relative;z-index:4;flex:1;width:100%;max-width:1000px;min-height:0;
+    padding:0 2px 2px;box-sizing:border-box;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  html.no-flexgap .ep > *:not(:last-child){margin-bottom:8px}
+  .ep-head{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;color:#fff}
+  html.no-flexgap .ep-head > *:not(:last-child){margin-right:10px}
+  .ep-k{
+    display:flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.28);
+    border-radius:999px;padding:4px 13px;font-weight:800;
+    font-size:16px;font-size:clamp(13px,2.2vw,16px);backdrop-filter:blur(2px);
+  }
+  html.no-flexgap .ep-k > *:not(:last-child){margin-right:6px}
+  .ep-k b{color:#ffd23f;font-size:1.15em;font-variant-numeric:tabular-nums}
+  .ep-lv b{color:#8ff0bc}
+  .ep-lv.flash{animation:ep-flash .55s ease}
+  @keyframes ep-flash{
+    0%{transform:scale(1)}
+    45%{transform:scale(1.16);background:rgba(143,240,188,.36)}
+    100%{transform:scale(1)}
+  }
+  .ep-area{
+    position:relative;flex:1;min-height:0;overflow:hidden;
+    border-radius:20px;border:2px solid rgba(255,255,255,.16);
+    background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
+  }
+  .ep-area::after{
+    content:"";position:absolute;right:0;bottom:0;left:0;height:3px;pointer-events:none;
+    background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.4),rgba(255,255,255,0));
+  }
+  .ep-tip{
+    position:absolute;top:50%;right:20px;left:20px;transform:translateY(-50%);
+    text-align:center;color:#ffe9a8;font-weight:800;pointer-events:none;
+    text-shadow:0 2px 8px rgba(20,10,50,.6);
+    font-size:18px;font-size:clamp(14px,2.6vw,18px);transition:opacity .5s ease;
+  }
+  .ep-tip.hide{opacity:.5}
+  .ep-item{
+    position:absolute;top:0;left:0;display:flex;align-items:center;justify-content:center;
+    border-radius:50%;background:rgba(255,255,255,.94);
+    box-shadow:0 6px 14px rgba(20,10,50,.35);cursor:pointer;user-select:none;
+    -webkit-user-select:none;touch-action:none;transition:opacity .2s linear;will-change:transform;
+  }
+  .ep-item.gold{
+    background:linear-gradient(180deg,#fff6c9,#ffd23f);
+    box-shadow:0 0 0 3px rgba(255,210,63,.55),0 6px 16px rgba(255,178,40,.5);
+  }
+  .ep-plus{
+    position:absolute;top:0;left:0;transform:translate(-50%,0);pointer-events:none;
+    color:#ffe9a8;font-weight:900;font-size:18px;text-shadow:0 2px 6px rgba(0,0,0,.35);
+    animation:ep-rise .85s ease forwards;
+  }
+  .ep-plus.big{color:#ffd23f;font-size:24px}
+  @keyframes ep-rise{
+    from{opacity:1;transform:translate(-50%,0) scale(.9)}
+    to{opacity:0;transform:translate(-50%,-52px) scale(1.2)}
+  }
+
+  @media(max-height:560px){
+    .game{padding-top:10px}
+    .intro{padding-bottom:8px}
+    h1{font-size:24px;margin-bottom:4px}
+    .ep-tip{font-size:14px}
+  }
+</style>
+<script>
+/* ===== 防误触兜底 =====
+   1) 右键菜单：学生鼠标不熟练，乱按时很容易弹出系统右键菜单挡住画面。
+      这里全局取消默认菜单，但只调 preventDefault、绝不 stopPropagation，
+      页内自己监听 contextmenu 的功能照常收到事件。输入框除外，要用右键粘贴。
+   2) 拖拽：防止图片/文字被拖出页面。拖拽练习走 pointer 事件，不受影响。
+   3) 防误退：Edge 的鼠标手势（右键按住向左拖动）和误按后退键都会触发浏览器
+      后退，把学生从练习页带走。压两层 history 哨兵，任何后退/前进都只会落回
+      本页，popstate 一响立刻再压一层，页面始终留在原地。
+   本页不使用 hash / history 导航，以上都不影响页内功能。 */
+(function () {
+  /* 输入框里保留原生右键菜单，方便右键粘贴 */
+  function keepNative(el) {
+    return !!(el && el.closest &&
+      el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'));
+  }
+  document.addEventListener('contextmenu', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();                    /* 只取消默认菜单，不阻断页内逻辑 */
+  }, true);
+  document.addEventListener('dragstart', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();
+  }, true);
+
+  /* 防误退 */
+  if (location.protocol === 'file:') return;      /* file:// 下浏览器禁止 pushState */
+  function guard() {
+    try { history.pushState({ mtSentinel: 1 }, '', location.href); } catch (e) {}
+  }
+  try {
+    guard(); guard();
+    window.addEventListener('popstate', guard);
+  } catch (e) {}
+})();
+</script>
+<script>
+/* ===== 兼容层 A：flex gap 能力探测 =====
+   老内核（Edge 84 以前、EdgeHTML）的 flex 布局不支持 gap，间距会全部塌掉。
+   这里用真实布局量一次宽度来判断，支持就用原样，不支持就给 <html> 挂上
+   no-flexgap，样式表里预置的 margin 规则接管间距。
+   不用 CSS.supports('gap') 判断：gap 在 Chrome 66 起就作为 grid-gap 的别名存在，
+   老版本会误报"支持"。 */
+(function () {
+  try {
+    var box = document.createElement('div');
+    box.style.cssText = 'position:absolute;top:-9999px;left:-9999px;display:flex;gap:10px;width:auto;height:1px';
+    var a = document.createElement('i');
+    var b = document.createElement('i');
+    a.style.cssText = b.style.cssText = 'display:block;width:10px;height:1px';
+    box.appendChild(a); box.appendChild(b);
+    document.documentElement.appendChild(box);
+    var w = box.getBoundingClientRect().width || box.scrollWidth;
+    document.documentElement.removeChild(box);
+    if (!(w >= 30)) document.documentElement.className += ' no-flexgap';
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+<main class="game">
+  <header class="intro">
+    <h1>🌟 无尽点点乐</h1>
+    <p>左键点一下，快乐加一分！金星 +5 分，每 10 分升一关，漏掉也没关系。</p>
+  </header>
+  <div class="ep" id="endless">
+    <div class="ep-head">
+      <span class="ep-k">得分<b id="epScore">0</b></span>
+      <span class="ep-k ep-lv" id="epLvChip">第<b id="epLevel">1</b>关</span>
+    </div>
+    <div class="ep-area" id="epArea">
+      <div class="ep-tip" id="epTip">🎯 点掉飘下来的小东西就能得分！金色 🌟 值 5 分，点得越多分越高～</div>
+    </div>
+  </div>
+</main>
+<script>
+(function(){
+  "use strict";
+  const $=s=>document.querySelector(s);
+  /* 独立存档，不读写鼠标练习营的通关进度。30 分钟内刷新可继续。 */
+  const FINALE_KEY='endlessClick.progress.v1';
+  const FINALE_FRESH=30*60*1000;
+  let finaleEndless={score:0, level:1};
+  let finaleWriteAt=0, finaleFlushTimer=0;
+  function writeFinaleState(force){
+    const now=Date.now();
+    /* 得分是离散事件，点了就立刻落盘；帧循环里的调用按 900ms 节流，只为了刷 ts */
+    if(!force&&now-finaleWriteAt<900){
+      if(!finaleFlushTimer){
+        finaleFlushTimer=setTimeout(function(){ finaleFlushTimer=0; writeFinaleState(true); },900-(now-finaleWriteAt));
+      }
+      return;
+    }
+    if(finaleFlushTimer){ clearTimeout(finaleFlushTimer); finaleFlushTimer=0; }
+    finaleWriteAt=now;
+    try{
+      localStorage.setItem(FINALE_KEY,JSON.stringify({
+        v:1, ts:now, score:finaleEndless.score, level:finaleEndless.level
+      }));
+    }catch(e){}
+  }
+  function readFinaleState(){
+    let d=null;
+    try{ d=JSON.parse(localStorage.getItem(FINALE_KEY)||'null'); }catch(e){ d=null; }
+    if(!d||typeof d!=='object') return null;
+    if(!(Date.now()-(d.ts||0)<FINALE_FRESH)) return null;      /* 下一节课从零开始 */
+    if(d.v!==1 || !Number.isFinite(d.score) || d.score<0) return null;
+    const score=Math.round(d.score);
+    return {score:score, level:Math.floor(score/10)+1};
+  }
+
+  let epAudio=null;
+  function epBeep(freq,dur){
+    try{
+      if(!epAudio) epAudio=new (window.AudioContext||window.webkitAudioContext)();
+      if(epAudio.state==='suspended'&&epAudio.resume) epAudio.resume();
+      const o=epAudio.createOscillator(), g=epAudio.createGain();
+      o.type='sine'; o.frequency.value=freq; g.gain.value=.05;
+      o.connect(g); g.connect(epAudio.destination); o.start();
+      g.gain.exponentialRampToValueAtTime(.0001,epAudio.currentTime+(dur||.09));
+      o.stop(epAudio.currentTime+(dur||.09)+.02);
+    }catch(e){}
+  }
+  function startEndless(){
+    const area=$('#epArea');
+    if(!area) return;
+    const scoreEl=$('#epScore'), lvEl=$('#epLevel'), lvChip=$('#epLvChip'), tip=$('#epTip');
+    const ITEMS=['⭐','🎈','🍎','🍓','⚽','🍬','🐤','🌸','🍀'];
+    const GOLD='🌟';
+    /* 难度曲线：每 10 分一关。第 1 关每秒下落约 0.3 个掉落区高度（约 3.3 秒落到底）、
+       平均 0.7 秒来一个；每升一关快一点、密一点，不设上限。 */
+    const FALL_H=0.26, LEVEL_FAST=0.035;
+    /* 继续独立小游戏自己的得分和关卡 */
+    let score=finaleEndless.score, level=finaleEndless.level, items=[], last=0, nextSpawn=350;
+    scoreEl.textContent=score; lvEl.textContent=level;
+    if(tip) setTimeout(()=>tip.classList.add('hide'),5200);
+
+    function spawn(){
+      const w=area.clientWidth, h=area.clientHeight;
+      if(w<40||h<40) return;
+      const gold=Math.random()<0.12;
+      const size=Math.max(34,Math.min(62,Math.round(h*0.22)));
+      const x=6+Math.random()*Math.max(6,w-size-12);
+      const el=document.createElement('div');
+      el.className='ep-item'+(gold?' gold':'');
+      el.style.width=size+'px'; el.style.height=size+'px';
+      el.style.lineHeight=size+'px';
+      el.style.fontSize=Math.round(size*0.56)+'px';
+      el.textContent=gold?GOLD:ITEMS[Math.floor(Math.random()*ITEMS.length)];
+      const it={el:el,x:x,y:-size,size:size,gold:gold,dead:false,
+                vy:h*(FALL_H+level*LEVEL_FAST)*(0.85+Math.random()*0.35)};
+      el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0)';
+      area.appendChild(el);
+      el.addEventListener('pointerdown',ev=>{
+        if(ev.button!==0) return;
+        ev.preventDefault(); hit(it);
+      });
+      items.push(it);
+      if(items.length>16){                       /* 保险：同时存在太多就淘汰最老的 */
+        const old=items.shift();
+        if(old&&old.el&&old.el.parentNode) old.el.parentNode.removeChild(old.el);
+      }
+    }
+
+    function rise(it,gain){
+      const p=document.createElement('div');
+      p.className='ep-plus'+(gain>1?' big':'');
+      p.textContent='+'+gain;
+      p.style.left=(it.x+it.size/2)+'px';
+      p.style.top=(it.y+it.size*0.15)+'px';
+      area.appendChild(p);
+      setTimeout(()=>{ if(p.parentNode) p.parentNode.removeChild(p); },900);
+    }
+
+    function hit(it){
+      if(it.dead) return;
+      it.dead=true;
+      const idx=items.indexOf(it); if(idx>=0) items.splice(idx,1);
+      const gain=it.gold?5:1;
+      score+=gain;
+      scoreEl.textContent=score;
+      const nl=Math.floor(score/10)+1;
+      if(nl>level){                              /* 每 10 分升一关：更快、更密，并且晃一下提示 */
+        level=nl; lvEl.textContent=level;
+        if(lvChip){ lvChip.classList.remove('flash'); void lvChip.offsetWidth; lvChip.classList.add('flash'); }
+      }
+      finaleEndless.score=score; finaleEndless.level=level;
+      writeFinaleState(true);                    /* 得分是离散事件，点了就落盘，刷新后不会少分 */
+      it.el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0) scale(1.45)';
+      it.el.style.opacity='0';
+      setTimeout(()=>{ if(it.el.parentNode) it.el.parentNode.removeChild(it.el); },260);
+      rise(it,gain);
+      epBeep(it.gold?1180:880,.09);
+    }
+
+    window.addEventListener('resize',()=>{
+      const w=area.clientWidth;
+      items.forEach(it=>{
+        if(it.x>w-it.size-4){
+          it.x=Math.max(4,w-it.size-4);
+          it.el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0)';
+        }
+      });
+    });
+
+    function frame(now){
+      requestAnimationFrame(frame);
+      if(document.hidden) return;
+      writeFinaleState();                        /* 滑一下存档时间：正在玩就别算过期 */
+      if(!last){ last=now; return; }
+      const dt=Math.min(.05,(now-last)/1000); last=now;
+      const h=area.clientHeight;
+      if(h<40) return;
+      nextSpawn-=dt*1000;
+      if(nextSpawn<=0){
+        spawn();
+        nextSpawn=Math.max(300,700-level*45)*(0.8+Math.random()*0.5);
+      }
+      for(let i=items.length-1;i>=0;i--){
+        const it=items[i];
+        it.y+=it.vy*dt;
+        if(it.y>h){                                /* 漏掉了：不扣分、不惩罚 */
+          it.dead=true;
+          if(it.el.parentNode) it.el.parentNode.removeChild(it.el);
+          items.splice(i,1);
+          continue;
+        }
+        it.el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0)';
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  finaleEndless=readFinaleState()||{score:0,level:1};
+  startEndless();
+  /* 保持练习画面，不阻断任何页内事件。 */
+  const block=e=>e.preventDefault();
+  document.addEventListener('wheel',block,{passive:false,capture:true});
+  document.addEventListener('touchmove',block,{passive:false,capture:true});
+  document.addEventListener('selectstart',block,true);
+  const stopKeys=[' ','Spacebar','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown','Home','End'];
+  document.addEventListener('keydown',e=>{if(stopKeys.indexOf(e.key)>=0) block(e);},true);
+})();
+</script>
+</body>
+</html>

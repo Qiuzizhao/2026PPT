@@ -67,3 +67,10 @@ node tools/qa/qa.mjs http://127.0.0.1:8765/_oldsim/ .qa-old
 ```powershell
 node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 键盘厨房
 ```
+
+独立无尽点点乐（直接开玩、左右键、计分升级、存档隔离、刷新续玩与小屏布局）：
+
+```powershell
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 无尽点点乐
+node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 无尽点点乐
+```

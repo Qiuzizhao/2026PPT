@@ -26,6 +26,7 @@ const P = `
 const j = (body) => `(async () => { ${P} try { ${body} } catch (e) { return String(e); } })()`;
 
 const SHOTS = [
+  { name: '无尽点点乐-独立小游戏', page: '无尽点点乐.html', js: j(`await __wait(1600); return 'ok';`) },
   { name: '太空补给站-求救信号订单', page: '鼠标练习营4.html', js: j(`
       await __wait(500); return 'ok';`) },
   { name: '太空补给站-右键复制菜单', page: '鼠标练习营4.html', js: j(`

@@ -2360,6 +2360,82 @@ add({name:'鼠标练习营4-自由切关',page:'鼠标练习营4.html',steps:[
   `)}
 ]});
 
+/* 独立无尽点点乐：沿用练习营1玩法，存档互不影响。 */
+add({name:'无尽点点乐-清档',page:'index.html',steps:[{label:'隔离原课件存档',js:wrap(`
+  localStorage.removeItem('endlessClick.progress.v1');
+  window.__endlessOriginals={};
+  for(const key of ['mousecamp1.progress.v1','mousecamp1.finale.v1']){
+    window.__endlessOriginals[key]=localStorage.getItem(key);
+    localStorage.setItem('endlessQA.original.'+key,localStorage.getItem(key)||'');
+  }
+  return 'ok';
+`)}]});
+add({name:'无尽点点乐-玩法',page:'无尽点点乐.html',viewport:[1024,768],steps:[
+  {label:'开页即玩、左右键、计分升级和漏点',js:wrap(`
+    const score=()=>Number(__$('#epScore').textContent);
+    if(score()!==0 || Number(__$('#epLevel').textContent)!==1) throw new Error('不是独立初始进度');
+    const speed=async()=>{
+      const el=__$('.ep-item:not(.gold)');
+      if(!el) return null;
+      const y=el.getBoundingClientRect().top;
+      await __wait(100);
+      return el.isConnected?(el.getBoundingClientRect().top-y)/100:null;
+    };
+    const before=await speed();
+    const target=__$('.ep-item');
+    const right=new PointerEvent('pointerdown',{bubbles:true,cancelable:true,button:2});
+    target.dispatchEvent(right);
+    if(score()!==0)throw new Error('右键错误加分');
+    const menu=new MouseEvent('contextmenu',{bubbles:true,cancelable:true,button:2});
+    target.dispatchEvent(menu);
+    if(!menu.defaultPrevented)throw new Error('右键菜单未拦截');
+    let gold=false,normal=false,clicks=0;
+    for(let i=0;i<600 && (score()<40 || !gold || !normal);i++){
+      for(const el of __$$('.ep-item')){
+        if(el.style.opacity==='0')continue;
+        const gain=el.classList.contains('gold')?5:1,old=score();
+        gold=gold||gain===5;normal=normal||gain===1;
+        __pd(el,'pointerdown',0,0);__pd(el,'pointerdown',0,0);
+        if(score()!==old+gain)throw new Error('计分或重复点击不正确');
+        clicks++;
+      }
+      await __wait(80);
+    }
+    if(!gold||!normal||Number(__$('#epLevel').textContent)!==Math.floor(score()/10)+1)throw new Error('金星或升级规则不正确');
+    const saved=score();
+    await __wait(4000);
+    if(score()!==saved)throw new Error('漏掉物件扣分');
+    if(!__$('.ep-item')||__$$('.ep-item').length>16)throw new Error('掉落物刷新或数量上限失效');
+    const after=await speed();
+    if(before!==null && after!==null && after<=before)throw new Error('升级没有加速');
+    if(__$$('a,button,#epCombo,#epBest').length)throw new Error('多余出口或比较牌子');
+    localStorage.setItem('endlessQA.score',String(score()));
+    for(const key of ['mousecamp1.progress.v1','mousecamp1.finale.v1']){
+      if((localStorage.getItem(key)||'')!==localStorage.getItem('endlessQA.original.'+key))throw new Error('污染原课件存档');
+    }
+    return JSON.stringify({score:score(),level:__$('#epLevel').textContent,gold,normal,clicks,before,after});
+  `),shot:true},
+  {label:'历史防误退、不重载和布局',js:wrap(`
+    const path=location.pathname;window.__probe='kept';
+    history.back();await __wait(350);history.forward();await __wait(350);history.go(-6);await __wait(350);
+    if(location.pathname!==path||window.__probe!=='kept')throw new Error('误退或发生重载');
+    const r=__$('#epArea').getBoundingClientRect();
+    if(r.height<200||r.bottom>innerHeight||document.documentElement.scrollWidth>innerWidth+1)throw new Error('布局溢出');
+    return JSON.stringify({probe:window.__probe,height:r.height,history:true});
+  `)}
+]});
+add({name:'无尽点点乐-刷新续玩',page:'无尽点点乐.html',steps:[{label:'新页面恢复自己的分数',js:wrap(`
+  const expected=localStorage.getItem('endlessQA.score');
+  if(__$('#epScore').textContent!==expected)throw new Error('刷新后丢分');
+  if(Number(__$('#epLevel').textContent)!==Math.floor(Number(expected)/10)+1)throw new Error('刷新后丢关卡');
+  return JSON.stringify({score:expected,level:__$('#epLevel').textContent});
+`),shot:true}]});
+add({name:'无尽点点乐-低屏',page:'无尽点点乐.html',viewport:[1024,560],steps:[{label:'小游戏不被标题挤压',js:wrap(`
+  const r=__$('#epArea').getBoundingClientRect(),h=__$('.intro').getBoundingClientRect();
+  if(r.height<200||r.top<h.bottom||r.bottom>innerHeight||document.documentElement.scrollWidth>innerWidth+1)throw new Error('低屏布局挤压');
+  return JSON.stringify({height:r.height,bottom:r.bottom});
+`),shot:true}]});
+
 const chrome = spawn(CHROME, [
   '--headless=new', '--disable-gpu', '--disable-extensions', '--no-first-run', '--no-default-browser-check',
   '--remote-debugging-port=' + QA_PORT, '--user-data-dir=' + userDir,
