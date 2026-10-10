@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第2课 获取数据有方法 · 教案</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='8' width='24' height='18' rx='3' fill='%231E6E62'/%3E%3Cpath d='M10 14h12M10 18h8' stroke='%23FAF8F2' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='22' cy='21' r='3' fill='%23C9A227'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --ink:#22302e;
+    --ink-soft:#5c6b68;
+    --teal:#1e6e62;
+    --teal-deep:#154d45;
+    --teal-soft:#e4efec;
+    --gold:#c9a227;
+    --line:#d8d4c8;
+    --white:#ffffff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:#ffffff;
+    color:var(--ink);
+    font-family:"Noto Sans SC","Microsoft YaHei","PingFang SC",sans-serif;
+    font-size:15.5px;
+    line-height:1.75;
+  }
+  .page{max-width:920px;margin:0 auto;padding:0 28px 72px;}
+
+  /* ===== 封面 ===== */
+  .cover{
+    background:#ffffff;color:var(--ink);
+    border-bottom:4px solid var(--teal);
+    border-radius:0 0 18px 18px;
+    padding:40px 48px 36px;
+    margin:0 -28px 36px;
+  }
+  .cover .kicker{
+    font-size:13px;letter-spacing:.35em;color:var(--teal-deep);
+    font-weight:700;margin-bottom:14px;
+  }
+  .cover h1{
+    font-family:"Noto Serif SC",serif;
+    font-size:40px;font-weight:900;line-height:1.25;margin-bottom:12px;
+  }
+  .cover .sub{font-size:16px;color:var(--ink-soft);}
+  .cover .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;}
+  .cover .meta span{
+    border:1px solid var(--line);
+    padding:5px 14px;border-radius:999px;font-size:13.5px;
+  }
+  .mainline{
+    border:1px solid var(--line);
+    border-left:4px solid var(--gold);
+    border-radius:10px;
+    padding:16px 22px;margin:0 0 34px;
+    display:flex;gap:14px;align-items:flex-start;
+  }
+  .mainline .tag{
+    flex:none;background:var(--gold);color:#fff;
+    font-size:12.5px;font-weight:700;border-radius:8px;
+    padding:3px 12px;margin-top:3px;letter-spacing:.08em;
+  }
+  .mainline p{font-size:15px;}
+  .mainline b{color:var(--teal-deep);}
+
+  /* ===== 章节标题 ===== */
+  .sec{margin:44px 0 20px;display:flex;align-items:baseline;gap:14px;}
+  .sec h2{
+    font-family:"Noto Serif SC",serif;
+    font-size:24px;font-weight:700;color:var(--teal-deep);
+  }
+  .sec .en{font-size:12px;letter-spacing:.3em;color:var(--ink-soft);text-transform:uppercase;}
+  .sec::after{content:"";flex:1;height:1px;background:var(--line);}
+
+  /* ===== 教学目标 ===== */
+  .goals{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .goal{
+    border:1px solid var(--line);
+    border-top:3px solid var(--teal);
+    border-radius:12px;padding:16px 18px;
+  }
+  .goal .num{font-size:12.5px;font-weight:700;color:var(--gold);letter-spacing:.1em;}
+  .goal p{margin-top:6px;font-size:14.5px;}
+
+  /* ===== 时间轴 ===== */
+  .tl{--col-time:74px;--col-axis:30px;display:grid;grid-template-columns:var(--col-time) var(--col-axis) 1fr;row-gap:18px;}
+  .tl-row{display:contents;}
+  .tl-time{
+    text-align:right;padding:18px 10px 0 0;
+    font-size:13.5px;color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+  }
+  .tl-time b{display:block;font-size:16px;color:var(--teal-deep);font-weight:700;}
+  .tl-axis{position:relative;}
+  .tl-axis::before{
+    content:"";position:absolute;
+    left:50%;top:6px;bottom:-18px;width:2px;
+    background:var(--line);transform:translateX(-50%);
+  }
+  .tl-row:last-child .tl-axis::before{display:none;}
+  .tl-dot{
+    width:15px;height:15px;border-radius:50%;
+    background:var(--gold);border:3px solid #ffffff;
+    box-shadow:0 0 0 2px var(--gold);
+    margin:22px auto 0;position:relative;z-index:1;
+  }
+  .tl-card{border:1px solid var(--line);border-radius:14px;padding:18px 22px;}
+  .tl-card h3{
+    font-family:"Noto Serif SC",serif;
+    font-size:18.5px;color:var(--ink);margin-bottom:4px;
+  }
+  .tl-card .dur{
+    display:inline-block;font-size:12.5px;color:var(--teal-deep);
+    background:var(--teal-soft);border-radius:999px;
+    padding:2px 12px;margin-bottom:10px;font-weight:700;
+  }
+  .tl-card .row{display:flex;gap:10px;margin-top:8px;align-items:flex-start;}
+  .tl-card .lbl{
+    flex:none;width:64px;text-align:center;
+    font-size:12px;font-weight:700;color:#fff;
+    border-radius:7px;padding:2px 0;margin-top:3px;
+  }
+  .lbl-teacher{background:var(--teal);}
+  .lbl-student{background:#5a7d94;}
+  .lbl-board{background:var(--gold);}
+  .tl-card .row p{font-size:14.5px;}
+  .quote{
+    border-left:4px solid var(--teal);
+    border-radius:0 10px 10px 0;
+    padding:10px 16px;margin-top:12px;
+    font-size:14.5px;color:var(--teal-deep);
+  }
+  .quote .who{display:block;font-size:12px;font-weight:700;margin-bottom:2px;opacity:.75;}
+  .steps{margin-top:10px;list-style:none;counter-reset:st;}
+  .steps li{position:relative;padding-left:30px;margin-top:6px;font-size:14.5px;}
+  .steps li::before{
+    counter-increment:st;content:counter(st);
+    position:absolute;left:0;top:3px;
+    width:20px;height:20px;border-radius:50%;
+    border:1.5px solid var(--teal);color:var(--teal-deep);
+    background:#ffffff;font-size:11.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .board{
+    border:1px dashed var(--gold);
+    border-radius:10px;padding:10px 16px;margin-top:12px;
+    font-size:14px;color:#7a5f14;
+  }
+  .board b{color:var(--teal-deep);}
+
+  /* ===== 总览表 ===== */
+  table.overview{
+    width:100%;border-collapse:collapse;table-layout:fixed;
+    background:var(--white);border-radius:12px;overflow:hidden;
+    border:1px solid var(--line);
+  }
+  table.overview col.c1{width:15%;}
+  table.overview col.c2{width:10%;}
+  table.overview col.c3{width:37%;}
+  table.overview col.c4{width:38%;}
+  table.overview th{
+    color:var(--teal-deep);font-size:14px;font-weight:700;
+    border-bottom:2px solid var(--teal);
+    padding:12px 14px;text-align:left;
+  }
+  table.overview thead{display:table-header-group;}
+  table.overview td{
+    padding:12px 14px;font-size:14px;border-top:1px solid var(--line);
+    vertical-align:top;
+  }
+  table.overview td:first-child{font-weight:600;}
+  table.overview td:nth-child(2){
+    font-weight:700;color:var(--teal-deep);white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ===== 提示 ===== */
+  .tips{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px;}
+  .tip{
+    border:1px solid var(--line);
+    border-left:4px solid var(--gold);
+    border-radius:12px;padding:16px 18px;
+  }
+  .tip h4{font-size:15px;color:var(--teal-deep);margin-bottom:6px;}
+  .tip p{font-size:14px;}
+
+  .footer{
+    margin-top:52px;padding-top:18px;border-top:1px solid var(--line);
+    font-size:12.5px;color:var(--ink-soft);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  }
+  @media (max-width:720px){
+    .page{padding:0 16px 56px;}
+    .cover{padding:32px 24px;margin:0 -16px 28px;}
+    .cover h1{font-size:30px;}
+    .goals{grid-template-columns:1fr;}
+    .tl{--col-time:56px;--col-axis:22px;grid-template-columns:var(--col-time) var(--col-axis) 1fr;}
+    .tl-time{font-size:12px;padding-right:8px;}
+    .tl-time b{font-size:14px;}
+    .tl-dot{width:13px;height:13px;margin-top:20px;}
+    .tl-card{padding:14px 16px;}
+    .tips{grid-template-columns:1fr;}
+  }
+  @page{size:A4;margin:14mm 15mm;}
+  @media print{
+    html{scroll-behavior:auto;}
+    body{background:#fff;font-size:12.5px;line-height:1.6;}
+    .page{padding:0;}
+    .cover{border-radius:0;margin:0 0 20px;padding:10px 0 18px;border-bottom:3px solid var(--teal);}
+    .cover h1{font-size:28px;}
+    .cover .sub{font-size:13px;}
+    .cover .meta{margin-top:14px;gap:8px;}
+    .cover .meta span{font-size:12px;padding:3px 10px;}
+    .mainline{padding:12px 16px;margin-bottom:20px;break-inside:avoid;}
+    .sec{margin:26px 0 12px;break-after:avoid;}
+    .sec h2{font-size:19px;}
+    .sec::after{display:none;}
+    .goal{padding:12px 14px;break-inside:avoid;}
+    .goal p{font-size:12.5px;}
+    .tl{row-gap:12px;}
+    .tl-time{padding-top:14px;font-size:12px;}
+    .tl-time b{font-size:14px;}
+    .tl-dot{margin-top:16px;width:12px;height:12px;}
+    .tl-card{padding:13px 16px;break-inside:avoid;}
+    .tl-card h3{font-size:16px;}
+    .tl-card .row p,.steps li,.quote{font-size:12.5px;}
+    .quote{padding:8px 12px;margin-top:10px;break-inside:avoid;}
+    .steps li{margin-top:4px;padding-left:26px;}
+    .board{padding:8px 12px;margin-top:10px;font-size:12.5px;break-inside:avoid;}
+    table.overview{border-radius:0;}
+    table.overview th{padding:8px 10px;font-size:12.5px;}
+    table.overview td{padding:8px 10px;font-size:12.5px;}
+    table.overview tr{break-inside:avoid;}
+    .tip{padding:12px 14px;break-inside:avoid;}
+    .tip h4{font-size:13.5px;}
+    .tip p{font-size:12.5px;}
+    .footer{margin-top:28px;padding-top:12px;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- ===== 封面 ===== -->
+  <header class="cover">
+    <div class="kicker">小学信息科技 · 四年级 · 第2课</div>
+    <h1>获取数据有方法</h1>
+    <div class="sub">气温小侦探 —— 在 3D 天气小镇里找线索、读数字、辨可信</div>
+    <div class="meta">
+      <span>课时 40 分钟</span>
+      <span>载体：3D 天气小镇 + A4 学习单</span>
+      <span>体验 → 复盘 → 归纳 → 迁移</span>
+    </div>
+  </header>
+
+  <div class="mainline">
+    <span class="tag">本课主线</span>
+    <p>以"<b>今天到底多少度</b>"为真实任务，让学生在 3D 天气小镇里<b>自主探索 8 个线索点位</b>、边玩边填学习单 → 全班<b>复盘 8 个数字</b>，发现不同来源数据不一致 → 归纳<b>获取数据的多种方法</b>与<b>判断可信度的三把尺子</b> → 迁移到获取风向、风速等其他数据 → 布置 <b>7 日气温记录</b>作业。</p>
+  </div>
+
+  <!-- ===== 教学目标 ===== -->
+  <div class="sec"><h2>教学目标</h2><span class="en">Goals</span></div>
+  <div class="goals">
+    <div class="goal"><div class="num">GOAL 01</div><p>了解获取数据的多种方法：问人、打电话、看电视、上网、App、问 AI、仪器测量。</p></div>
+    <div class="goal"><div class="num">GOAL 02</div><p>完整体验"获取数据"的过程，认识获取数据在日常生活中的应用。</p></div>
+    <div class="goal"><div class="num">GOAL 03</div><p>初步知道不同来源的数据可能不一致，会从来源、时间、方法三方面简单判断可信度。</p></div>
+  </div>
+
+  <!-- ===== 教学流程 ===== -->
+  <div class="sec"><h2>教学流程</h2><span class="en">Procedure</span></div>
+
+  <div class="tl">
+
+    <!-- 环节 1 -->
+    <div class="tl-row">
+      <div class="tl-time"><b>0–4′</b>情境导入</div>
+      <div class="tl-axis"><div class="tl-dot"></div></div>
+      <div class="tl-card">
+        <h3>环节 1 · 为什么要获取气温数据</h3>
+        <span class="dur">4 分钟</span>
+        <div class="quote"><span class="who">教师提问</span>"明天学校运动会，老师最关心一件事——<b>明天多少度、会不会下雨</b>。穿多少衣服、要不要带伞，都要看气温。生活里还有什么时候，我们特别想知道气温？"</div>
+        <div class="row"><span class="lbl lbl-student">学生</span><p>自由举例：出门旅游、降温添衣、高温预警、科学课观察……</p></div>
+        <div class="board"><b>点题：</b>气温是重要的天气数据，要想知道它，就得想办法<b>获取</b>。</div>
+      </div>
+    </div>
+
+    <!-- 环节 2 -->
+    <div class="tl-row">
+      <div class="tl-time"><b>4–7′</b>进入小镇</div>
+      <div class="tl-axis"><div class="tl-dot"></div></div>
+      <div class="tl-card">
+        <h3>环节 2 · 进入天气小镇与操作说明</h3>
+        <span class="dur">3 分钟</span>
+        <div class="row"><span class="lbl lbl-teacher">教师</span><p>打开天气小镇，广播演示操作。</p></div>
+        <ol class="steps">
+          <li>鼠标<b>滚轮</b>：放大、缩小</li>
+          <li>按住<b>左键拖动</b>：移动、旋转视角</li>
+          <li>看到发光、有提示的地方，<b>点一下</b>，线索就会说话</li>
+        </ol>
+        <div class="quote"><span class="who">任务发布</span>"小镇里藏着 <b>8 个气温线索</b>。像侦探一样把它们全部找到，数字记在学习单上，还要判断：这个线索可不可信？"</div>
+      </div>
+    </div>
+
+    <!-- 环节 3 -->
+    <div class="tl-row">
+      <div class="tl-time"><b>7–19′</b>自主探索</div>
+      <div class="tl-axis"><div class="tl-dot"></div></div>
+      <div class="tl-card">
+        <h3>环节 3 · 小镇探索，边玩边填学习单</h3>
+        <span class="dur">12 分钟</span>
+        <div class="row"><span class="lbl lbl-student">学生</span><p>按学习单表格逐行记录：来源（在哪里、谁说的）、数字（多少℃）、角色标注（它为什么这么说）、勾选是否可信。</p></div>
+        <div class="row"><span class="lbl lbl-teacher">教师</span><p>巡场，提醒进度慢的学生先集齐 8 个点位；不直接报答案，引导"再点一下听听它说什么"。</p></div>
+        <div class="board"><b>8 个点位：</b>摇扇子的奶奶 · 电话亭 · 天气大屏 · 网吧 · 看手机的同学 · 小音箱 · 气象站百叶箱 · 学校公告栏</div>
+      </div>
+    </div>
+
+    <!-- 环节 4 -->
+    <div class="tl-row">
+      <div class="tl-time"><b>19–29′</b>全班复盘</div>
+      <div class="tl-axis"><div class="tl-dot"></div></div>
+      <div class="tl-card">
+        <h3>环节 4 · 复盘 8 个数字</h3>
+        <span class="dur">10 分钟</span>
+        <ol class="steps">
+          <li>"8 个线索报的数字一样吗？" → 学生报：35、28、28、28、28.3、28、28.5、26。</li>
+          <li>"哪几个数字差不多？" → 电话亭、大屏、网吧、音箱都是 28℃ —— 它们其实来自<b>同一条气象信息链</b>，互相印证。</li>
+          <li>"奶奶为什么说 35℃？" → 那是<b>身体感觉</b>，不是温度计测的；晒太阳、刚走动都会影响感觉。</li>
+          <li>"公告栏为什么写 26℃？" → 那是<b>昨天</b>的记录，旧数据不能回答今天的问题。</li>
+          <li>"看手机的同学是 28.3℃，多一位小数，是不是更准？" → 不一定，App 的数字来自数据源，不是手机测的。</li>
+        </ol>
+        <div class="quote"><span class="who">结案</span>"那么今天到底多少度？最该信谁？" → <b>气象站百叶箱实测 28.5℃</b>：此时、此地、仪器规范测量，是基准答案。</div>
+      </div>
+    </div>
+
+    <!-- 环节 5 -->
+    <div class="tl-row">
+      <div class="tl-time"><b>29–33′</b>归纳方法</div>
+      <div class="tl-axis"><div class="tl-dot"></div></div>
+      <div class="tl-card">
+        <h3>环节 5 · 归纳获取方法与可信度</h3>
+        <span class="dur">4 分钟</span>
+        <div class="row"><span class="lbl lbl-teacher">教师</span><p>对照小镇点位，把方法和判断尺子板书出来。</p></div>
+        <div class="board"><b>板书一 · 获取数据 7 法：</b>问人 / 打电话 / 看电视 / 上网搜索 / 天气 App / 问 AI / 仪器测量</div>
+        <div class="board"><b>板书二 · 判断可信三把尺子：</b>看<b>来源</b>（谁给的）· 看<b>时间</b>（是不是现在的）· 看<b>方法</b>（是测量还是感觉）</div>
+      </div>
+    </div>
+
+    <!-- 环节 6 -->
+    <div class="tl-row">
+      <div class="tl-time"><b>33–38′</b>迁移应用</div>
+      <div class="tl-axis"><div class="tl-dot"></div></div>
+      <div class="tl-card">
+        <h3>环节 6 · 获取其他数据可以用的方法</h3>
+        <span class="dur">5 分钟</span>
+        <div class="quote"><span class="who">教师追问</span>"除了气温，我们还想知道<b>风向、风速、空气好不好</b>——刚才这些方法，哪些还能用？"</div>
+        <div class="row"><span class="lbl lbl-student">学生</span><p>讨论迁移：看电视/上网/App/问 AI 都能查风向风速；风要靠风速仪等专门仪器测，感觉只能粗略判断。</p></div>
+        <div class="board"><b>归纳：</b>方法可以迁移到其他数据；越来越多的数据靠<b>数字设备和传感器</b>自动获取。</div>
+      </div>
+    </div>
+
+    <!-- 环节 7 -->
+    <div class="tl-row">
+      <div class="tl-time"><b>38–40′</b>布置作业</div>
+      <div class="tl-axis"><div class="tl-dot"></div></div>
+      <div class="tl-card">
+        <h3>环节 7 · 布置 7 日气温记录</h3>
+        <span class="dur">2 分钟</span>
+        <div class="row"><span class="lbl lbl-teacher">教师</span><p>说明作业要求：用自己喜欢的方式，连续 7 天记录深圳气温。</p></div>
+        <div class="board"><b>只记三项：</b>日期 / 最高气温 / 最低气温 —— 下节课带来，看看一周气温怎么变。</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== 总览表 ===== -->
+  <div class="sec"><h2>环节总览</h2><span class="en">Overview</span></div>
+  <table class="overview">
+    <colgroup>
+      <col class="c1"><col class="c2"><col class="c3"><col class="c4">
+    </colgroup>
+    <thead>
+      <tr><th>环节</th><th>时长</th><th>学生做什么</th><th>教师做什么</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>情境导入</td><td>4 分钟</td><td>举例什么时候需要气温</td><td>运动会情境，提出真实问题</td></tr>
+      <tr><td>进入小镇</td><td>3 分钟</td><td>看演示、学操作</td><td>演示滚轮/拖动/点击，发布任务</td></tr>
+      <tr><td>自主探索</td><td>12 分钟</td><td>找 8 线索、填学习单</td><td>巡场、引导不直接报答案</td></tr>
+      <tr><td>全班复盘</td><td>10 分钟</td><td>报数字、比较、解释差异</td><td>提问链，锁定气象站基准</td></tr>
+      <tr><td>归纳方法</td><td>4 分钟</td><td>对照点位说方法</td><td>板书 7 法 + 三把尺子</td></tr>
+      <tr><td>迁移应用</td><td>5 分钟</td><td>讨论风向风速怎么获取</td><td>引导方法迁移</td></tr>
+      <tr><td>布置作业</td><td>2 分钟</td><td>明确记录要求</td><td>7 日气温，只记三项</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ===== 提示 ===== -->
+  <div class="sec"><h2>课堂提示</h2><span class="en">Notes</span></div>
+  <div class="tips">
+    <div class="tip">
+      <h4>探索环节控场</h4>
+      <p>约第 8 分钟提醒一次进度；落后学生先集齐 8 个点位，可信度判断可在复盘时补勾，保证人人进入复盘。</p>
+    </div>
+    <div class="tip">
+      <h4>复盘的核心落点</h4>
+      <p>不必让学生背全 7 种方法，重点是体验"同一问题有多种获取途径、结果可能不同"，记住信气象站、旧数据不能用即可。</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>第2课《获取数据有方法》 · 备课用教案</span>
+    <span>配套：天气小镇 WeatherTown ＋ 气温小侦探学习单</span>
+  </div>
+</div>
+</body>
+</html>
