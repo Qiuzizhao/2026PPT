@@ -74,3 +74,10 @@ node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 键盘厨房
 node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 无尽点点乐
 node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 无尽点点乐
 ```
+
+独立鼠标切切乐（真实拖划、金星计分、升级、存档隔离、刷新续玩与小屏 / 宽屏布局）：
+
+```powershell
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 鼠标切切乐-独立
+node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 鼠标切切乐
+```

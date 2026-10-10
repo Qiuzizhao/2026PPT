@@ -2436,6 +2436,71 @@ add({name:'无尽点点乐-低屏',page:'无尽点点乐.html',viewport:[1024,56
   return JSON.stringify({height:r.height,bottom:r.bottom});
 `),shot:true}]});
 
+/* 独立鼠标切切乐：真实拖划、计分、升级、独立存档和防误触。 */
+add({name:'鼠标切切乐-独立清档',page:'index.html',steps:[{label:'保存原课件档案快照',js:wrap(`
+  localStorage.removeItem('mouseSlice.progress.v1');
+  for(const key of ['mousecamp3.progress.v1','mousecamp3-1.progress.v1','mousecamp3-2.progress.v1','endlessClick.progress.v1'])
+    localStorage.setItem('sliceQA.original.'+key,localStorage.getItem(key)||'');
+  return 'ok';
+`)}]});
+add({name:'鼠标切切乐-独立玩法',page:'鼠标切切乐.html',viewport:[1024,768],wait:600,steps:[
+ {label:'真实鼠标拖划、左右键和计分升级',nativeDrags:[{from:'.slice-item:not(.hit)',to:'#sliceArea'}],js:wrap(`
+   const score=()=>Number(__$('#sliceScore').textContent),area=__$('#sliceArea');
+   if(score()<1)throw new Error('真实鼠标拖划没有切中');
+   const cut=el=>{
+     const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
+     __pd(area,'pointerdown',x-15,y);__pd(area,'pointermove',x+15,y);__pd(area,'pointerup',x+15,y);
+   };
+   const target=__$('.slice-item:not(.hit)'),pt=__center(target),before=score();
+   __pd(area,'pointermove',pt[0],pt[1]);
+   __pd(area,'pointerdown',pt[0],pt[1]);__pd(area,'pointerup',pt[0],pt[1]);
+   __mouse(area,'click');
+   if(score()!==before)throw new Error('普通单击或未按下移动错误计分');
+   area.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true,button:2,clientX:pt[0]-20,clientY:pt[1]}));
+   area.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,cancelable:true,buttons:2,clientX:pt[0]+20,clientY:pt[1]}));
+   if(score()!==before)throw new Error('右键划动错误计分');
+   const rand=Math.random;let gold=false;
+   try{
+     Math.random=()=>0.01;
+     for(let i=0;i<30;i++){
+       const el=__$('.slice-item.gold:not(.hit)');
+       if(el){const n=score();cut(el);gold=score()>=n+5;break;}
+       await __wait(70);
+     }
+   }finally{Math.random=rand;}
+   if(!gold||!__$$('.slice-plus').some(el=>el.textContent==='+5'))throw new Error('金星未加5分');
+   for(let i=0;i<250&&score()<30;i++){
+     for(const el of __$$('.slice-item:not(.hit)'))cut(el);
+     await __wait(60);
+   }
+   if(score()<30||Number(__$('#sliceLevel').textContent)!==Math.floor(score()/10)+1)throw new Error('升级失败');
+   const saved=score();await __wait(3500);
+   if(score()!==saved||!__$('.slice-item')||__$$('.slice-item:not(.hit)').length>16)throw new Error('漏掉扣分或停止刷新');
+   for(const key of ['mousecamp3.progress.v1','mousecamp3-1.progress.v1','mousecamp3-2.progress.v1','endlessClick.progress.v1'])
+     if((localStorage.getItem(key)||'')!==localStorage.getItem('sliceQA.original.'+key))throw new Error('原课件存档受到影响');
+   localStorage.setItem('sliceQA.score',String(score()));
+   return JSON.stringify({score:score(),level:__$('#sliceLevel').textContent,gold,nativeDrag:true});
+ `),shot:true},
+ {label:'防误退、不重载和右键兜底',js:wrap(`
+   const path=location.pathname;window.__probe='kept';
+   history.back();await __wait(300);history.forward();await __wait(300);history.go(-6);await __wait(300);
+   const ev=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});document.querySelector('#sliceArea').dispatchEvent(ev);
+   if(location.pathname!==path||window.__probe!=='kept'||!ev.defaultPrevented)throw new Error('防误触失败');
+   if(__$$('a,button').length)throw new Error('出现离开路径');
+   return JSON.stringify({probe:window.__probe,menuBlocked:ev.defaultPrevented});
+ `)}
+]});
+add({name:'鼠标切切乐-独立续玩',page:'鼠标切切乐.html',steps:[{label:'刷新后的分数和关卡',js:wrap(`
+  const score=localStorage.getItem('sliceQA.score');
+  if(__$('#sliceScore').textContent!==score||Number(__$('#sliceLevel').textContent)!==Math.floor(Number(score)/10)+1)throw new Error('刷新丢分');
+  return JSON.stringify({score,level:__$('#sliceLevel').textContent});
+`),shot:true}]});
+for(const size of [[1024,560],[1920,1080]])add({name:'鼠标切切乐-独立布局-'+size.join('x'),page:'鼠标切切乐.html',viewport:size,steps:[{label:'游戏区尺寸与画布',js:wrap(`
+ const r=__$('#sliceArea').getBoundingClientRect(),head=__$('.intro').getBoundingClientRect(),canvas=__$('#sliceBlade');
+ if(r.height<200||r.width>1000||r.top<head.bottom||r.bottom>innerHeight||document.documentElement.scrollWidth>innerWidth+1||canvas.width<r.width-4)throw new Error('布局或画布不正确');
+ return JSON.stringify({width:r.width,height:r.height,canvas:canvas.width});
+`),shot:true}]});
+
 const chrome = spawn(CHROME, [
   '--headless=new', '--disable-gpu', '--disable-extensions', '--no-first-run', '--no-default-browser-check',
   '--remote-debugging-port=' + QA_PORT, '--user-data-dir=' + userDir,

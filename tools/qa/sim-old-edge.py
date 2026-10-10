@@ -8,6 +8,7 @@ import shutil
 FILES = [
     "index.html",
     "无尽点点乐.html",
+    "鼠标切切乐.html",
     "数据自画像-教师端看板.html",
     "数据自画像-猜猜我是谁.html",
     "键盘练习营.html",

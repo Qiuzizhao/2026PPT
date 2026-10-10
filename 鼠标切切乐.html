@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鼠标切切乐 · 鼠标小游戏</title>
+<meta name="theme-color" content="#f4f7fb">
+<style>
+  :root{--ink:#1f2937;--muted:#64748b;--blue:#2563eb;--blue-dark:#1d4ed8;--line:#dbe4f0}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  body{
+    font-family:"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    color:var(--ink);user-select:none;
+    background:radial-gradient(circle at 12% 0%,#eef6ff,rgba(238,246,255,0) 34%),linear-gradient(180deg,#f8fafc,#f4f7fb);
+  }
+  .game{height:100%;display:flex;flex-direction:column;align-items:center;padding:20px 14px 14px}
+  .intro{flex:none;text-align:center;padding:0 0 18px}
+  h1{margin:0 0 8px;color:var(--blue-dark);font-size:36px;font-size:clamp(24px,4vw,36px)}
+  .intro p{margin:0;line-height:1.7;color:var(--muted);font-size:16px;font-size:clamp(13px,2vw,16px)}
+  .slice{
+    position:relative;z-index:4;flex:1 1 auto;width:100%;max-width:1000px;min-height:0;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  html.no-flexgap .slice > *:not(:last-child){margin-bottom:8px}
+  .slice-head{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;color:var(--ink)}
+  html.no-flexgap .slice-head > *:not(:last-child){margin-right:10px}
+  .slice-title{font-size:17px;font-weight:900;color:var(--blue-dark)}
+  .slice-title span{font-size:12px;font-weight:600;color:var(--muted);margin-left:8px}
+  .slice-hud{display:flex;align-items:center;gap:8px}
+  html.no-flexgap .slice-hud > *:not(:last-child){margin-right:8px}
+  .slice-k{
+    display:flex;align-items:center;gap:5px;background:#ffffff;border:1px solid var(--line);
+    border-radius:999px;padding:4px 12px;font-weight:800;font-size:14px;color:var(--muted);
+    box-shadow:0 4px 12px rgba(15,42,80,.05);
+  }
+  html.no-flexgap .slice-k > *:not(:last-child){margin-right:5px}
+  .slice-k b{color:var(--blue);font-size:1.15em;font-variant-numeric:tabular-nums}
+  .slice-lv b{color:#059669}
+  .slice-lv.flash{animation:slice-flash .55s ease}
+  @keyframes slice-flash{
+    0%{transform:scale(1)}
+    45%{transform:scale(1.14);background:#dcfce7}
+    100%{transform:scale(1)}
+  }
+  .slice-area{
+    position:relative;flex:1;min-height:0;overflow:hidden;cursor:crosshair;
+    border-radius:20px;border:1px solid #dbe4f0;
+    background:linear-gradient(180deg,#ffffff,#eef6ff);
+    box-shadow:inset 0 1px 0 #ffffff,0 10px 30px rgba(15,42,80,.06);
+    touch-action:none;user-select:none;
+  }
+  .slice-area::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:3px;pointer-events:none;
+    background:linear-gradient(90deg,rgba(37,99,235,0),rgba(37,99,235,.25),rgba(37,99,235,0));
+  }
+  .slice-tip{
+    position:absolute;top:50%;right:20px;left:20px;transform:translateY(-50%);z-index:13;
+    text-align:center;color:var(--muted);font-weight:800;pointer-events:none;
+    font-size:16px;font-size:clamp(13px,2.2vw,16px);transition:opacity .5s ease;
+  }
+  .slice-tip.hide{opacity:.25}
+  .slice-item{
+    position:absolute;top:0;left:0;display:flex;align-items:center;justify-content:center;
+    pointer-events:none;will-change:transform;
+  }
+  .slice-item svg{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 10px rgba(15,42,80,.16))}
+  .slice-item.gold svg{filter:drop-shadow(0 0 10px rgba(245,158,11,.45)) drop-shadow(0 6px 10px rgba(15,42,80,.15))}
+  .slice-item.hit{opacity:0;transition:opacity .22s ease,transform .22s ease}
+  .slice-blade{
+    position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;
+    z-index:12;pointer-events:none;
+  }
+  .slice-spark{
+    position:absolute;left:0;top:0;width:6px;height:6px;border-radius:50%;
+    z-index:14;pointer-events:none;background:#60a5fa;
+    box-shadow:0 0 8px rgba(37,99,235,.55);
+    animation:slice-spark .42s ease-out forwards;
+  }
+  .slice-spark.gold{background:#fbbf24;box-shadow:0 0 9px rgba(245,158,11,.65)}
+  @keyframes slice-spark{
+    from{opacity:1;transform:translate(-50%,-50%) scale(1)}
+    to{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.2)}
+  }
+  .slice-cut{
+    position:absolute;height:4px;border-radius:4px;z-index:15;pointer-events:none;
+    background:linear-gradient(90deg,rgba(255,255,255,0),#ffffff,rgba(255,255,255,0));
+    box-shadow:0 0 10px rgba(255,255,255,.8);transform-origin:50% 50%;
+    animation:slice-cut .24s ease-out forwards;
+  }
+  @keyframes slice-cut{
+    from{opacity:1;transform:rotate(var(--rot)) scaleX(.35) scaleY(1.2)}
+    to{opacity:0;transform:rotate(var(--rot)) scaleX(1.2) scaleY(.25)}
+  }
+  .slice-plus{
+    position:absolute;left:0;top:0;transform:translate(-50%,0);pointer-events:none;z-index:14;
+    color:var(--blue);font-weight:900;font-size:18px;text-shadow:0 2px 6px rgba(15,42,80,.15);
+    animation:slice-rise .85s ease forwards;
+  }
+  .slice-plus.big{color:#d97706;font-size:23px}
+  @keyframes slice-rise{
+    from{opacity:1;transform:translate(-50%,0) scale(.9)}
+    to{opacity:0;transform:translate(-50%,-48px) scale(1.15)}
+  }
+
+  @media(max-height:560px){
+    .game{padding-top:10px}
+    .intro{padding-bottom:8px}
+    h1{font-size:24px;margin-bottom:4px}
+    .slice-tip{font-size:14px}
+  }
+</style>
+<script>
+/* ===== 防误触兜底 =====
+   1) 右键菜单：学生鼠标不熟练，乱按时很容易弹出系统右键菜单挡住画面。
+      这里全局取消默认菜单，但只调 preventDefault、绝不 stopPropagation，
+      页内自己监听 contextmenu 的功能照常收到事件。输入框除外，要用右键粘贴。
+   2) 拖拽：防止图片/文字被拖出页面。拖拽练习走 pointer 事件，不受影响。
+   3) 防误退：Edge 的鼠标手势（右键按住向左拖动）和误按后退键都会触发浏览器
+      后退，把学生从练习页带走。压两层 history 哨兵，任何后退/前进都只会落回
+      本页，popstate 一响立刻再压一层，页面始终留在原地。
+   本页不使用 hash / history 导航，以上都不影响页内功能。 */
+(function () {
+  /* 输入框里保留原生右键菜单，方便右键粘贴 */
+  function keepNative(el) {
+    return !!(el && el.closest &&
+      el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'));
+  }
+  document.addEventListener('contextmenu', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();                    /* 只取消默认菜单，不阻断页内逻辑 */
+  }, true);
+  document.addEventListener('dragstart', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();
+  }, true);
+
+  /* 防误退 */
+  if (location.protocol === 'file:') return;      /* file:// 下浏览器禁止 pushState */
+  function guard() {
+    try { history.pushState({ mtSentinel: 1 }, '', location.href); } catch (e) {}
+  }
+  try {
+    guard(); guard();
+    window.addEventListener('popstate', guard);
+  } catch (e) {}
+})();
+</script>
+<script>
+/* ===== 兼容层 A：flex gap 能力探测 =====
+   老内核（Edge 84 以前、EdgeHTML）的 flex 布局不支持 gap，间距会全部塌掉。
+   这里用真实布局量一次宽度来判断，支持就用原样，不支持就给 <html> 挂上
+   no-flexgap，样式表里预置的 margin 规则接管间距。
+   不用 CSS.supports('gap') 判断：gap 在 Chrome 66 起就作为 grid-gap 的别名存在，
+   老版本会误报"支持"。 */
+(function () {
+  try {
+    var box = document.createElement('div');
+    box.style.cssText = 'position:absolute;top:-9999px;left:-9999px;display:flex;gap:10px;width:auto;height:1px';
+    var a = document.createElement('i');
+    var b = document.createElement('i');
+    a.style.cssText = b.style.cssText = 'display:block;width:10px;height:1px';
+    box.appendChild(a); box.appendChild(b);
+    document.documentElement.appendChild(box);
+    var w = box.getBoundingClientRect().width || box.scrollWidth;
+    document.documentElement.removeChild(box);
+    if (!(w >= 30)) document.documentElement.className += ' no-flexgap';
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+<main class="game">
+  <header class="intro">
+    <h1>🍉 鼠标切切乐</h1>
+    <p>按住左键，划过水果！水果 +1 分，金星 +5 分，每 10 分升一关，漏掉也没关系。</p>
+  </header>
+    <div class="slice" id="slice">
+      <div class="slice-head">
+        <div class="slice-hud">
+          <span class="slice-k">得分 <b id="sliceScore">0</b></span>
+          <span class="slice-k slice-lv" id="sliceLvChip">第 <b id="sliceLevel">1</b> 关</span>
+        </div>
+      </div>
+      <div class="slice-area" id="sliceArea">
+        <canvas class="slice-blade" id="sliceBlade" aria-hidden="true"></canvas>
+        <div class="slice-tip" id="sliceTip">按住左键，划过水果</div>
+      </div>
+    </div>
+</main>
+<script>
+(function(){
+  "use strict";
+  const $=s=>document.querySelector(s);
+  /* 独立存档，30 分钟内刷新接着玩；不碰原课件的进度。 */
+  const SAVE_KEY='mouseSlice.progress.v1', SAVE_FRESH=30*60*1000;
+  let savedScore=0,writeAt=0;
+  function readState(){
+    let d=null;
+    try{d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');}catch(e){}
+    if(!d||d.v!==1||!(Date.now()-d.ts<SAVE_FRESH)||!Number.isFinite(d.score)||d.score<0) return 0;
+    return Math.round(d.score);
+  }
+  function writeState(force){
+    const now=Date.now();
+    if(!force&&now-writeAt<900)return;
+    writeAt=now;
+    try{localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,ts:now,score:savedScore,level:Math.floor(savedScore/10)+1}));}catch(e){}
+  }
+  savedScore=readState();
+  /* ================= 通关页「鼠标切切乐」 ================= */
+  const SLICE_ICONS={
+    apple:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 15c-4-5-11-5-14 0-4 7 1 20 8 24 2 1 4 1 6 0 2 1 4 1 6 0 7-4 12-17 8-24-3-5-10-5-14 0Z" fill="#ff6b6b" stroke="#c2410c" stroke-width="2.5" stroke-linejoin="round"/><path d="M24 15c0-4 2-7 5-9" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/><path d="M24 15c-2-4-5-6-8-6" fill="none" stroke="#65a30d" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    orange:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="27" r="15" fill="#fb923c" stroke="#c2410c" stroke-width="2.5"/><path d="M24 12c1-4 4-6 8-6" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/><path d="M18 25c3-3 9-3 12 0" fill="none" stroke="#fed7aa" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    lemon:'<svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="26" rx="16" ry="13" fill="#fde047" stroke="#ca8a04" stroke-width="2.5"/><path d="M9 20c4 5 12 8 21 7" fill="none" stroke="#fef9c3" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    melon:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 20a18 18 0 0 1 36 0Z" fill="#4ade80" stroke="#15803d" stroke-width="2.5" stroke-linejoin="round"/><path d="M11 20a13 13 0 0 1 26 0Z" fill="#fb7185" stroke="#be123c" stroke-width="2"/><path d="M18 20h.1M24 20h.1M30 20h.1" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    strawberry:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 43C13 35 7 27 9 18c2-8 10-9 15-5 5-4 13-3 15 5 2 9-4 17-15 25Z" fill="#fb7185" stroke="#be123c" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 13c5-4 11-4 16 0" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round"/><path d="M20 20h.1M28 19h.1M18 28h.1M26 30h.1M30 24h.1M22 35h.1" stroke="#fff7ed" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    grape:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 9c-3-5-8-6-12-4 3 2 5 5 5 9" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="20" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><circle cx="24" cy="18" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><circle cx="32" cy="20" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><circle cx="20" cy="28" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><circle cx="28" cy="28" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><circle cx="24" cy="36" r="5.5" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/><path d="M24 12c2-4 6-6 10-5" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    banana:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 12c2 17 14 27 31 24-7 9-21 8-29-2C6 27 6 18 10 12Z" fill="#fde047" stroke="#ca8a04" stroke-width="2.5" stroke-linejoin="round"/><path d="M10 12c4 15 14 23 28 22" fill="none" stroke="#fef9c3" stroke-width="2.5" stroke-linecap="round"/><path d="M10 12c-2-3-1-6 2-8M39 35c3 1 5 0 6-2" fill="none" stroke="#92400e" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    peach:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 14c-4-5-12-5-16 1-4 7 0 17 7 22 3 2 6 1 9-1 3 2 6 3 9 1 7-5 11-15 7-22-4-6-12-6-16-1Z" fill="#f9a8d4" stroke="#be185d" stroke-width="2.5" stroke-linejoin="round"/><path d="M24 14c0-4 2-7 5-9" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/><path d="M24 14c-2-3-5-5-8-5" fill="none" stroke="#65a30d" stroke-width="2.5" stroke-linecap="round"/><path d="M18 26c4 3 8 3 12 0" fill="none" stroke="#fce7f3" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    pineapple:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 12c8 0 14 8 14 18s-6 13-14 13-14-3-14-13 6-18 14-18Z" fill="#facc15" stroke="#a16207" stroke-width="2.5"/><path d="M24 12c-2-5-1-8 3-10M24 12c3-4 6-5 9-4M24 12c-4-3-7-3-10 0" fill="none" stroke="#4d7c0f" stroke-width="2.5" stroke-linecap="round"/><path d="M17 22l7 5-7 5M31 22l-7 5 7 5M24 19v17" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round"/></svg>',
+    star:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m24 5 5.5 11.2 12.4 1.8-9 8.8 2.1 12.4L24 33.4l-11 5.8 2.1-12.4-9-8.8 12.4-1.8Z" fill="#fbbf24" stroke="#d97706" stroke-width="2.5" stroke-linejoin="round"/><path d="m24 12 3 6.1 6.7 1-4.8 4.7 1.1 6.7-6-3.2-6 3.2 1.1-6.7-4.8-4.7 6.7-1Z" fill="#fde68a"/></svg>'
+  };
+  function sliceIcon(name){ return SLICE_ICONS[name]||SLICE_ICONS.apple; }
+  let sliceStartTimer=0, sliceCleanup=null;
+  function scheduleSliceGame(){
+    if(sliceStartTimer){ clearTimeout(sliceStartTimer); sliceStartTimer=0; }
+    sliceStartTimer=setTimeout(function(){ sliceStartTimer=0; startSliceGame(); },1700);
+  }
+  function stopSliceGame(){
+    if(sliceStartTimer){ clearTimeout(sliceStartTimer); sliceStartTimer=0; }
+    if(sliceCleanup){ sliceCleanup(); sliceCleanup=null; }
+  }
+  function startSliceGame(){
+    stopSliceGame();
+    const area=$('#sliceArea');
+    if(!area) return;
+    const scoreEl=$('#sliceScore'), lvEl=$('#sliceLevel'), lvChip=$('#sliceLvChip'), tip=$('#sliceTip');
+    const blade=$('#sliceBlade'), bctx=blade?blade.getContext('2d'):null;
+    const FRUITS=['apple','orange','lemon','melon','strawberry','grape','banana','peach','pineapple'];
+    let score=savedScore, level=Math.floor(savedScore/10)+1, items=[], last=0, nextSpawn=120, raf=0, slicing=false, lastPt=null, tipTimer=0;
+    let bladePoints=[], bladeW=0, bladeH=0;
+    scoreEl.textContent=score; lvEl.textContent=level;
+    if(tip) tipTimer=setTimeout(function(){ tip.classList.add('hide'); },5200);
+    function resizeBlade(){
+      if(!blade||!bctx) return;
+      bladeW=area.clientWidth; bladeH=area.clientHeight;
+      const dpr=Math.min(2,window.devicePixelRatio||1);
+      blade.width=Math.round(bladeW*dpr); blade.height=Math.round(bladeH*dpr);
+      blade.style.width=bladeW+'px'; blade.style.height=bladeH+'px';
+      bctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    function drawBlade(now){
+      if(!bctx||!blade) return;
+      bctx.clearRect(0,0,bladeW,bladeH);
+      if(bladePoints.length<2) return;
+      const life=180;
+      let write=0;
+      for(let i=0;i<bladePoints.length;i++){ if(now-bladePoints[i].t<life) bladePoints[write++]=bladePoints[i]; }
+      bladePoints.length=write;
+      if(bladePoints.length<2) return;
+      const first=bladePoints[0], lastP=bladePoints[bladePoints.length-1];
+      const headFade=Math.max(0,1-(now-lastP.t)/life);
+      function bladePath(){
+        bctx.beginPath();
+        bctx.moveTo(bladePoints[0].x,bladePoints[0].y);
+        for(let i=1;i<bladePoints.length-1;i++){
+          const xc=(bladePoints[i].x+bladePoints[i+1].x)/2;
+          const yc=(bladePoints[i].y+bladePoints[i+1].y)/2;
+          bctx.quadraticCurveTo(bladePoints[i].x,bladePoints[i].y,xc,yc);
+        }
+        bctx.lineTo(lastP.x,lastP.y);
+      }
+      const glow=bctx.createLinearGradient(first.x,first.y,lastP.x,lastP.y);
+      glow.addColorStop(0,'rgba(37,99,235,0)');
+      glow.addColorStop(.52,'rgba(37,99,235,'+(.3*headFade)+')');
+      glow.addColorStop(1,'rgba(37,99,235,'+(.9*headFade)+')');
+      const core=bctx.createLinearGradient(first.x,first.y,lastP.x,lastP.y);
+      core.addColorStop(0,'rgba(255,255,255,0)');
+      core.addColorStop(1,'rgba(255,255,255,'+(.95*headFade)+')');
+      bctx.save();
+      bctx.lineCap='round'; bctx.lineJoin='round';
+      bctx.shadowColor='rgba(37,99,235,.55)'; bctx.shadowBlur=16;
+      bladePath(); bctx.strokeStyle=glow; bctx.lineWidth=12; bctx.stroke();
+      bctx.shadowBlur=0;
+      bladePath(); bctx.strokeStyle=core; bctx.lineWidth=3.5; bctx.stroke();
+      bctx.beginPath(); bctx.arc(lastP.x,lastP.y,5*headFade+1,0,Math.PI*2);
+      bctx.fillStyle='rgba(255,255,255,'+(.9*headFade)+')';
+      bctx.shadowColor='rgba(37,99,235,.6)'; bctx.shadowBlur=12; bctx.fill();
+      bctx.restore();
+    }
+    function removeEl(n){ if(n&&n.parentNode) n.parentNode.removeChild(n); }
+    function areaPoint(ev){
+      const r=area.getBoundingClientRect();
+      return {x:ev.clientX-r.left,y:ev.clientY-r.top};
+    }
+    function spawn(forceFruit,startY){
+      const w=area.clientWidth,h=area.clientHeight;
+      if(w<80||h<120) return;
+      const gold=!forceFruit&&Math.random()<0.08;
+      const kind=gold?'star':FRUITS[Math.floor(Math.random()*FRUITS.length)];
+      const lv=level;
+      const vyBoost=Math.min(1.35,1+(lv-1)*0.045);
+      const gBoost=Math.min(1.95,1+(lv-1)*0.095);
+      const sizeFactor=Math.max(0.78,1-(lv-1)*0.025);
+      const cap=window.innerWidth>=1900?92:(window.innerWidth>=1500?80:68);
+      const size=Math.round(Math.max(36,Math.min(cap,h*0.15)*sizeFactor));
+      const node=document.createElement('div');
+      node.className='slice-item'+(gold?' gold':'');
+      node.style.width=size+'px'; node.style.height=size+'px';
+      node.innerHTML=sliceIcon(kind);
+      const it={
+        el:node,x:size+Math.random()*Math.max(1,w-size*2),y:startY!=null?startY:h+size*.65,
+        vx:(Math.random()-.5)*(w*Math.min(.22,.12+(lv-1)*.012)),
+        vy:-(h*.92*vyBoost+Math.random()*h*.30*vyBoost),
+        g:h*1.05*gBoost,size:size,gold:gold,rot:Math.random()*360,
+        vr:(Math.random()-.5)*160,dead:false
+      };
+      node.style.transform='translate3d('+it.x+'px,'+it.y+'px,0) rotate('+it.rot+'deg)';
+      area.appendChild(node);
+      items.push(it);
+      if(items.length>16){ const old=items.shift(); if(old) removeEl(old.el); }
+    }
+    function spark(it){
+      for(let i=0;i<6;i++){
+        const s=document.createElement('div');
+        s.className='slice-spark'+(it.gold?' gold':'');
+        const a=Math.random()*Math.PI*2, d=18+Math.random()*26;
+        s.style.left=(it.x+it.size/2)+'px'; s.style.top=(it.y+it.size/2)+'px';
+        s.style.setProperty('--dx',Math.round(Math.cos(a)*d)+'px');
+        s.style.setProperty('--dy',Math.round(Math.sin(a)*d)+'px');
+        area.appendChild(s);
+        setTimeout(function(){ removeEl(s); },440);
+      }
+    }
+    function cut(it,ang){
+      const c=document.createElement('div');
+      const len=Math.round(it.size*1.45);
+      c.className='slice-cut';
+      c.style.width=len+'px';
+      c.style.left=(it.x+it.size/2-len/2)+'px';
+      c.style.top=(it.y+it.size/2-2)+'px';
+      c.style.setProperty('--rot',ang+'rad');
+      area.appendChild(c);
+      setTimeout(function(){ removeEl(c); },260);
+    }
+    function nearSegment(it,a,b){
+      const cx=it.x+it.size/2, cy=it.y+it.size/2;
+      const dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy;
+      let t=len2?((cx-a.x)*dx+(cy-a.y)*dy)/len2:0;
+      t=Math.max(0,Math.min(1,t));
+      const px=a.x+t*dx,py=a.y+t*dy,ddx=cx-px,ddy=cy-py,r=it.size*.62;
+      return ddx*ddx+ddy*ddy<=r*r;
+    }
+    function showPlus(it,gain){
+      const p=document.createElement('div');
+      p.className='slice-plus'+(gain>1?' big':'');
+      p.textContent='+'+gain;
+      p.style.left=(it.x+it.size/2)+'px'; p.style.top=(it.y+it.size*.12)+'px';
+      area.appendChild(p);
+      setTimeout(function(){ removeEl(p); },900);
+    }
+    function hit(it,ang){
+      if(it.dead) return;
+      it.dead=true;
+      const gain=it.gold?5:1;
+      score+=gain; scoreEl.textContent=score;
+      const nl=Math.floor(score/10)+1;
+      if(nl>level){
+        level=nl; lvEl.textContent=level;
+        if(lvChip){ lvChip.classList.remove('flash'); void lvChip.offsetWidth; lvChip.classList.add('flash'); }
+      }
+      savedScore=score; writeState(true);
+      it.el.classList.add('hit');
+      it.el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0) rotate('+(it.rot+24)+'deg) scale(1.35)';
+      setTimeout(function(){ removeEl(it.el); },240);
+      cut(it,ang);
+      spark(it);
+      showPlus(it,gain);
+    }
+    function onDown(ev){
+      if(ev.button!==0) return;
+      slicing=true; lastPt=areaPoint(ev);
+      bladePoints=[{x:lastPt.x,y:lastPt.y,t:performance.now()}];
+      try{ area.setPointerCapture(ev.pointerId); }catch(e){}
+      if(ev.preventDefault) ev.preventDefault();
+    }
+    function onMove(ev){
+      if(!slicing) return;
+      const p=areaPoint(ev);
+      bladePoints.push({x:p.x,y:p.y,t:performance.now()});
+      if(bladePoints.length>24) bladePoints.shift();
+      for(let i=items.length-1;i>=0;i--){
+        const it=items[i];
+        if(!it.dead&&nearSegment(it,lastPt,p)){ hit(it,Math.atan2(p.y-lastPt.y,p.x-lastPt.x)); items.splice(i,1); }
+      }
+      lastPt=p;
+      if(ev.preventDefault) ev.preventDefault();
+    }
+    function onUp(){ slicing=false; lastPt=null; }
+    area.addEventListener('pointerdown',onDown);
+    area.addEventListener('pointermove',onMove);
+    area.addEventListener('pointerup',onUp);
+    area.addEventListener('pointercancel',onUp);
+    area.addEventListener('lostpointercapture',onUp);
+    window.addEventListener('blur',onUp);
+    resizeBlade();
+    window.addEventListener('resize',resizeBlade);
+    function frame(now){
+      raf=requestAnimationFrame(frame);
+      if(document.hidden) return;
+      writeState();
+      if(!last){ last=now; return; }
+      const dt=Math.min(.05,(now-last)/1000); last=now;
+      const h=area.clientHeight;
+      if(h<120) return;
+      nextSpawn-=dt*1000;
+      if(nextSpawn<=0){
+        spawn();
+        nextSpawn=Math.max(220,540-level*42)*(0.8+Math.random()*0.4);
+      }
+      const w=area.clientWidth;
+      for(let i=items.length-1;i>=0;i--){
+        const it=items[i];
+        if(it.dead) continue;
+        it.vy+=it.g*dt; it.x+=it.vx*dt; it.y+=it.vy*dt; it.rot+=it.vr*dt;
+        if(it.x<2){ it.x=2; it.vx=Math.abs(it.vx); }
+        if(it.x>w-it.size-2){ it.x=w-it.size-2; it.vx=-Math.abs(it.vx); }
+        if(it.y>h+it.size&&it.vy>0){ removeEl(it.el); items.splice(i,1); continue; }
+        it.el.style.transform='translate3d('+it.x+'px,'+it.y+'px,0) rotate('+it.rot+'deg)';
+      }
+      drawBlade(now);
+    }
+    sliceCleanup=function(){
+      cancelAnimationFrame(raf);
+      if(tipTimer){ clearTimeout(tipTimer); tipTimer=0; }
+      window.removeEventListener('resize',resizeBlade);
+      area.removeEventListener('pointerdown',onDown);
+      area.removeEventListener('pointermove',onMove);
+      area.removeEventListener('pointerup',onUp);
+      area.removeEventListener('pointercancel',onUp);
+      area.removeEventListener('lostpointercapture',onUp);
+      window.removeEventListener('blur',onUp);
+      bladePoints=[];
+      if(bctx) bctx.clearRect(0,0,bladeW,bladeH);
+      items.forEach(function(it){ removeEl(it.el); });
+      items=[];
+      const leftovers=area.querySelectorAll('.slice-item,.slice-spark,.slice-cut,.slice-plus');
+      for(let i=0;i<leftovers.length;i++) removeEl(leftovers[i]);
+      if(tip) tip.classList.remove('hide');
+    };
+    const firstH=area.clientHeight;
+    spawn(true,firstH*.68); spawn(true,firstH*.84); spawn(true,firstH*.98);
+    raf=requestAnimationFrame(frame);
+  }
+
+  startSliceGame();
+  const block=e=>e.preventDefault();
+  document.addEventListener('wheel',block,{passive:false,capture:true});
+  document.addEventListener('touchmove',block,{passive:false,capture:true});
+  document.addEventListener('selectstart',block,true);
+  const stopKeys=[' ','Spacebar','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown','Home','End'];
+  document.addEventListener('keydown',e=>{if(stopKeys.indexOf(e.key)>=0)block(e);},true);
+})();
+</script>
+</body>
+</html>
