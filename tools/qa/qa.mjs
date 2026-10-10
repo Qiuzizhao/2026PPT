@@ -2296,6 +2296,37 @@ for(const part of [1,2])for(const viewport of [[1024,768],[1920,1080]]){
   ]});
 }
 
+/* 键盘隐藏厨房：覆盖十种制作任务的基础/进阶两轮。 */
+for (let level = 1; level <= 20; level++) {
+  add({
+    name: '键盘厨房-第' + level + '关',
+    page: '键盘练习营.html?kitchen=1&level=' + level,
+    viewport: [1024,768],
+    steps: [{label:'按键制作、积分和订单完成',js:wrap(`
+      if (__$('#kitchen').hidden || Number(__$('#k-level').textContent)!==${level})
+        throw new Error('隐藏厨房未打开正确关卡');
+      const key = c => window.dispatchEvent(new KeyboardEvent('keydown', {key:c,bubbles:true,cancelable:true}));
+      const chars=__$$('#k-tokens b').length, count=__$$('#k-tokens .k-token').length;
+      const blocked='abcdefghijklmnopqrstuvwxyz0123456789'.split('').find(c=>!__$$('#k-tokens .ready .current').some(x=>x.textContent===c));
+      key(blocked);
+      if(Number(__$('#k-score').textContent)!==0)throw new Error('按错增加了积分');
+      for(let i=0;i<chars;i++){
+        const next=__$('#k-tokens .ready .current');
+        if(!next)throw new Error('制作过程丢失当前字符');
+        key(i===0?next.textContent.toUpperCase():next.textContent);
+      }
+      if(__$$('#k-tokens .done').length!==count || Number(__$('#k-score').textContent)!==chars+5)
+        throw new Error('订单或积分错误');
+      if(__$('#k-orders').textContent!=='1 / 5')throw new Error('订单没有累计');
+      if(__$$('#k-hands .hand-finger').length!==10)throw new Error('缺少十指图示');
+      const hands=__$('#k-hands').getBoundingClientRect();
+      if(hands.bottom>innerHeight || document.documentElement.scrollWidth>innerWidth)
+        throw new Error('课堂小屏布局溢出');
+      return JSON.stringify({level:${level},dish:__$('#k-name').textContent,chars,score:chars+5,order:true});
+    `),shot:true}]
+  });
+}
+
 const userDir = join(tmpdir(), 'cdp-qa-' + Date.now());
 add({name:'鼠标练习营4-自由切关种档',page:'index.html',steps:[
   {label:'准备各关不同轮数',js:wrap(`localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{},rounds:{s1:4,s2:1,s3:0},ts:Date.now()}));return 'ok';`)}

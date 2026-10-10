@@ -61,3 +61,9 @@ node tools/qa/qa.mjs http://127.0.0.1:8765/_oldsim/ .qa-old
 `backdrop-filter`/`:focus-visible`）、去掉 import map，并强制挂上 `no-flexgap`，
 用来验证兼容层的回退路径。3D 页面此时应该走 `jsdelivr`（看 `window.__threeSource`）。
 脚本也会复制 `assets/`，让模拟页能加载练习营4的本地插画。
+
+键盘隐藏厨房（十种任务、基础与进阶共 20 关）：
+
+```powershell
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 键盘厨房
+```
