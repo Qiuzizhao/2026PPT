@@ -688,7 +688,7 @@ body.kitchen-playing .cf{display:none}
       {name:'打包套餐',policy:'combo',labels:['小汉堡','小汉堡','饼干','饼干','饮料','饮料']}
     ];
     let state={v:1,unlocked:false,entered:false,level:1,score:0,orders:0,order:null};
-    let servingTimer=0,lastChanged=-1;
+    let servingTimer=0,lastChanged=-1,renderedOrder=null;
     function validOrder(o){
       return o&&Number.isInteger(o.kind)&&o.kind>=0&&o.kind<10&&Number.isInteger(o.variant)&&o.variant>=0&&o.variant<4&&Array.isArray(o.tokens)&&o.tokens.length===dishes[o.kind].labels.length&&o.tokens.every(t=>t&&typeof t.text==='string'&&/^[a-z0-9]{1,3}$/.test(t.text)&&Number.isInteger(t.pos)&&t.pos>=0&&t.pos<=t.text.length)&&Number.isInteger(o.focus)&&o.focus>=-1&&o.focus<o.tokens.length&&typeof o.pending==='boolean'&&(o.pending===o.tokens.every(t=>t.pos===t.text.length));
     }
@@ -823,7 +823,15 @@ body.kitchen-playing .cf{display:none}
       $('#k-score').textContent=state.score;$('#k-level').textContent=state.level;$('#k-orders').textContent=state.orders+' / 5';
       $('#k-name').textContent=dishes[o.kind].name;
       $('#k-policy').textContent=o.pending?'订单完成':policy==='combo'?'汉堡 → 饼干 → 饮料':policy==='free'?'任选一组，连续敲完':'按顺序输入';
-      $('#k-food').innerHTML=food();
+      // Food is inline SVG: no image downloads, bitmap decoding, or external assets.
+      // Build once per order; each keystroke only updates at most six existing groups.
+      const foodBox=$('#k-food');
+      if(renderedOrder!==o){foodBox.innerHTML=food();renderedOrder=o;}
+      foodBox.querySelectorAll('.k-food-piece').forEach(function(node,i){
+        const t=o.tokens[i];
+        node.setAttribute('opacity',t.pos===t.text.length?1:(t.pos?0.3+0.7*t.pos/t.text.length:0));
+        node.classList.toggle('k-new',i===lastChanged);
+      });
       $('#k-tokens').innerHTML=o.tokens.map(function(t,i){
         const finished=t.pos===t.text.length;
         const chars=t.text.split('').map((c,n)=>'<b class="'+(n<t.pos?'typed':(n===t.pos&&choices.indexOf(i)>=0?'current':''))+'">'+c+'</b>').join('');
