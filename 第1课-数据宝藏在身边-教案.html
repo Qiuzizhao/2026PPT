@@ -232,12 +232,41 @@
     table.overview col.c1{width:15%;}
     table.overview col.c2{width:16%;}
   }
+  @page{size:A4;margin:14mm 15mm;}
   @media print{
-    body{background:#fff;font-size:12px;}
-    .cover{border-radius:0;margin:0 -28px 24px;}
-    .tl-card,.goal,.tip,.mainline,.board,.quote{break-inside:avoid;}
+    html{scroll-behavior:auto;}
+    body{background:#fff;font-size:12.5px;line-height:1.6;}
+    .page{padding:0;}
+    .cover{border-radius:0;margin:0 0 20px;padding:10px 0 18px;border-bottom:3px solid var(--teal);}
+    .cover h1{font-size:28px;}
+    .cover .sub{font-size:13px;}
+    .cover .meta{margin-top:14px;gap:8px;}
+    .cover .meta span{font-size:12px;padding:3px 10px;}
+    .mainline{padding:12px 16px;margin-bottom:20px;break-inside:avoid;}
+    .sec{margin:26px 0 12px;break-after:avoid;}
+    .sec h2{font-size:19px;}
     .sec::after{display:none;}
-    .page{padding-bottom:24px;}
+    .goal{padding:12px 14px;break-inside:avoid;}
+    .goal p{font-size:12.5px;}
+    .tl{row-gap:12px;}
+    .tl-time{padding-top:14px;font-size:12px;}
+    .tl-time b{font-size:14px;}
+    .tl-dot{margin-top:16px;width:12px;height:12px;}
+    .tl-card{padding:13px 16px;break-inside:avoid;}
+    .tl-card h3{font-size:16px;}
+    .tl-card .row p,.steps li,.quote{font-size:12.5px;}
+    .quote{padding:8px 12px;margin-top:10px;break-inside:avoid;}
+    .steps li{margin-top:4px;padding-left:26px;}
+    .board{padding:8px 12px;margin-top:10px;font-size:12.5px;break-inside:avoid;}
+    .note{padding:8px 12px;font-size:12.5px;break-inside:avoid;}
+    table.overview{border-radius:0;}
+    table.overview th{padding:8px 10px;font-size:12.5px;}
+    table.overview td{padding:8px 10px;font-size:12.5px;}
+    table.overview tr{break-inside:avoid;}
+    .tip{padding:12px 14px;break-inside:avoid;}
+    .tip h4{font-size:13.5px;}
+    .tip p{font-size:12.5px;}
+    .footer{margin-top:28px;padding-top:12px;}
   }
 </style>
 </head>
