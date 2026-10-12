@@ -352,7 +352,34 @@ body.kitchen-playing .cf{display:none}
   const LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const DIGITS='0123456789'.split('');
 
-  let mode='a', queue=[], qi=0, total=0;
+  let mode='a', queue=[], qi=0, total=0,drawTimer=0;
+  const PROGRESS_KEY='keyboardcamp.progress.v1';
+  const previewProgress=new URLSearchParams(location.search).get('kitchen')==='1'||new URLSearchParams(location.search).get('finale')==='1';
+  const stages={};
+  function saveProgress(){
+    if(previewProgress)return;
+    try{localStorage.setItem(PROGRESS_KEY,JSON.stringify({v:1,mode:mode,best:best,cleared:Array.from(done),stages:stages}));}catch(e){}
+  }
+  function restoreProgress(){
+    if(previewProgress)return;
+    try{
+      const saved=JSON.parse(localStorage.getItem(PROGRESS_KEY));
+      if(!saved||saved.v!==1)return;
+      Object.keys(TOTALS).forEach(function(name){
+        const n=saved.best&&saved.best[name];
+        if(Number.isInteger(n)&&n>=0&&n<=TOTALS[name])best[name]=n;
+        if(best[name]===TOTALS[name]||(Array.isArray(saved.cleared)&&saved.cleared.indexOf(name)>=0)){
+          best[name]=TOTALS[name];done.add(name);
+          document.querySelector('#nav [data-mode="'+name+'"]').classList.add('n-done');
+          return;
+        }
+        const stage=saved.stages&&saved.stages[name];
+        const expected=(name==='a'?LETTERS:name==='n'?DIGITS:LETTERS.concat(DIGITS)).join('').split('').sort().join('');
+        if(stage&&typeof stage.keys==='string'&&stage.keys.split('').sort().join('')===expected&&Number.isInteger(stage.qi)&&stage.qi>=0&&stage.qi<TOTALS[name])stages[name]={keys:stage.keys,qi:stage.qi};
+      });
+      if(Object.prototype.hasOwnProperty.call(TOTALS,saved.mode))mode=saved.mode;
+    }catch(e){}
+  }
 
   /* sounds */
   let av=null;
@@ -408,8 +435,10 @@ body.kitchen-playing .cf{display:none}
 
   function setStage(){
     mascot.textContent='🐼';
-    queue=newQueue(mode);qi=0;total=queue.length;
-    setStars(0,total); target.style.background=tColor[mode]; draw();
+    const stage=stages[mode];
+    queue=stage?stage.keys.split(''):newQueue(mode);qi=stage?stage.qi:0;total=queue.length;
+    stages[mode]={keys:queue.join(''),qi:qi};saveProgress();
+    setStars(qi,total); target.style.background=tColor[mode]; draw();
   }
   function draw(){
     const c=queue[qi];
@@ -420,6 +449,7 @@ body.kitchen-playing .cf{display:none}
   }
 
   function finish(){
+    clearTimeout(drawTimer);
     lockMode(mode);                   // completed -> cannot restart
     if(done.size>=3){                 // 最后一关：不弹小窗，直接进入通关大奖
       good(); fanfare();
@@ -444,7 +474,8 @@ body.kitchen-playing .cf{display:none}
       mascot.textContent='😄';
       msg.className='msg good'; msg.textContent='对啦！';
       if(qi>=total){finish();return;}
-      setTimeout(draw,420);
+      stages[mode]={keys:queue.join(''),qi:qi};saveProgress();
+      clearTimeout(drawTimer);drawTimer=setTimeout(function(){if(!finaleOn&&!done.has(mode))draw();},420);
     }else{
       bad();
       target.classList.remove('wrong');void target.offsetWidth;target.classList.add('wrong');
@@ -456,6 +487,7 @@ body.kitchen-playing .cf{display:none}
 
   /* only the real keyboard advances the game */
   window.addEventListener('keydown',e=>{
+    if(finaleOn||e.repeat||e.ctrlKey||e.altKey||e.metaKey||e.isComposing)return;
     let ch=e.key;
     if(/^[a-z]$/i.test(ch)){ ch=ch.toUpperCase(); e.preventDefault(); press(ch); }
     else if(/^[0-9]$/.test(ch)){ e.preventDefault(); press(ch); }
@@ -471,12 +503,14 @@ body.kitchen-playing .cf{display:none}
     $('#totN').textContent=s;
   }
   function lockMode(name){
-    done.add(name);
+    done.add(name);delete stages[name];saveProgress();
     const b=document.querySelector('#nav [data-mode="'+name+'"]');
     if(b) b.classList.add('n-done');  // add ✓ marker, still clickable
   }
   function show(name){
-    mode=name;
+    if(finaleOn)return;
+    clearTimeout(drawTimer);
+    mode=name;saveProgress();
     document.querySelectorAll('#nav button').forEach(b=>b.style.outline=b.dataset.mode===name?'3px solid #fff':'none');
     overlay.classList.remove('show');
     if(done.has(name)){ showCompleted(name); return; }  // completed: no replay
@@ -490,6 +524,8 @@ body.kitchen-playing .cf{display:none}
     setStars(TOTALS[name],TOTALS[name]);   // all stars lit
     mascot.textContent='🏆';
   }
+
+  restoreProgress();updateTot();
 
   /* ===== finale: every level cleared -> fireworks + big trophy, page frozen here ===== */
   const LEVELS=[
@@ -655,7 +691,7 @@ body.kitchen-playing .cf{display:none}
     setTimeout(()=>bigConfetti(),2700);
     /* 锁定：画面停在这里，不接受任何滚动/操作 */
     const block=e=>{e.preventDefault();};
-    const stopKeys=[' ','Spacebar','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown','Home','End'];
+    const stopKeys=['Tab',' ','Spacebar','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown','Home','End'];
     document.addEventListener('wheel',block,{passive:false,capture:true});
     document.addEventListener('touchmove',block,{passive:false,capture:true});
     document.addEventListener('contextmenu',block,{capture:true});
@@ -701,6 +737,21 @@ body.kitchen-playing .cf{display:none}
     }catch(e){}}
     if(preview){state.unlocked=true;state.level=Math.max(1,Math.min(10000,parseInt(params.get('level'),10)||1));}
     const box=$('#kitchen');
+    box.tabIndex=-1;
+    box.style.outline='none';
+    function focusKitchen(){
+      if(box.hidden||document.hidden)return;
+      try{box.focus({preventScroll:true});}catch(e){box.focus();}
+    }
+    window.addEventListener('focus',focusKitchen);
+    document.addEventListener('visibilitychange',function(){if(!document.hidden)focusKitchen();});
+    window.addEventListener('blur',function(){
+      setTimeout(function(){if(document.hasFocus())focusKitchen();},0);
+    });
+    box.addEventListener('pointerdown',function(){setTimeout(focusKitchen,0);});
+    document.addEventListener('focusin',function(e){
+      if(!box.hidden&&e.target!==box&&!(e.target.closest&&e.target.closest('input,textarea,[contenteditable]:not([contenteditable="false"])')))focusKitchen();
+    });
     function save(){if(preview)return;try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
     function unlock(){state.unlocked=true;save();}
     function randomChar(advanced,index){
@@ -862,7 +913,7 @@ body.kitchen-playing .cf{display:none}
       document.body.classList.add('kitchen-playing');
       $('#finale').classList.add('kitchen-on');box.hidden=false;
       save();render();if(state.order.pending)serve();
-      $('#k-enter').blur();
+      focusKitchen();
     }
     window.addEventListener('keydown',function(e){
       if(box.hidden||e.ctrlKey||e.metaKey||e.altKey)return;
@@ -893,7 +944,8 @@ body.kitchen-playing .cf{display:none}
   if(kitchenGame.restored){
     LEVELS.forEach(l=>{best[l[0]]=TOTALS[l[0]];lockMode(l[0]);});updateTot();startFinale();
     if(kitchenGame.entered||new URLSearchParams(location.search).get('kitchen')==='1')kitchenGame.enter();
-  }else show('a');
+  }else if(allCleared())startFinale();
+  else show(mode);
 })();
 </script>
 </body>
