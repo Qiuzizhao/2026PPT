@@ -2518,11 +2518,14 @@ add({name:'搬砖建房子-十关通关',page:'搬砖建房子.html',wait:300,st
   const before=Number(__$('#builtCount').textContent);
   if(before<total){
    const right=__$('#letter').textContent,wrong=right==='a'?'b':'a';
-   document.dispatchEvent(new KeyboardEvent('keydown',{key:wrong,bubbles:true,cancelable:true}));
+   document.dispatchEvent(new KeyboardEvent('keydown',{key:wrong.toUpperCase(),bubbles:true,cancelable:true}));
    document.dispatchEvent(new KeyboardEvent('keydown',{key:right,repeat:true,bubbles:true,cancelable:true}));
    if(Number(__$('#builtCount').textContent)!==before)throw new Error('错键或长按加分');
   }
-  for(let j=before;j<total;j++)document.dispatchEvent(new KeyboardEvent('keydown',{key:__$('#letter').textContent,bubbles:true,cancelable:true}));
+  for(let j=before;j<total;j++){
+   const letter=__$('#letter').textContent;
+   document.dispatchEvent(new KeyboardEvent('keydown',{key:j%2?letter.toUpperCase():letter,bubbles:true,cancelable:true}));
+  }
   if(!__$('#house').classList.contains('complete')||__$$('#house .piece.built').length!==total||!buttons[i].classList.contains('done'))throw new Error('未完成第'+(i+1)+'关');
   out.push({name:buttons[i].textContent,total});
   if(i<9){__$('#next').click();if(!buttons[i+1].classList.contains('active'))throw new Error('下一关切换错误');}
