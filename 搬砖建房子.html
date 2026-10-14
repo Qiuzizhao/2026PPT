@@ -345,39 +345,85 @@ function buildCastle(){
 
 /* 中式建筑用轻量 SVG 分件搭建，墙砖、木柱、窗格、瓦片都逐块出现。 */
 function chineseScene(outline,details){
-  el('house').innerHTML='<ellipse cx="400" cy="495" rx="245" ry="16" fill="#edf1e6"/>'+outline+
+  el('house').innerHTML='<defs>'+
+    '<linearGradient id="stoneShade" x2="0" y2="1"><stop stop-color="#e5decb"/><stop offset="1" stop-color="#b8b3a5"/></linearGradient>'+
+    '<linearGradient id="woodShade" x2="1" y2="0"><stop stop-color="#8c4f38"/><stop offset=".45" stop-color="#bc7956"/><stop offset="1" stop-color="#88513b"/></linearGradient>'+
+    '<linearGradient id="glassShade" x2="0" y2="1"><stop stop-color="#e0efe9"/><stop offset="1" stop-color="#8eada7"/></linearGradient>'+
+    '<radialGradient id="gardenShade"><stop stop-color="#dee7d4"/><stop offset="1" stop-color="#f8faf4"/></radialGradient>'+
+    '</defs><g class="detail"><ellipse cx="400" cy="488" rx="260" ry="28" fill="url(#gardenShade)"/><ellipse cx="400" cy="491" rx="216" ry="10" fill="#a4ab91" opacity=".18"/></g>'+outline+
     '<g id="foundation"></g><g id="walls"></g><g id="door"></g><g id="windows"></g><g id="trim"></g><g id="roof"></g>'+
     '<g class="detail">'+details+'</g>';
 }
-function masonry(x,y,w,h,rows,cols,colors){
-  for(var r=0;r<rows;r++)for(var c=0;c<cols;c++)
-    rect('walls',x+c*w/cols+1,y+h-(r+1)*h/rows+1,w/cols-2,h/rows-2,colors[(r+c)%colors.length]);
+/* 装饰随所属分件一起出现，不增加练习次数，也不改变已有存档。 */
+function embellish(markup){
+  var part=parts[parts.length-1],node=part.node,group=document.createElementNS(NS,'g');
+  group.setAttribute('class','piece');node.parentNode.replaceChild(group,node);node.removeAttribute('class');
+  group.appendChild(node);var detail=document.createElementNS(NS,'g');detail.innerHTML=markup;group.appendChild(detail);part.node=group;
 }
-function plinth(x,w){for(var i=0;i<6;i++)rect('foundation',x+i*w/6,480,w/6-1,12,'#d1cec0');}
+function ornament(markup){
+  var group=document.createElementNS(NS,'g');group.setAttribute('class','detail');group.innerHTML=markup;el('house').appendChild(group);
+}
+function shrub(x,y,scale){
+  return '<g transform="translate('+x+' '+y+') scale('+scale+')"><path d="M-23 0 Q-34-18-19-25 Q-21-43-4-36 Q8-52 19-34 Q40-30 30-12 Q44 4 18 7 H-16Z" fill="#91a67c"/><path d="M-17-5 Q-21-22-6-25 Q5-32 18-19" fill="none" stroke="#bac9a0" stroke-width="5" stroke-linecap="round"/><path d="M0 7 V-17 M0-4 L13-13 M0-9 L-10-17" stroke="#74885c" stroke-width="3" fill="none"/></g>';
+}
+function lantern(x,y){
+  return '<g transform="translate('+x+' '+y+')"><path d="M0-13 V0 M0 32 V43" stroke="#ac8950" stroke-width="2"/><rect x="-12" y="2" width="24" height="28" rx="10" fill="#c35e47"/><path d="M-4 4 Q-9 16-4 28 M4 4 Q9 16 4 28" stroke="#e39469" stroke-width="2" fill="none"/><path d="M-8 2 H8 M-8 30 H8" stroke="#d9b56d" stroke-width="3"/><path d="M-3 38 V45 M3 38 V45" stroke="#c8754e" stroke-width="2"/></g>';
+}
+function masonry(x,y,w,h,rows,cols,colors){
+  for(var r=0;r<rows;r++)for(var c=0;c<cols;c++){
+    var bx=x+c*w/cols+1,by=y+h-(r+1)*h/rows+1,bw=w/cols-2,bh=h/rows-2;
+    rect('walls',bx,by,bw,bh,colors[(r+c)%colors.length]);
+    embellish('<path d="M'+(bx+3)+' '+(by+bh-2)+' H'+(bx+bw-3)+'" stroke="#8c795f" opacity=".14"/><path d="M'+(bx+3)+' '+(by+2)+' H'+(bx+bw-3)+'" stroke="#fffaf0" opacity=".55"/>');
+  }
+}
+function plinth(x,w){
+  for(var i=0;i<6;i++){
+    var px=x+i*w/6,pw=w/6-1;rect('foundation',px,480,pw,12,'url(#stoneShade)');
+    embellish('<path d="M'+(px+2)+' 481 H'+(px+pw-2)+'" stroke="#f9f4e7" stroke-width="2"/><path d="M'+px+' 491 H'+(px+pw)+'" stroke="#aaa591"/>');
+  }
+}
 function woodDoor(x,y,w,h){
-  for(var i=0;i<4;i++)rect('door',x+i*w/4,y,w/4-1,h,i%2?'#9f6651':'#b67c61');
+  for(var i=0;i<4;i++){
+    var px=x+i*w/4,pw=w/4-1;rect('door',px,y,pw,h,'url(#woodShade)');
+    embellish('<rect x="'+(px+3)+'" y="'+(y+6)+'" width="'+(pw-6)+'" height="'+(h*.52)+'" rx="2" fill="none" stroke="#d5a577" stroke-width="1.4"/>'+
+      '<rect x="'+(px+3)+'" y="'+(y+h*.65)+'" width="'+(pw-6)+'" height="'+(h*.27)+'" rx="2" fill="none" stroke="#d5a577" stroke-width="1.4"/>'+
+      ((i===1||i===2)?'<circle cx="'+(i===1?px+pw-4:px+4)+'" cy="'+(y+h*.6)+'" r="3" fill="none" stroke="#ebc67d" stroke-width="1.6"/>':''));
+  }
 }
 function lattice(x,y,w,h){
-  for(var i=0;i<4;i++)rect('windows',x+i*w/4,y,w/4-2,h,i%2?'#b1ccd0':'#c6dce0');
+  for(var i=0;i<4;i++){
+    var px=x+i*w/4,pw=w/4-2;rect('windows',px,y,pw,h,'url(#glassShade)');
+    embellish('<path d="M'+(px+pw/2)+' '+(y+2)+' V'+(y+h-2)+' M'+px+' '+(y+h*.18)+' L'+(px+pw)+' '+(y+h*.38)+' M'+px+' '+(y+h*.38)+' L'+(px+pw)+' '+(y+h*.18)+'" stroke="#74684e" stroke-width="1.4" opacity=".85"/>');
+  }
   for(var j=1;j<3;j++)rect('windows',x,y+j*h/3-1,w,3,'#78664f');
   rect('windows',x-3,y-3,w+6,4,'#78664f');rect('windows',x-3,y+h,w+6,4,'#78664f');
+  embellish('<path d="M'+(x-5)+' '+(y+h+6)+' H'+(x+w+5)+'" stroke="#b39b74" stroke-width="4" stroke-linecap="round"/>');
 }
 function curvedRoof(x,y,w,h,colors){
-  // 屋脊和翘起的两端形成中式屋檐；每片瓦共享曲线边界。
+  function point(t,v){return [x+w*(.5+(t-.5)*(.56+.44*v)),y+h*(v-.27*v*Math.pow(2*t-1,4))];}
   for(var row=1;row>=0;row--){
     var top=row/2,bottom=(row+1)/2;
-    function point(t,v){return [x+w*(.5+(t-.5)*(.56+.44*v)),y+h*(v-.22*v*Math.pow(2*t-1,4))];}
     for(var i=0;i<8;i++){
       var a=point(i/8,top),b=point((i+1)/8,top),c=point((i+1)/8,bottom),d=point(i/8,bottom);
       pathPart('roof','M'+a.join(' ')+' L'+b.join(' ')+' L'+c.join(' ')+' Q'+((c[0]+d[0])/2)+' '+(Math.max(c[1],d[1])+3)+' '+d.join(' ')+' Z',colors[(i+row)%colors.length],colors[0]);
+      var lines='';
+      for(var k=1;k<4;k++){
+        var t=(i+k/4)/8,u=point(t,top),v=point(t,bottom);
+        lines+='<path d="M'+u.join(' ')+' L'+v.join(' ')+'" stroke="#fff3ce" stroke-width="1.2" opacity=".24"/>';
+      }
+      embellish(lines+'<path d="M'+d.join(' ')+' Q'+((c[0]+d[0])/2)+' '+(Math.max(c[1],d[1])+3)+' '+c.join(' ')+'" fill="none" stroke="'+colors[0]+'" stroke-width="2"/>');
     }
   }
-  pathPart('roof','M'+x+' '+(y+h*.70)+' Q'+(x+w*.07)+' '+(y+h*.99)+' '+(x+w*.19)+' '+(y+h)+' H'+(x+w*.81)+' Q'+(x+w*.93)+' '+(y+h*.99)+' '+(x+w)+' '+(y+h*.70)+' L'+(x+w)+' '+(y+h*.84)+' Q'+(x+w*.95)+' '+(y+h+10)+' '+(x+w*.81)+' '+(y+h+10)+' H'+(x+w*.19)+' Q'+(x+w*.05)+' '+(y+h+10)+' '+x+' '+(y+h*.84)+' Z',colors[0]);
+  pathPart('roof','M'+x+' '+(y+h*.66)+' Q'+(x+w*.07)+' '+(y+h*.99)+' '+(x+w*.19)+' '+(y+h)+' H'+(x+w*.81)+' Q'+(x+w*.93)+' '+(y+h*.99)+' '+(x+w)+' '+(y+h*.66)+' L'+(x+w)+' '+(y+h*.80)+' Q'+(x+w*.95)+' '+(y+h+10)+' '+(x+w*.81)+' '+(y+h+10)+' H'+(x+w*.19)+' Q'+(x+w*.05)+' '+(y+h+10)+' '+x+' '+(y+h*.80)+' Z',colors[0]);
+  embellish('<path d="M'+(x+4)+' '+(y+h*.72)+' Q'+(x+w*.08)+' '+(y+h+3)+' '+(x+w*.19)+' '+(y+h+3)+' H'+(x+w*.81)+' Q'+(x+w*.92)+' '+(y+h+3)+' '+(x+w-4)+' '+(y+h*.72)+'" fill="none" stroke="'+colors[colors.length-1]+'" stroke-width="2.5"/>');
   rect('roof',x+w*.22,y-3,w*.56,7,colors[0]);
+  embellish('<path d="M'+(x+w*.20)+' '+(y-10)+' Q'+(x+w*.22)+' '+(y-1)+' '+(x+w*.26)+' '+(y-1)+' H'+(x+w*.74)+' Q'+(x+w*.78)+' '+(y-1)+' '+(x+w*.80)+' '+(y-10)+'" stroke="'+colors[0]+'" stroke-width="4" fill="none" stroke-linecap="round"/>'+
+    '<path d="M'+(x+w*.26)+' '+y+' H'+(x+w*.74)+'" stroke="#f4dfb0" stroke-width="1.5" opacity=".45"/>');
 }
 function roundWindow(x,y){
   var node=document.createElementNS(NS,'circle');node.setAttribute('cx',x);node.setAttribute('cy',y);node.setAttribute('r',22);
-  node.setAttribute('fill','#c4dada');node.setAttribute('stroke','#78664f');node.setAttribute('stroke-width',4);addPart('windows',node);
+  node.setAttribute('fill','url(#glassShade)');node.setAttribute('stroke','#78664f');node.setAttribute('stroke-width',4);addPart('windows',node);
+  embellish('<circle cx="'+x+'" cy="'+y+'" r="16" fill="none" stroke="#9b8964" stroke-width="2"/><path d="M'+(x-12)+' '+(y-12)+' L'+(x+12)+' '+(y+12)+' M'+(x+12)+' '+(y-12)+' L'+(x-12)+' '+(y+12)+'" stroke="#78664f" stroke-width="1.5"/>');
   rect('windows',x-2,y-20,4,40,'#78664f');rect('windows',x-20,y-2,40,4,'#78664f');
 }
 function buildCourtyard(){
@@ -388,6 +434,13 @@ function buildCourtyard(){
   woodDoor(376,321,48,79);lattice(306,307,43,48);lattice(451,307,43,48);lattice(202,371,62,64);lattice(536,371,62,64);
   curvedRoof(257,204,286,73,['#677d7c','#81918b','#738584']);
   curvedRoof(153,269,160,57,['#677d7c','#81918b']);curvedRoof(487,269,160,57,['#677d7c','#81918b']);
+  ornament('<path d="M292 404 H508 M181 464 H286 M514 464 H620" stroke="#b7aa8c" stroke-width="6"/>'+
+    '<path d="M302 280 V399 M498 280 V399" stroke="#9a6250" stroke-width="7"/>'+
+    '<rect x="363" y="285" width="74" height="21" rx="3" fill="#52675e"/><text x="400" y="300" text-anchor="middle" font-size="12" fill="#f1ddab">四季平安</text>'+
+    lantern(357,290)+lantern(443,290)+shrub(175,481,.7)+shrub(622,481,.7)+
+    '<rect x="290" y="409" width="17" height="35" rx="4" fill="#bca47c"/><rect x="493" y="409" width="17" height="35" rx="4" fill="#bca47c"/>'+
+    '<path d="M300 421 Q400 438 500 421 M295 447 Q400 464 505 447" stroke="#d1c9b5" stroke-width="2" fill="none"/>');
+
 }
 function buildPavilion(){
   chineseScene('<path class="outline" d="M250 475 V273 H550 V475 M194 265 L400 140 L606 265 Z"/>',
@@ -400,6 +453,13 @@ function buildPavilion(){
   curvedRoof(190,177,420,107,['#526f69','#6b8678','#7b9482']);
   pathPart('roof','M325 177 Q376 155 400 120 Q424 155 475 177 Z','#718d7c','#526f69');
   rect('roof',395,107,10,19,'#b89558');
+  ornament('<path d="M249 295 H551 M256 311 H544" stroke="#85543c" stroke-width="5"/>'+
+    '<path d="M265 296 Q277 325 294 311 M355 296 Q367 325 384 311 M445 296 Q457 325 474 311 M535 296 Q523 325 506 311" stroke="#cbaa78" stroke-width="4" fill="none"/>'+
+    '<path d="M258 325 V458 M348 325 V458 M438 325 V458 M528 325 V458" stroke="#e4b985" stroke-width="2"/>'+
+    '<path d="M266 426 L280 449 L294 426 L308 449 L322 426 L336 449 L350 426 L364 449 L378 426 L392 449 L406 426 L420 449 L434 426 L448 449 L462 426 L476 449 L490 426 L504 449 L518 426 L532 449" stroke="#d3aa78" stroke-width="2" fill="none"/>'+
+    lantern(399,301)+shrub(217,477,.75)+shrub(580,479,.65)+
+    '<path d="M163 499 Q211 489 255 501 M553 505 Q601 493 641 502" stroke="#a9c3b3" stroke-width="3" fill="none"/>');
+
 }
 function buildHuizhou(){
   chineseScene('<rect class="outline" x="235" y="281" width="330" height="199"/><path class="outline" d="M213 480 V274 H223 V230 H237 V197 H253 V231 H267 V274 H279 V480 Z M521 480 V274 H533 V231 H547 V197 H563 V230 H577 V274 H587 V480 Z"/>',
@@ -410,6 +470,15 @@ function buildHuizhou(){
   curvedRoof(220,224,360,60,['#526463','#6c7975','#5d6e6a']);
   pathPart('trim','M214 281 V269 H224 V230 H238 V197 H251 V232 H264 V269 H268 V281 Z','#eeece1');
   pathPart('trim','M532 281 V269 H536 V232 H549 V197 H562 V230 H576 V269 H586 V281 Z','#eeece1');
+  ornament('<path d="M215 283 V475 M585 283 V475" stroke="#bbbcb0" stroke-width="4"/>'+
+    '<path d="M270 298 H530" stroke="#d2cec1" stroke-width="7"/>'+
+    '<path d="M353 480 V367 H447 V480" stroke="#aaa99c" stroke-width="6" fill="none"/>'+
+    '<path d="M347 363 L400 346 L453 363 Z" fill="#626f68"/><path d="M363 353 H437" stroke="#879189" stroke-width="3"/>'+
+    '<path d="M220 269 H235 V232 H248 M552 232 H565 V269 H580" stroke="#a0aaa0" stroke-width="2" fill="none"/>'+
+    '<path d="M243 469 H347 M452 469 H559" stroke="#bcbfb1" stroke-width="11"/>'+
+    shrub(200,480,.6)+shrub(603,480,.65)+'<path d="M183 459 V357 M183 410 L167 391 M183 394 L200 372" stroke="#819b74" stroke-width="3" fill="none"/>'+
+    '<path d="M174 380 Q152 363 153 350 Q173 354 174 380 M189 375 Q205 344 214 346 Q213 367 189 375" fill="#9caf88"/>');
+
 }
 function buildPagoda(){
   chineseScene('<path class="outline" d="M300 480 V372 H321 V266 H343 V172 H457 V266 H479 V372 H500 V480 Z"/>',
@@ -418,6 +487,13 @@ function buildPagoda(){
   masonry(300,374,200,106,3,5,['#e6c7a0','#edcfaa']);masonry(321,267,158,106,3,4,['#e6c7a0','#edcfaa']);masonry(343,170,114,95,3,3,['#e6c7a0','#edcfaa']);
   woodDoor(377,416,46,64);lattice(375,290,50,52);lattice(381,184,38,43);
   curvedRoof(250,320,300,55,['#7d6556','#9c7961']);curvedRoof(282,215,236,55,['#7d6556','#9c7961']);curvedRoof(310,108,180,64,['#7d6556','#9c7961']);
+  ornament('<path d="M309 396 H490 M330 288 H471 M351 184 H449" stroke="#a56849" stroke-width="5"/>'+
+    '<path d="M309 401 V475 M490 401 V475 M330 294 V365 M471 294 V365 M351 188 V257 M449 188 V257" stroke="#ae7753" stroke-width="6"/>'+
+    '<path d="M293 468 H369 M431 468 H507 M316 361 H483 M336 256 H464" stroke="#bcaa86" stroke-width="5"/>'+
+    '<path d="M284 386 V399 M516 386 V399 M311 280 V292 M489 280 V292 M337 181 V193 M463 181 V193" stroke="#b69555" stroke-width="2"/>'+
+    '<circle cx="284" cy="402" r="4" fill="#d4b76e"/><circle cx="516" cy="402" r="4" fill="#d4b76e"/><circle cx="311" cy="295" r="3" fill="#d4b76e"/><circle cx="489" cy="295" r="3" fill="#d4b76e"/>'+
+    shrub(269,483,.55)+shrub(534,483,.55));
+
 }
 function buildGate(){
   chineseScene('<defs><clipPath id="gateArch"><path d="M327 480 V403 A73 73 0 0 1 473 403 V480 Z"/></clipPath></defs><rect class="outline" x="170" y="330" width="460" height="150"/><rect class="outline" x="265" y="214" width="270" height="116"/>',
@@ -427,6 +503,13 @@ function buildGate(){
   lattice(300,249,53,60);lattice(447,249,53,60);woodDoor(380,257,40,73);
   for(var c=0;c<10;c++)rect('trim',174+c*46,311,25,20,'#b8b9aa');
   curvedRoof(234,144,332,75,['#647870','#7e8c7e']);
+  ornament('<path d="M174 334 H626 M175 470 H319 M481 470 H626" stroke="#a9ae9d" stroke-width="7"/>'+
+    '<path d="M276 228 V325 M524 228 V325" stroke="#9e6248" stroke-width="8"/>'+
+    '<rect x="365" y="222" width="70" height="21" rx="3" fill="#566d61"/><text x="400" y="237" text-anchor="middle" font-size="12" fill="#edd8a2">平安古城</text>'+
+    '<path d="M335 480 V403 A65 65 0 0 1 465 403 V480" stroke="#77543d" stroke-width="3" fill="none"/>'+
+    lantern(361,257)+lantern(439,257)+'<path d="M400 147 V111" stroke="#8e7758" stroke-width="3"/><path d="M401 111 Q416 117 435 113 V133 Q418 138 401 130 Z" fill="#bd785a"/>'+
+    shrub(154,481,.45)+shrub(646,481,.45));
+
 }
 function buildTulou(){
   chineseScene('<path class="outline" d="M190 273 Q400 196 610 273 V438 Q400 531 190 438 Z"/>',
@@ -447,6 +530,15 @@ function buildTulou(){
   }
   pathPart('roof','M259 232 A141 43 0 1 0 541 232 A141 43 0 1 0 259 232 Z','#cad1b7');
   pathPart('roof','M280 231 A120 28 0 1 0 520 231 A120 28 0 1 0 280 231 Z','#e5dcc1');
+  ornament('<path d="M194 352 Q400 425 606 352 M194 407 Q400 480 606 407" stroke="#b29268" stroke-width="3" fill="none"/>'+
+    '<path d="M196 286 Q400 364 604 286" stroke="#574e3d" stroke-width="5" fill="none"/>'+
+    '<path d="M365 488 V418 Q400 407 435 418 V488" stroke="#927954" stroke-width="5" fill="none"/>'+
+    '<path d="M371 417 Q400 406 429 417" stroke="#e8c899" stroke-width="3" fill="none"/>'+
+    '<ellipse cx="400" cy="232" rx="119" ry="28" fill="none" stroke="#b6a582" stroke-width="3"/>'+
+    '<path d="M301 238 Q400 266 499 238" stroke="#f2e8cf" stroke-width="4" fill="none"/>'+
+    '<path d="M400 210 V253 M300 228 H500" stroke="#c0b390" stroke-width="2"/>'+
+    lantern(356,417)+lantern(444,417)+shrub(170,479,.65)+shrub(632,478,.65));
+
 }
 function buildPalace(){
   chineseScene('<rect class="outline" x="212" y="292" width="376" height="168"/><rect class="outline" x="284" y="188" width="232" height="104"/>',
@@ -455,6 +547,14 @@ function buildPalace(){
   woodDoor(363,350,74,110);lattice(246,342,72,79);lattice(482,342,72,79);lattice(364,214,72,54);
   for(var p=0;p<6;p++)for(var r=0;r<3;r++)rect('trim',209+p*74,405-r*54,13,55,'#a95f4c');
   curvedRoof(165,230,470,72,['#bb9250','#d5b168','#e0bf7a']);curvedRoof(249,110,302,82,['#bb9250','#d5b168','#e0bf7a']);
+  ornament('<path d="M218 313 H582 M288 209 H512" stroke="#a46645" stroke-width="9"/>'+
+    '<path d="M220 320 H580 M292 216 H508" stroke="#e1be7a" stroke-width="3"/>'+
+    '<path d="M229 323 Q242 345 254 323 M303 323 Q316 345 328 323 M477 323 Q490 345 502 323 M551 323 Q564 345 576 323" stroke="#e4bf78" stroke-width="4" fill="none"/>'+
+    '<path d="M216 332 V452 M290 332 V452 M512 332 V452 M586 332 V452" stroke="#edbc87" stroke-width="2"/>'+
+    '<path d="M201 471 V452 H350 M450 452 H599 V471" stroke="#dcd1b7" stroke-width="8" fill="none"/>'+
+    '<path d="M219 451 V471 M247 451 V471 M275 451 V471 M303 451 V471 M331 451 V471 M469 451 V471 M497 451 V471 M525 451 V471 M553 451 V471 M581 451 V471" stroke="#c0b598" stroke-width="5"/>'+
+    lantern(335,329)+lantern(465,329)+shrub(166,479,.55)+shrub(632,479,.55));
+
 }
 /* 从实际分件数计算每关总量，旧三关仍为 82 块。 */
 levels.forEach(function(item,index){
