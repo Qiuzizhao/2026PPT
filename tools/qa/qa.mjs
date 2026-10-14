@@ -2501,6 +2501,66 @@ for(const size of [[1024,560],[1920,1080]])add({name:'鼠标切切乐-独立布�
  return JSON.stringify({width:r.width,height:r.height,canvas:canvas.width});
 `),shot:true}]});
 
+/* 搬砖建房子：十关、旧存档、分件计数与继续练习。 */
+add({name:'搬砖建房子-旧存档准备',page:'index.html',wait:300,steps:[{label:'保留旧三关成绩',js:wrap(`
+ localStorage.setItem('brickHouse.progress.v2',JSON.stringify({v:2,level:1,progress:[82,7,0]}));
+ return JSON.stringify({seeded:true});
+`)}]});
+add({name:'搬砖建房子-十关通关',page:'搬砖建房子.html',wait:300,steps:[
+ {label:'旧三关继承、十关逐块建造、完成后重练',js:wrap(`
+ const buttons=__$$('#levelNav button'),out=[];
+ if(buttons.length!==10||__$('#builtCount').textContent!=='7'||!buttons[0].classList.contains('done'))throw new Error('旧存档或关卡数量错误');
+ for(let i=0;i<10;i++){
+  buttons[i].click();
+  const total=__$$('#house .piece').length;
+  if(!total||Number(__$('#totalCount').textContent.replace('/',''))!==total)throw new Error('分件总量错误');
+  if(i<3&&total!==82)throw new Error('旧关卡总数变化');
+  const before=Number(__$('#builtCount').textContent);
+  if(before<total){
+   const right=__$('#letter').textContent,wrong=right==='a'?'b':'a';
+   document.dispatchEvent(new KeyboardEvent('keydown',{key:wrong,bubbles:true,cancelable:true}));
+   document.dispatchEvent(new KeyboardEvent('keydown',{key:right,repeat:true,bubbles:true,cancelable:true}));
+   if(Number(__$('#builtCount').textContent)!==before)throw new Error('错键或长按加分');
+  }
+  for(let j=before;j<total;j++)document.dispatchEvent(new KeyboardEvent('keydown',{key:__$('#letter').textContent,bubbles:true,cancelable:true}));
+  if(!__$('#house').classList.contains('complete')||__$$('#house .piece.built').length!==total||!buttons[i].classList.contains('done'))throw new Error('未完成第'+(i+1)+'关');
+  out.push({name:buttons[i].textContent,total});
+  if(i<9){__$('#next').click();if(!buttons[i+1].classList.contains('active'))throw new Error('下一关切换错误');}
+ }
+ if(__$('#next').textContent!=='再练十关')throw new Error('十关完成文案错误');
+ if(JSON.parse(localStorage.getItem('brickHouse.progress.v2')).progress.length!==10)throw new Error('十关未保存');
+ __$('#next').click();
+ if(__$('#builtCount').textContent!=='0'||__$$('.level-btn.done').length)throw new Error('重练未清空');
+ buttons[9].click();for(let i=0;i<5;i++)document.dispatchEvent(new KeyboardEvent('keydown',{key:__$('#letter').textContent,bubbles:true,cancelable:true}));
+ return JSON.stringify({out,partialSaved:5});
+ `),shot:true},
+ {label:'右键拦截和防误退不重载',js:wrap(`
+ const path=location.pathname;window.__probe='kept';let bubbled=false;
+ document.body.addEventListener('contextmenu',()=>{bubbled=true},{once:true});
+ const event=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});document.body.dispatchEvent(event);
+ if(!event.defaultPrevented||!bubbled)throw new Error('右键兜底影响传播');
+ history.back();await __wait(150);history.forward();await __wait(150);history.go(-6);await __wait(150);
+ if(location.pathname!==path||window.__probe!=='kept')throw new Error('后退带走页面');
+ return JSON.stringify({kept:true,rightClick:true});
+ `)}]});
+add({name:'搬砖建房子-刷新续练',page:'搬砖建房子.html',wait:300,steps:[{label:'新增关卡进度恢复',js:wrap(`
+ if(__$('#builtCount').textContent!=='5'||__$('.level-btn.active').getAttribute('data-level')!=='9')throw new Error('刷新丢失进度');
+ return JSON.stringify({resumed:5,level:10});
+`)}]});
+for(const size of [[1024,768],[1366,768],[390,844]])add({name:'搬砖建房子-布局-'+size.join('x'),page:'搬砖建房子.html',viewport:size,wait:300,steps:[{label:'十关入口完整可见',js:wrap(`
+ if(document.documentElement.scrollWidth>innerWidth+1)throw new Error('横向溢出');
+ const bounds=__$$('.level-btn').map(b=>b.getBoundingClientRect());
+ if(bounds.some(r=>r.left<0||r.right>innerWidth||r.top<0||r.bottom>innerHeight))throw new Error('关卡按钮不可见');
+ return JSON.stringify({buttons:bounds.length,overflow:false});
+`),shot:true}]});
+for(let i=3;i<10;i++)add({name:'搬砖建房子-建筑预览-'+(i+1),page:'搬砖建房子.html',wait:300,steps:[{label:'完整建筑',js:wrap(`
+ __$$('#levelNav button')[${i}].click();
+ const total=__$$('#house .piece').length;
+ for(let n=Number(__$('#builtCount').textContent);n<total;n++)document.dispatchEvent(new KeyboardEvent('keydown',{key:__$('#letter').textContent,bubbles:true,cancelable:true}));
+ await __wait(280);
+ return JSON.stringify({name:__$('.level-btn.active').textContent,total});
+`),shot:true}]});
+
 const chrome = spawn(CHROME, [
   '--headless=new', '--disable-gpu', '--disable-extensions', '--no-first-run', '--no-default-browser-check',
   '--remote-debugging-port=' + QA_PORT, '--user-data-dir=' + userDir,

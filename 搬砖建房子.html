@@ -14,8 +14,9 @@
 .opening{fill:none;stroke:#d6ddce;stroke-width:2}.house-detail{opacity:0;transition:opacity .2s}.house-detail.installed{opacity:1}.piece.arriving{animation:brickDrop .24s ease-out}@keyframes brickDrop{0%{opacity:0;transform:translateY(-18px)}75%{opacity:1;transform:translateY(2px)}100%{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.piece.arriving{animation:none}}
 
-.level-nav{display:flex;background:#eef2e9;border-radius:12px;padding:4px}.level-btn{border:0;border-radius:9px;background:transparent;color:#7c8a75;padding:9px 12px;font-size:13px;margin-right:4px;white-space:nowrap}.level-btn:last-child{margin-right:0}.level-btn.active{background:#fff;color:#365c47;box-shadow:0 2px 5px #324b3810;font-weight:700}.level-btn.done:after{content:' ✓';color:#71905e}.level-btn:focus{outline-offset:0}
-@media(max-width:900px){header{flex-wrap:wrap}.level-nav{order:3;margin-top:12px;width:100%;justify-content:center}.level-btn{flex:1}.drawing{height:245px}.hands{height:110px}}
+.level-nav{display:grid;grid-template-columns:repeat(5,1fr);grid-gap:4px;background:#eef2e9;border-radius:12px;padding:4px;margin-bottom:14px}.level-btn{border:0;border-radius:9px;background:transparent;color:#7c8a75;padding:9px 12px;font-size:13px;margin-right:0;white-space:nowrap}.level-btn:last-child{margin-right:0}.level-btn.active{background:#fff;color:#365c47;box-shadow:0 2px 5px #324b3810;font-weight:700}.level-btn.done:after{content:' ✓';color:#71905e}.level-btn:focus{outline-offset:0}
+@media(max-width:900px){header{flex-wrap:wrap}.level-nav{width:100%}.level-btn{padding:9px 4px}.drawing{height:245px}.hands{height:110px}}
+@media(max-width:560px){.level-nav{grid-template-columns:repeat(2,1fr)}}
 </style>
 <script>
 /* ===== 防误触兜底 =====
@@ -78,7 +79,8 @@
 </head>
 <body>
 <main class="app">
-<header><div class="brand"><div class="brand-icon" aria-hidden="true">⌂</div><div><h1>搬砖建房子</h1></div></div><nav class="level-nav" id="levelNav" aria-label="建筑关卡"><button class="level-btn" type="button" data-level="0">1 田园小屋</button><button class="level-btn" type="button" data-level="1">2 海边灯塔</button><button class="level-btn" type="button" data-level="2">3 童话城堡</button></nav><div class="count">已完成 <strong id="builtCount">0</strong><span id="totalCount"></span> 块</div></header>
+<header><div class="brand"><div class="brand-icon" aria-hidden="true">⌂</div><div><h1>搬砖建房子</h1></div></div><div class="count">已完成 <strong id="builtCount">0</strong><span id="totalCount"></span> 块</div></header>
+<nav class="level-nav" id="levelNav" aria-label="建筑关卡"></nav>
 <section class="workspace" aria-label="建房练习">
 <div class="scene"><div class="scene-label"><span class="phase" id="phase">正在砌墙</span></div>
 <svg class="drawing" id="house" viewBox="120 55 560 465" role="img" aria-label="逐块建造的卡通房子">
@@ -172,9 +174,13 @@
 (function(){
 'use strict';
 var NS='http://www.w3.org/2000/svg', parts=[], done=0, target='', bag=[];
-var saveKey='brickHouse.progress.v2',level=0,progress=[0,0,0],total=82;
+var saveKey='brickHouse.progress.v2',level=0,progress=[],total=82;
 var cottageSVG=document.getElementById('house').innerHTML;
-var levels=[{name:'田园小屋',build:buildCottage},{name:'海边灯塔',build:buildLighthouse},{name:'童话城堡',build:buildCastle}];
+var levels=[{name:'田园小屋',build:buildCottage},{name:'海边灯塔',build:buildLighthouse},{name:'童话城堡',build:buildCastle},
+  {name:'北京四合院',build:buildCourtyard}, {name:'江南凉亭',build:buildPavilion},
+  {name:'徽派民居',build:buildHuizhou}, {name:'中式宝塔',build:buildPagoda},
+  {name:'古城门楼',build:buildGate}, {name:'福建土楼',build:buildTulou},
+  {name:'金瓦宫殿',build:buildPalace}];
 var letters='abcdefghijklmnopqrstuvwxyz';
 var fingers=[['qaz','左手小指'],['wsx','左手无名指'],['edc','左手中指'],['rfvtgb','左手食指'],['yuhjnm','右手食指'],['ik','右手中指'],['ol','右手无名指'],['p','右手小指']];
 function el(id){return document.getElementById(id);}
@@ -336,6 +342,128 @@ function buildCastle(){
     }
   }
 }
+
+/* 中式建筑用轻量 SVG 分件搭建，墙砖、木柱、窗格、瓦片都逐块出现。 */
+function chineseScene(outline,details){
+  el('house').innerHTML='<ellipse cx="400" cy="495" rx="245" ry="16" fill="#edf1e6"/>'+outline+
+    '<g id="foundation"></g><g id="walls"></g><g id="door"></g><g id="windows"></g><g id="trim"></g><g id="roof"></g>'+
+    '<g class="detail">'+details+'</g>';
+}
+function masonry(x,y,w,h,rows,cols,colors){
+  for(var r=0;r<rows;r++)for(var c=0;c<cols;c++)
+    rect('walls',x+c*w/cols+1,y+h-(r+1)*h/rows+1,w/cols-2,h/rows-2,colors[(r+c)%colors.length]);
+}
+function plinth(x,w){for(var i=0;i<6;i++)rect('foundation',x+i*w/6,480,w/6-1,12,'#d1cec0');}
+function woodDoor(x,y,w,h){
+  for(var i=0;i<4;i++)rect('door',x+i*w/4,y,w/4-1,h,i%2?'#9f6651':'#b67c61');
+}
+function lattice(x,y,w,h){
+  for(var i=0;i<4;i++)rect('windows',x+i*w/4,y,w/4-2,h,i%2?'#b1ccd0':'#c6dce0');
+  for(var j=1;j<3;j++)rect('windows',x,y+j*h/3-1,w,3,'#78664f');
+  rect('windows',x-3,y-3,w+6,4,'#78664f');rect('windows',x-3,y+h,w+6,4,'#78664f');
+}
+function curvedRoof(x,y,w,h,colors){
+  // 屋脊和翘起的两端形成中式屋檐；每片瓦共享曲线边界。
+  for(var row=1;row>=0;row--){
+    var top=row/2,bottom=(row+1)/2;
+    function point(t,v){return [x+w*(.5+(t-.5)*(.56+.44*v)),y+h*(v-.22*v*Math.pow(2*t-1,4))];}
+    for(var i=0;i<8;i++){
+      var a=point(i/8,top),b=point((i+1)/8,top),c=point((i+1)/8,bottom),d=point(i/8,bottom);
+      pathPart('roof','M'+a.join(' ')+' L'+b.join(' ')+' L'+c.join(' ')+' Q'+((c[0]+d[0])/2)+' '+(Math.max(c[1],d[1])+3)+' '+d.join(' ')+' Z',colors[(i+row)%colors.length],colors[0]);
+    }
+  }
+  pathPart('roof','M'+x+' '+(y+h*.70)+' Q'+(x+w*.07)+' '+(y+h*.99)+' '+(x+w*.19)+' '+(y+h)+' H'+(x+w*.81)+' Q'+(x+w*.93)+' '+(y+h*.99)+' '+(x+w)+' '+(y+h*.70)+' L'+(x+w)+' '+(y+h*.84)+' Q'+(x+w*.95)+' '+(y+h+10)+' '+(x+w*.81)+' '+(y+h+10)+' H'+(x+w*.19)+' Q'+(x+w*.05)+' '+(y+h+10)+' '+x+' '+(y+h*.84)+' Z',colors[0]);
+  rect('roof',x+w*.22,y-3,w*.56,7,colors[0]);
+}
+function roundWindow(x,y){
+  var node=document.createElementNS(NS,'circle');node.setAttribute('cx',x);node.setAttribute('cy',y);node.setAttribute('r',22);
+  node.setAttribute('fill','#c4dada');node.setAttribute('stroke','#78664f');node.setAttribute('stroke-width',4);addPart('windows',node);
+  rect('windows',x-2,y-20,4,40,'#78664f');rect('windows',x-20,y-2,40,4,'#78664f');
+}
+function buildCourtyard(){
+  chineseScene('<path class="outline" d="M178 480 V319 H288 V269 H512 V319 H622 V480 Z"/>',
+    '<path d="M302 486 L330 405 H470 L498 486 Z" fill="#e0dccc"/><path d="M322 431 H478 M313 457 H487" stroke="#c6c4b4" stroke-width="3"/><path d="M204 489 Q191 465 184 486 M598 489 Q609 465 617 486" stroke="#86a26d" stroke-width="8" fill="none"/>');
+  plinth(170,460);masonry(288,270,224,130,4,6,['#ded9c9','#e9e3d4']);
+  masonry(178,320,110,160,4,3,['#dfd7c3','#eae3d3']);masonry(512,320,110,160,4,3,['#dfd7c3','#eae3d3']);
+  woodDoor(376,321,48,79);lattice(306,307,43,48);lattice(451,307,43,48);lattice(202,371,62,64);lattice(536,371,62,64);
+  curvedRoof(257,204,286,73,['#677d7c','#81918b','#738584']);
+  curvedRoof(153,269,160,57,['#677d7c','#81918b']);curvedRoof(487,269,160,57,['#677d7c','#81918b']);
+}
+function buildPavilion(){
+  chineseScene('<path class="outline" d="M250 475 V273 H550 V475 M194 265 L400 140 L606 265 Z"/>',
+    '<path d="M265 495 H535 M282 506 H518" stroke="#c7c4b3" stroke-width="8" stroke-linecap="round"/><path d="M168 486 Q197 463 229 486 M571 486 Q605 463 637 486" stroke="#9eb9a4" stroke-width="5" fill="none"/>');
+  plinth(232,336);
+  for(var p=0;p<4;p++)for(var r=0;r<5;r++)rect('walls',250+p*90,434-r*38,15,39,r%2?'#b47556':'#c08b65');
+  for(var rail=0;rail<9;rail++)rect('trim',264+rail*32,418,7,54,'#a77155');
+  rect('trim',252,414,298,9,'#b98560');rect('trim',252,463,298,8,'#b98560');
+  for(var beam=0;beam<6;beam++)rect('trim',244+beam*52,277,51,15,'#a76e51');
+  curvedRoof(190,177,420,107,['#526f69','#6b8678','#7b9482']);
+  pathPart('roof','M325 177 Q376 155 400 120 Q424 155 475 177 Z','#718d7c','#526f69');
+  rect('roof',395,107,10,19,'#b89558');
+}
+function buildHuizhou(){
+  chineseScene('<rect class="outline" x="235" y="281" width="330" height="199"/><path class="outline" d="M213 480 V274 H223 V230 H237 V197 H253 V231 H267 V274 H279 V480 Z M521 480 V274 H533 V231 H547 V197 H563 V230 H577 V274 H587 V480 Z"/>',
+    '<path d="M217 276 H239 V237 H254 V205 M546 205 V237 H563 V276 H583" stroke="#566765" stroke-width="7" fill="none"/><path d="M353 492 H447 L460 509 H340 Z" fill="#dbd7ca"/>');
+  plinth(207,386);masonry(235,280,330,200,6,7,['#f0eee3','#e8e7dc','#f6f3e9']);
+  masonry(214,280,54,200,5,2,['#f2efe4','#e8e7dd']);masonry(532,280,54,200,5,2,['#f2efe4','#e8e7dd']);
+  woodDoor(365,371,70,109);lattice(280,333,54,67);lattice(466,333,54,67);roundWindow(400,316);
+  curvedRoof(220,224,360,60,['#526463','#6c7975','#5d6e6a']);
+  pathPart('trim','M214 281 V269 H224 V230 H238 V197 H251 V232 H264 V269 H268 V281 Z','#eeece1');
+  pathPart('trim','M532 281 V269 H536 V232 H549 V197 H562 V230 H576 V269 H586 V281 Z','#eeece1');
+}
+function buildPagoda(){
+  chineseScene('<path class="outline" d="M300 480 V372 H321 V266 H343 V172 H457 V266 H479 V372 H500 V480 Z"/>',
+    '<path d="M346 493 H454 M363 505 H437" stroke="#cec8b5" stroke-width="8" stroke-linecap="round"/><path d="M400 97 V67" stroke="#ae8c52" stroke-width="5"/><circle cx="400" cy="68" r="7" fill="#cfad64"/>');
+  plinth(284,232);
+  masonry(300,374,200,106,3,5,['#e6c7a0','#edcfaa']);masonry(321,267,158,106,3,4,['#e6c7a0','#edcfaa']);masonry(343,170,114,95,3,3,['#e6c7a0','#edcfaa']);
+  woodDoor(377,416,46,64);lattice(375,290,50,52);lattice(381,184,38,43);
+  curvedRoof(250,320,300,55,['#7d6556','#9c7961']);curvedRoof(282,215,236,55,['#7d6556','#9c7961']);curvedRoof(310,108,180,64,['#7d6556','#9c7961']);
+}
+function buildGate(){
+  chineseScene('<defs><clipPath id="gateArch"><path d="M327 480 V403 A73 73 0 0 1 473 403 V480 Z"/></clipPath></defs><rect class="outline" x="170" y="330" width="460" height="150"/><rect class="outline" x="265" y="214" width="270" height="116"/>',
+    '<path d="M325 480 V403 A75 75 0 0 1 475 403 V480" stroke="#c4b69c" stroke-width="9" fill="none"/><path d="M388 426 H412 M388 448 H412" stroke="#d4af65" stroke-width="5"/>');
+  plinth(166,468);masonry(170,330,460,150,5,10,['#c5c5b6','#d4d1c0','#bdbeb1']);masonry(265,214,270,116,3,6,['#cf9774','#d5a281']);
+  for(var i=0;i<6;i++){var plank=rect('door',327+i*146/6,330,146/6-1,150,i%2?'#915e48':'#a16d50');plank.setAttribute('clip-path','url(#gateArch)');}
+  lattice(300,249,53,60);lattice(447,249,53,60);woodDoor(380,257,40,73);
+  for(var c=0;c<10;c++)rect('trim',174+c*46,311,25,20,'#b8b9aa');
+  curvedRoof(234,144,332,75,['#647870','#7e8c7e']);
+}
+function buildTulou(){
+  chineseScene('<path class="outline" d="M190 273 Q400 196 610 273 V438 Q400 531 190 438 Z"/>',
+    '<path d="M190 438 Q400 531 610 438" stroke="#b28b60" stroke-width="5" fill="none"/><path d="M365 492 L355 508 H445 L435 492 Z" fill="#d8cbb2"/>');
+  plinth(200,400);
+  for(var row=0;row<6;row++)for(var col=0;col<12;col++){
+    var x=190+col*35,x2=x+35,curve=function(v){return 38*(1-Math.pow((v-400)/210,2));};
+    var y=273+row*27,by=y+26;
+    pathPart('walls','M'+(x+1)+' '+(y+curve(x))+' Q'+((x+x2)/2)+' '+(y+curve((x+x2)/2))+' '+(x2-1)+' '+(y+curve(x2))+' L'+(x2-1)+' '+(by+curve(x2))+' Q'+((x+x2)/2)+' '+(by+curve((x+x2)/2))+' '+(x+1)+' '+(by+curve(x))+' Z',['#d3b280','#ddbd8d','#e2c397'][(row+col)%3]);
+  }
+  woodDoor(373,419,54,70);
+  for(var r=0;r<2;r++)for(var c=0;c<9;c++){
+    var wx=224+c*40,cy=38*(1-Math.pow((wx-390)/210,2));rect('windows',wx,300+r*47+cy,14,23,'#735f47');
+  }
+  for(var t=0;t<16;t++){
+    var a=Math.PI*2*t/16,b=Math.PI*2*(t+1)/16;
+    pathPart('roof','M'+(400+233*Math.cos(a))+' '+(270+84*Math.sin(a))+' A233 84 0 0 1 '+(400+233*Math.cos(b))+' '+(270+84*Math.sin(b))+' L'+(400+141*Math.cos(b))+' '+(232+43*Math.sin(b))+' A141 43 0 0 0 '+(400+141*Math.cos(a))+' '+(232+43*Math.sin(a))+' Z',t%2?'#786f59':'#8b8066','#6d6553');
+  }
+  pathPart('roof','M259 232 A141 43 0 1 0 541 232 A141 43 0 1 0 259 232 Z','#cad1b7');
+  pathPart('roof','M280 231 A120 28 0 1 0 520 231 A120 28 0 1 0 280 231 Z','#e5dcc1');
+}
+function buildPalace(){
+  chineseScene('<rect class="outline" x="212" y="292" width="376" height="168"/><rect class="outline" x="284" y="188" width="232" height="104"/>',
+    '<path d="M221 472 H579 M245 487 H555 M269 502 H531" stroke="#d4cbb6" stroke-width="11" stroke-linecap="round"/><rect x="355" y="310" width="90" height="23" rx="3" fill="#456c67"/><text x="400" y="327" text-anchor="middle" font-size="13" fill="#f5db91">金瓦宫殿</text>');
+  plinth(193,414);masonry(212,292,376,168,4,8,['#c78972','#cf957e']);masonry(284,188,232,104,3,5,['#c78972','#d19b7f']);
+  woodDoor(363,350,74,110);lattice(246,342,72,79);lattice(482,342,72,79);lattice(364,214,72,54);
+  for(var p=0;p<6;p++)for(var r=0;r<3;r++)rect('trim',209+p*74,405-r*54,13,55,'#a95f4c');
+  curvedRoof(165,230,470,72,['#bb9250','#d5b168','#e0bf7a']);curvedRoof(249,110,302,82,['#bb9250','#d5b168','#e0bf7a']);
+}
+/* 从实际分件数计算每关总量，旧三关仍为 82 块。 */
+levels.forEach(function(item,index){
+  parts=[];item.build();item.total=parts.length;progress.push(0);
+  var button=document.createElement('button');button.className='level-btn';button.type='button';
+  button.setAttribute('data-level',index);button.textContent=(index+1)+' '+item.name;el('levelNav').appendChild(button);
+});
+parts=[];
+
 ['qwertyuiop','asdfghjkl','zxcvbnm'].forEach(function(row){var wrap=document.createElement('div');wrap.className='key-row';row.split('').forEach(function(k){var key=document.createElement('span');key.className='key'+(k==='f'||k==='j'?' home':'');key.id='key-'+k;key.textContent=k;wrap.appendChild(key);});el('keyboard').appendChild(wrap);});
 function save(){
   progress[level]=done;
@@ -344,11 +472,11 @@ function save(){
 try{
   var stored=JSON.parse(localStorage.getItem(saveKey));
   if(stored&&stored.v===2&&Array.isArray(stored.progress)){
-    for(var i=0;i<3;i++){
+    for(var i=0;i<levels.length;i++){
       var n=stored.progress[i];
-      progress[i]=Number.isInteger(n)&&n>=0&&n<=82?n:0;
+      progress[i]=Number.isInteger(n)&&n>=0&&n<=levels[i].total?n:0;
     }
-    if(Number.isInteger(stored.level)&&stored.level>=0&&stored.level<3)level=stored.level;
+    if(Number.isInteger(stored.level)&&stored.level>=0&&stored.level<levels.length)level=stored.level;
   }else{
     var legacy=JSON.parse(localStorage.getItem('brickHouse.progress.v1'));
     if(legacy&&legacy.v===1&&Number.isInteger(legacy.done)&&legacy.done>=0&&legacy.done<=82)progress[0]=legacy.done;
@@ -366,8 +494,8 @@ function updateLevelNav(){
   var buttons=el('levelNav').querySelectorAll('button');
   for(var i=0;i<buttons.length;i++){
     buttons[i].classList.toggle('active',i===level);
-    buttons[i].classList.toggle('done',progress[i]===82);
-    buttons[i].setAttribute('aria-label','第'+(i+1)+'关 '+levels[i].name+(progress[i]===82?'，已完成':''));
+    buttons[i].classList.toggle('done',progress[i]===levels[i].total);
+    buttons[i].setAttribute('aria-label','第'+(i+1)+'关 '+levels[i].name+(progress[i]===levels[i].total?'，已完成':''));
     if(i===level)buttons[i].setAttribute('aria-current','step');else buttons[i].removeAttribute('aria-current');
   }
 }
@@ -384,15 +512,15 @@ function render(animate){
 parts.forEach(function(p,i){p.node.setAttribute('class','piece'+(i<done?' built':'')+(animate&&i===done-1?' arriving':''));});
 var finishes=document.querySelectorAll('.house-detail');
 for(var f=0;f<finishes.length;f++)finishes[f].classList.toggle('installed',done>=Number(finishes[f].getAttribute('data-after')));
-el('builtCount').textContent=done;el('totalCount').textContent='/ '+total;var percent=Math.floor(done/total*100);el('progressText').textContent='完成 '+percent+'%';el('bar').style.width=percent+'%';el('progress').setAttribute('aria-valuenow',percent);var names={foundation:'铺好地基',walls:'正在砌墙',door:'装上小门',windows:level===1?'装上灯室':'装上窗户',chimney:'搭起烟囱',trim:'装好护栏',roof:'铺好屋顶'};updateLevelNav();el('phase').textContent=done===total?'已建成':names[parts[done].group];if(done===total){el('house').classList.add('complete');el('task').classList.add('finished');el('next').textContent=level<2?'下一关':(progress.some(function(n){return n<82;})?'继续练习':'再练三关');el('letter').textContent='⌂';el('finger').textContent='已建成';lightFinger('');el('message').textContent='';var active=document.querySelector('.key.active');if(active)active.classList.remove('active');}}
+el('builtCount').textContent=done;el('totalCount').textContent='/ '+total;var percent=Math.floor(done/total*100);el('progressText').textContent='完成 '+percent+'%';el('bar').style.width=percent+'%';el('progress').setAttribute('aria-valuenow',percent);var names={foundation:'铺好地基',walls:'正在砌墙',door:'装上小门',windows:level===1?'装上灯室':'装上窗户',chimney:'搭起烟囱',trim:'装好护栏',roof:'铺好屋顶'};updateLevelNav();el('phase').textContent=done===total?'已建成':names[parts[done].group];if(done===total){el('house').classList.add('complete');el('task').classList.add('finished');el('next').textContent=level<levels.length-1?'下一关':(progress.some(function(n,i){return n<levels[i].total;})?'继续练习':'再练十关');el('letter').textContent='⌂';el('finger').textContent='已建成';lightFinger('');el('message').textContent='';var active=document.querySelector('.key.active');if(active)active.classList.remove('active');}}
 function accept(key){if(done===total||!key||!/^[a-zA-Z]$/.test(key))return;if(key!==target){el('message').textContent=key!==key.toLowerCase()?'请松开 Shift 或关闭大写锁定。':'请按 '+target;el('letter').classList.remove('shake');void el('letter').offsetWidth;el('letter').classList.add('shake');return;}done++;save();render(true);if(done<total){nextLetter();el('message').textContent='';}}
 document.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;if(e.isComposing||e.key==='Process'){el('message').textContent='请切换到英文输入。';return;}if(e.key==='Backspace')e.preventDefault();if(!/^[a-zA-Z]$/.test(e.key))return;e.preventDefault();if(e.repeat)return;accept(e.key);});
 el('next').addEventListener('click',function(){
-  if(level<2)selectLevel(level+1);
+  if(level<levels.length-1)selectLevel(level+1);
   else{
-    var unfinished=progress.findIndex(function(n){return n<82;});
+    var unfinished=progress.findIndex(function(n,i){return n<levels[i].total;});
     if(unfinished>=0)selectLevel(unfinished);
-    else{progress=[0,0,0];selectLevel(0);}
+    else{progress=levels.map(function(){return 0;});selectLevel(0);}
   }
   this.blur();
 });

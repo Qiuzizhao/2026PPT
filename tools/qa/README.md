@@ -81,3 +81,9 @@ node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 无尽点点乐
 node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 鼠标切切乐-独立
 node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 鼠标切切乐
 ```
+
+搬砖建房子（十种建筑、旧三关存档继承、逐块建造、刷新续练与布局）：
+
+```powershell
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 搬砖建房子
+```
