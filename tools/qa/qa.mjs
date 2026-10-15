@@ -2510,6 +2510,7 @@ add({name:'搬砖建房子-十关通关',page:'搬砖建房子.html',wait:300,st
  {label:'旧三关继承、十关逐块建造、完成后重练',js:wrap(`
  const buttons=__$$('#levelNav button'),out=[];
  if(buttons.length!==10||__$('#builtCount').textContent!=='7'||!buttons[0].classList.contains('done'))throw new Error('旧存档或关卡数量错误');
+ if(__$('#completedLevels').textContent!=='1')throw new Error('已完成关卡未从存档恢复');
  for(let i=0;i<10;i++){
   buttons[i].click();
   const total=__$$('#house .piece').length;
@@ -2527,6 +2528,7 @@ add({name:'搬砖建房子-十关通关',page:'搬砖建房子.html',wait:300,st
    document.dispatchEvent(new KeyboardEvent('keydown',{key:j%2?letter.toUpperCase():letter,bubbles:true,cancelable:true}));
   }
   if(!__$('#house').classList.contains('complete')||__$$('#house .piece.built').length!==total||!buttons[i].classList.contains('done'))throw new Error('未完成第'+(i+1)+'关');
+  if(Number(__$('#completedLevels').textContent)!==i+1)throw new Error('已完成关卡数未更新');
   out.push({name:buttons[i].textContent,total});
   if(i<9){__$('#next').click();if(!buttons[i+1].classList.contains('active'))throw new Error('下一关切换错误');}
  }
@@ -2534,6 +2536,7 @@ add({name:'搬砖建房子-十关通关',page:'搬砖建房子.html',wait:300,st
  if(JSON.parse(localStorage.getItem('brickHouse.progress.v2')).progress.length!==10)throw new Error('十关未保存');
  __$('#next').click();
  if(__$('#builtCount').textContent!=='0'||__$$('.level-btn.done').length)throw new Error('重练未清空');
+ if(__$('#completedLevels').textContent!=='0')throw new Error('重练后已完成关卡数未清零');
  buttons[9].click();for(let i=0;i<5;i++)document.dispatchEvent(new KeyboardEvent('keydown',{key:__$('#letter').textContent,bubbles:true,cancelable:true}));
  return JSON.stringify({out,partialSaved:5});
  `),shot:true},

@@ -17,6 +17,7 @@
 .level-nav{display:grid;grid-template-columns:repeat(5,1fr);grid-gap:4px;background:#eef2e9;border-radius:12px;padding:4px;margin-bottom:14px}.level-btn{border:0;border-radius:9px;background:transparent;color:#7c8a75;padding:9px 12px;font-size:13px;margin-right:0;white-space:nowrap}.level-btn:last-child{margin-right:0}.level-btn.active{background:#fff;color:#365c47;box-shadow:0 2px 5px #324b3810;font-weight:700}.level-btn.done:after{content:' ✓';color:#71905e}.level-btn:focus{outline-offset:0}
 @media(max-width:900px){header{flex-wrap:wrap}.level-nav{width:100%}.level-btn{padding:9px 4px}.drawing{height:245px}.hands{height:110px}}
 @media(max-width:560px){.level-nav{grid-template-columns:repeat(2,1fr)}}
+.count{text-align:right}.level-count{display:block;margin-bottom:3px}.level-count strong{font-size:18px}
 </style>
 <script>
 /* ===== 防误触兜底 =====
@@ -79,7 +80,7 @@
 </head>
 <body>
 <main class="app">
-<header><div class="brand"><div class="brand-icon" aria-hidden="true">⌂</div><div><h1>搬砖建房子</h1></div></div><div class="count">已完成 <strong id="builtCount">0</strong><span id="totalCount"></span> 块</div></header>
+<header><div class="brand"><div class="brand-icon" aria-hidden="true">⌂</div><div><h1>搬砖建房子</h1></div></div><div class="count"><span class="level-count">已完成关卡 <strong id="completedLevels">0</strong><span id="levelTotal">/ 10</span></span>已完成 <strong id="builtCount">0</strong><span id="totalCount"></span> 块</div></header>
 <nav class="level-nav" id="levelNav" aria-label="建筑关卡"></nav>
 <section class="workspace" aria-label="建房练习">
 <div class="scene"><div class="scene-label"><span class="phase" id="phase">正在砌墙</span></div>
@@ -591,6 +592,8 @@ function selectLevel(index){
   nextLetter();render();save();
 }
 function updateLevelNav(){
+  el('completedLevels').textContent=progress.filter(function(n,i){return n===levels[i].total;}).length;
+  el('levelTotal').textContent='/ '+levels.length;
   var buttons=el('levelNav').querySelectorAll('button');
   for(var i=0;i<buttons.length;i++){
     buttons[i].classList.toggle('active',i===level);
