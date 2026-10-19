@@ -39,7 +39,6 @@ html.no-flexgap .lesson>*:not(:last-child){margin-right:11px}
 .next-button{min-width:190px;min-height:66px;border:0;border-radius:14px;padding:16px 30px;background:var(--green);color:#fff;font-size:24px;font-weight:700}
 .keyboard-panel{display:grid;grid-template-columns:60% 40%;margin-top:13px;border:1px solid var(--line);border-radius:18px;padding:12px 18px 8px;background:#fafbf5;align-items:center}
 .keyboard-head{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:8px;color:var(--muted)}.keyboard-head b{color:var(--green);font-weight:700}
-.sound-toggle{border:0;background:none;font-size:11px;color:var(--muted);text-decoration:underline;padding:3px 2px}
 .key-row{display:flex;justify-content:center;gap:5px;margin-bottom:5px}html.no-flexgap .key-row>*:not(:last-child){margin-right:5px}
 .key{width:35px;height:29px;border:1px solid #d6dfd1;border-bottom-width:3px;border-radius:6px;background:#f1f4e9;font:14px Consolas,monospace;text-align:center;line-height:25px;color:#7a8b76}
 .key.active{background:var(--orange);color:white;border-color:#b95431;font-weight:bold;transform:translateY(-2px);box-shadow:0 3px 0 #f4d8c0}.key.home{text-decoration:underline;text-underline-offset:4px}
@@ -132,7 +131,7 @@ html.no-flexgap .lesson>*:not(:last-child){margin-right:11px}
 <div class="task-foot"><button class="next-button" id="nextLesson" hidden>下一关</button></div>
 <div class="stamp" id="stamp" hidden>投递成功<br><small>✉</small></div>
 </div></section>
-<section class="keyboard-panel" id="keyboardPanel" aria-label="键盘指法提示"><div><div class="keyboard-head"><b id="fingerHint">下一键</b><button class="sound-toggle" id="soundToggle" aria-pressed="true">提示音：开</button></div><div id="keyboard"></div></div>
+<section class="keyboard-panel" id="keyboardPanel" aria-label="键盘指法提示"><div><div class="keyboard-head"><b id="fingerHint">下一键</b></div><div id="keyboard"></div></div>
 <svg class="hands" id="hands" viewBox="0 0 660 190" role="img" aria-label="双手指法">
 <g>
 <rect class="hand-palm" x="72" y="93" width="157" height="70" rx="30"/>
@@ -319,16 +318,15 @@ var THEMES=[{name:'森林邮路',sky:'#dcebd8',hill:'#bed3aa',ground:'#93b48c',h
 {name:'雪山邮路',sky:'#e4edf2',hill:'#c4d5df',ground:'#eef2ee',house:'#c7c2d1',ink:'#55778b',night:false},
 {name:'夜晚邮路',sky:'#303f5b',hill:'#435573',ground:'#556650',house:'#a4acb8',ink:'#edf3cd',night:true}];
 var KEY='pinyinPost.progress.v1',params=new URLSearchParams(location.search),preview=params.get('finale')==='1'||params.get('post')==='1';
-var state={v:1,level:0,screen:'practice',sound:true,rounds:[{done:0,typed:''},{done:0,typed:''},{done:0,typed:''}],mail:{sent:0,typed:'',delivering:false}};
+var state={v:1,level:0,screen:'practice',rounds:[{done:0,typed:''},{done:0,typed:''},{done:0,typed:''}],mail:{sent:0,typed:'',delivering:false}};
 var busy=false,timer=0,feedback='',lastScene='';
 /* 提示音离线合成；仅在按键或点击后创建/恢复音频上下文。 */
 var audio=null;
 function sound(kind){
- if(!state.sound)return;
  try{
   if(!audio){var Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;audio=new Context();}
   function play(){
-   if(!state.sound||audio.state!=='running')return;
+   if(audio.state!=='running')return;
    var notes=kind==='wrong'?[220]:kind==='done'?[523.25,659.25,783.99]:[660];
    notes.forEach(function(f,i){
     var osc=audio.createOscillator(),gain=audio.createGain(),at=audio.currentTime+i*.085,duration=kind==='tap' ? .075 : kind==='wrong' ? .1 : .17;
@@ -352,7 +350,7 @@ function restore(){
  if(preview)return;
  try{var d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d||d.v!==1)return;
   if(Array.isArray(d.rounds))state.rounds.forEach(function(r,i){var a=d.rounds[i];if(!a||!number(a.done,lessonTotal(i)))return;r.done=a.done;r.typed=r.done<lessonTotal(i)?prefix(a.typed,LESSONS[i].words[r.done].raw):'';});
-  if(number(d.level,2))state.level=d.level;if(typeof d.sound==='boolean')state.sound=d.sound;
+  if(number(d.level,2))state.level=d.level;
   if(d.mail&&number(d.mail.sent,100000000)){state.mail.sent=d.mail.sent;state.mail.typed=d.mail.delivering?'':prefix(d.mail.typed,MAIL[d.mail.sent%MAIL.length].raw);}
   if(complete())state.screen=d.screen==='post'?'post':'invite';
  }catch(e){}
@@ -367,7 +365,6 @@ function buildKeyboard(){['qwertyuiop','asdfghjkl','zxcvbnm'].forEach(function(r
 function hint(){var c=busy||state.screen==='invite'||state.screen==='practice'&&state.rounds[state.level].done===lessonTotal(state.level)?'':word().raw[typed().length],finger='';FINGERS.forEach(function(f){if(c&&f[0].indexOf(c)!==-1)finger=f[1];});
  document.querySelectorAll('.key').forEach(function(k){k.classList.toggle('active',k.id==='key-'+c);});document.querySelectorAll('.hand-finger').forEach(function(f){f.classList.toggle('active',f.getAttribute('data-finger')===finger);});
  $('fingerHint').textContent=c?'下一键 '+c.toUpperCase()+' · '+finger:'';$('hands').setAttribute('aria-label',finger?finger+'按键提示':'双手指法');
- $('soundToggle').textContent=state.sound?'提示音：开':'提示音：关';$('soundToggle').setAttribute('aria-pressed',String(state.sound));
 }
 function landscape(){var post=state.screen==='post',station=Math.floor(state.mail.sent/5)+1,index=post?Math.floor((state.mail.sent-(state.mail.delivering?1:0))/5)%4:0,t=THEMES[index],key=post?String(index):'base';
  $('scene').setAttribute('aria-label',t.name);$('scene').style.background=t.sky;
@@ -415,7 +412,6 @@ function accept(e){
 }
 $('nextLesson').addEventListener('click',function(){var i=state.rounds.findIndex(function(r,i){return r.done<lessonTotal(i);});if(i>=0)selectLesson(i);});
 $('enterPost').addEventListener('click',function(){if(!complete())return;stopTimer();state.screen='post';feedback='';save();render();focusApp();});
-$('soundToggle').addEventListener('click',function(){state.sound=!state.sound;save();hint();if(state.sound)sound('done');focusApp();});
 document.addEventListener('keydown',accept);window.addEventListener('focus',focusApp);document.addEventListener('visibilitychange',function(){if(!document.hidden)focusApp();});$('workspace').addEventListener('pointerdown',focusApp);
 restore();
 if(preview){state.rounds.forEach(function(r,i){r.done=lessonTotal(i);r.typed='';});state.screen=params.get('post')==='1'?'post':'invite';var station=parseInt(params.get('station'),10);if(number(station,100000)&&station>0)state.mail.sent=(station-1)*5;}

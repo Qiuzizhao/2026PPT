@@ -2368,8 +2368,8 @@ add({name:'拼音邮局-刷新续练与切关',page:'拼音小邮局.html',steps
 ]});
 add({name:'拼音邮局-三关真实全通',page:'拼音小邮局.html',steps:[
  {label:'完成150题才解锁邀请函，逐字推进，已完成关不重记',js:wrap(postHelpers+`
-  const realTimer=window.setTimeout,hadSound=snap().sound;
-  if(hadSound)__$('#soundToggle').click();
+  const realTimer=window.setTimeout,realAudio=window.AudioContext,realWebkitAudio=window.webkitAudioContext;
+  window.AudioContext=undefined;window.webkitAudioContext=undefined;
   /* 仅缩短盖章等待，150题仍逐字通过真实事件处理器完成。 */
   window.setTimeout=(fn,ms,...args)=>realTimer(fn,ms===650?0:ms,...args);
   try{
@@ -2378,7 +2378,7 @@ add({name:'拼音邮局-三关真实全通',page:'拼音小邮局.html',steps:[
       while(snap().rounds[i].done<50){finish();await __wait(5);if(i<2&&!__$('#invitation').hidden)throw new Error('提前解锁');}
       if(i<2){const before=snap().rounds[i].done;key('a');if(snap().rounds[i].done!==before)throw new Error('重复累计');}
     }
-  }finally{window.setTimeout=realTimer;if(snap().sound!==hadSound)__$('#soundToggle').click();}
+  }finally{window.setTimeout=realTimer;window.AudioContext=realAudio;window.webkitAudioContext=realWebkitAudio;}
   if(snap().screen!=='invite'||__$('#invitation').hidden||snap().rounds.reduce((n,r)=>n+r.done,0)!==150)throw new Error('未全通解锁');
   if(!__$('#invitation').contains(document.activeElement))throw new Error('邀请函焦点错误');
   return JSON.stringify(snap());
@@ -2450,7 +2450,7 @@ add({name:'拼音邮局-扩充旧档刷新',page:'拼音小邮局.html',steps:[{
 `)}]});
 
 /* 监听真实 Web Audio 图：确认已恢复播放并产生非零波形，不只检查按钮文字。 */
-add({name:'拼音邮局-音效清档',page:'index.html',steps:[{label:'准备音效测试',js:wrap(`localStorage.removeItem('pinyinPost.progress.v1');return 'ok';`)}]});
+add({name:'拼音邮局-音效清档',page:'index.html',steps:[{label:'旧版静音设置不应影响默认播放',js:wrap(`localStorage.setItem('pinyinPost.progress.v1',JSON.stringify({v:1,sound:false}));return 'ok';`)}]});
 const postAudioProbe=`
   const OriginalContext=window.AudioContext;window.__audioProbe={contexts:[],notes:[],peak:0};
   window.AudioContext=function(){
@@ -2463,7 +2463,7 @@ const postAudioProbe=`
   };
 `;
 add({name:'拼音邮局-音效实测',page:'拼音小邮局.html',viewport:[1024,768],steps:[
- {label:'加载不自动播放，安装波形探测',js:wrap(postAudioProbe+`if(!window.__post.snapshot().sound)throw new Error('默认未开启');return 'ok';`)},
+ {label:'加载不自动播放，安装波形探测',js:wrap(postAudioProbe+`if(__$('#soundToggle')||window.__audioProbe.contexts.length)throw new Error('不应有开关或自动播放');return 'ok';`)},
  {label:'真实按键激活声音，产生可播放波形',nativeKeys:['b'],js:wrap(`
   await __wait(160);const p=window.__audioProbe;
   if(p.contexts.length!==1||p.contexts[0].state!=='running'||p.notes.length!==1||p.peak<.001)throw new Error('未实际产生声音：'+JSON.stringify({notes:p.notes,peak:p.peak,state:p.contexts[0]&&p.contexts[0].state}));
@@ -2472,20 +2472,18 @@ add({name:'拼音邮局-音效实测',page:'拼音小邮局.html',viewport:[1024
  {label:'错键和完成分别发出柔和低音与三音奖励',nativeKeys:['z','a'],js:wrap(`
   await __wait(400);const p=window.__audioProbe;
   if(p.notes.length!==5||p.notes[1].frequency!==220||Math.round(p.notes[4].frequency)!==784)throw new Error('反馈音类型不正确：'+JSON.stringify(p.notes));
-  __$('#soundToggle').click();const count=p.notes.length;
+  const count=p.notes.length;
   await __wait(360);document.dispatchEvent(new KeyboardEvent('keydown',{key:'m',bubbles:true}));await __wait(100);
-  if(p.notes.length!==count||window.__post.snapshot().sound!==false||__$('#soundToggle').getAttribute('aria-pressed')!=='false')throw new Error('关闭后仍播放');
+  if(p.notes.length!==count+1||__$('#soundToggle'))throw new Error('提示音未始终开启');
   if(document.documentElement.scrollWidth>innerWidth||__$('#keyboardPanel').getBoundingClientRect().bottom>innerHeight)throw new Error('开关挤坏布局');
-  return JSON.stringify({notes:count,muted:true,peak:p.peak});
+  return JSON.stringify({notes:p.notes.length,alwaysOn:true,peak:p.peak});
  `),shot:true}
 ]});
-add({name:'拼音邮局-音效设置恢复',page:'拼音小邮局.html',steps:[
- {label:'刷新记住静音，打开时播放确认音',js:wrap(postAudioProbe+`
-  if(window.__post.snapshot().sound!==false||__$('#soundToggle').textContent!=='提示音：关')throw new Error('静音未保存');return 'ok';
- `)},
- {label:'真实点击恢复播放并保存',nativeClicks:['#soundToggle'],js:wrap(`
+add({name:'拼音邮局-音效刷新',page:'拼音小邮局.html',steps:[
+ {label:'刷新后首次按键仍播放，无静音开关',js:wrap(postAudioProbe+`if(__$('#soundToggle'))throw new Error('开关未删除');return 'ok';`)},
+ {label:'真实按键继续产生声音',nativeKeys:['i'],js:wrap(`
   await __wait(400);const p=window.__audioProbe;
-  if(p.notes.length!==3||p.peak<.001||!JSON.parse(localStorage.getItem('pinyinPost.progress.v1')).sound)throw new Error('打开音效失败');return JSON.stringify({notes:p.notes.length,peak:p.peak});
+  if(p.notes.length!==3||p.peak<.001)throw new Error('刷新后未播放');return JSON.stringify({notes:p.notes.length,peak:p.peak});
  `)}
 ]});
 add({name:'拼音邮局-音效隐藏关',page:'拼音小邮局.html?post=1',steps:[
