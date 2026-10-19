@@ -126,12 +126,12 @@ html.no-flexgap .scene-note>*:not(:last-child){margin-right:8px}
 </head>
 <body>
 <main class="app" id="app" tabindex="-1">
-<header><div class="brand"><div class="brand-mark" aria-hidden="true">✉</div><div><h1>拼音小邮局</h1><p class="subtitle" id="subtitle">每一个拼音，都是一封小小的信。</p></div></div><div class="header-count" id="headerCount">已完成练习 <strong id="totalDone">0</strong> / 24</div></header>
+<header><div class="brand"><div class="brand-mark" aria-hidden="true">✉</div><div><h1>拼音小邮局</h1><p class="subtitle" id="subtitle">每一个拼音，都是一封小小的信。</p></div></div><div class="header-count" id="headerCount">已完成练习 <strong id="totalDone">0</strong> / 150</div></header>
 <nav id="lessonNav" aria-label="基础练习关卡"></nav>
 <div class="routes" id="routes" hidden><span class="route-title" id="routeTitle"></span><span id="routeProgress" class="progress-dots"></span></div>
 <section class="workspace" id="workspace" aria-label="拼音练习">
 <div class="scene" id="scene"><div id="landscape"></div><div class="scene-note"><div><span id="sceneKicker">FOREST POST OFFICE</span><b id="sceneTitle">今天，也有一封信在等你</b></div><div class="postmark" aria-hidden="true">森林邮局<br>PIN YIN</div></div><span class="scene-caption" id="sceneCaption">先练会拼音，再出发送信。</span></div>
-<div class="task" id="task"><div class="task-head"><b id="roundLabel">1 / 8</b></div>
+<div class="task" id="task"><div class="task-head"><b id="roundLabel">1 / 50</b></div>
 <div class="word"><div class="word-icon" id="wordIcon" aria-hidden="true"></div><div><h2 id="wordName"></h2><p class="pinyin" id="pinyin"></p></div></div>
 <p class="instruction" id="instruction">照着拼音敲字母，不用打声调和空格。</p>
 <div class="tokens" id="tokens" aria-label="当前输入进度"></div>
@@ -181,17 +181,145 @@ html.no-flexgap .scene-note>*:not(:last-child){margin-right:8px}
 </svg>
 </section><p class="tiny-note">使用英文输入 · 不用按回车 · Backspace 可以退一格</p>
 </main>
-<section class="invitation" id="invitation" hidden role="dialog" aria-modal="true" aria-labelledby="inviteTitle"><div class="invite-card"><div class="invite-icon">💌</div><small>一封来自森林的邀请函</small><h2 id="inviteTitle">小小邮递员，准备出发！</h2><p>三关练习全部完成，24 枚邮票已集齐。<br>森林里的小伙伴，正在等你送来第一封信。</p><button id="enterPost">打开隐藏关 · 森林送信员</button></div></section>
+<section class="invitation" id="invitation" hidden role="dialog" aria-modal="true" aria-labelledby="inviteTitle"><div class="invite-card"><div class="invite-icon">💌</div><small>一封来自森林的邀请函</small><h2 id="inviteTitle">小小邮递员，准备出发！</h2><p>三关练习全部完成，150 枚邮票已集齐。<br>森林里的小伙伴，正在等你送来第一封信。</p><button id="enterPost">打开隐藏关 · 森林送信员</button></div></section>
 <script>
 (function(){
 'use strict';
 var $=function(id){return document.getElementById(id);};
 var pack=function(name,tone,raw,icon){return {name:name,tone:tone,raw:raw,icon:icon};};
 var LESSONS=[
- {name:'拼音起步',sub:'短音节 · 找准每一个键',words:[pack('八','bā','ba','8️⃣'),pack('米','mǐ','mi','🍚'),pack('兔','tù','tu','🐰'),pack('马','mǎ','ma','🐴'),pack('你','nǐ','ni','👋'),pack('我','wǒ','wo','🙋'),pack('鱼','yú','yu','🐟'),pack('虎','hǔ','hu','🐯')]},
- {name:'音节进阶',sub:'长音节 · 连着敲也不怕',words:[pack('猫','māo','mao','🐱'),pack('水','shuǐ','shui','💧'),pack('羊','yáng','yang','🐑'),pack('山','shān','shan','⛰️'),pack('鸟','niǎo','niao','🐦'),pack('船','chuán','chuan','⛵'),pack('星','xīng','xing','⭐'),pack('掌','zhǎng','zhang','🖐️')]},
- {name:'词语练习',sub:'双音节 · 拼成一个小词语',words:[pack('小猫','xiǎo māo','xiaomao','🐱'),pack('苹果','píng guǒ','pingguo','🍎'),pack('白兔','bái tù','baitu','🐰'),pack('花朵','huā duǒ','huaduo','🌼'),pack('太阳','tài yáng','taiyang','☀️'),pack('月亮','yuè liang','yueliang','🌙'),pack('小鸟','xiǎo niǎo','xiaoniao','🐦'),pack('大树','dà shù','dashu','🌳')]}
+ {name:'拼音起步',sub:'短音节 · 找准每一个键',words:[pack('八','bā','ba','8️⃣'),pack('米','mǐ','mi','🍚'),pack('兔','tù','tu','🐰'),pack('马','mǎ','ma','🐴'),pack('你','nǐ','ni','👋'),pack('我','wǒ','wo','🙋'),pack('鱼','yú','yu','🐟'),pack('虎','hǔ','hu','🐯'),
+  pack("波","bō","bo","🌊"),
+  pack("坡","pō","po","⛰️"),
+  pack("摸","mō","mo","🖐️"),
+  pack("佛","fó","fo","🪷"),
+  pack("的","de","de","📖"),
+  pack("特","tè","te","⭐"),
+  pack("呢","ne","ne","💬"),
+  pack("乐","lè","le","😄"),
+  pack("歌","gē","ge","🎵"),
+  pack("课","kè","ke","📚"),
+  pack("河","hé","he","🏞️"),
+  pack("鸡","jī","ji","🐔"),
+  pack("旗","qí","qi","🚩"),
+  pack("西","xī","xi","🧭"),
+  pack("子","zǐ","zi","👶"),
+  pack("刺","cì","ci","🌵"),
+  pack("丝","sī","si","🧵"),
+  pack("日","rì","ri","☀️"),
+  pack("入","rù","ru","🚪"),
+  pack("木","mù","mu","🪵"),
+  pack("怒","nù","nu","😠"),
+  pack("布","bù","bu","🧶"),
+  pack("铺","pù","pu","🏪"),
+  pack("斧","fǔ","fu","🪓"),
+  pack("读","dú","du","📖"),
+  pack("鹿","lù","lu","🦌"),
+  pack("鼓","gǔ","gu","🥁"),
+  pack("哭","kū","ku","😢"),
+  pack("爬","pá","pa","🐾"),
+  pack("发","fā","fa","📨"),
+  pack("大","dà","da","🐘"),
+  pack("他","tā","ta","👦"),
+  pack("拿","ná","na","🤲"),
+  pack("拉","lā","la","🪢"),
+  pack("嘎","gā","ga","🦆"),
+  pack("卡","kǎ","ka","💳"),
+  pack("哈","hā","ha","😄"),
+  pack("笔","bǐ","bi","🖊️"),
+  pack("皮","pí","pi","🍊"),
+  pack("地","dì","di","🌱"),
+  pack("梯","tī","ti","🪜"),
+  pack("梨","lí","li","🍐")]},
+ {name:'音节进阶',sub:'长音节 · 连着敲也不怕',words:[pack('猫','māo','mao','🐱'),pack('水','shuǐ','shui','💧'),pack('羊','yáng','yang','🐑'),pack('山','shān','shan','⛰️'),pack('鸟','niǎo','niao','🐦'),pack('船','chuán','chuan','⛵'),pack('星','xīng','xing','⭐'),pack('掌','zhǎng','zhang','🖐️'),
+  pack("纸","zhǐ","zhi","📃"),
+  pack("吃","chī","chi","🍽️"),
+  pack("诗","shī","shi","📜"),
+  pack("竹","zhú","zhu","🎋"),
+  pack("出","chū","chu","🚪"),
+  pack("书","shū","shu","📖"),
+  pack("找","zhǎo","zhao","🔎"),
+  pack("炒","chǎo","chao","🍳"),
+  pack("勺","sháo","shao","🥄"),
+  pack("舟","zhōu","zhou","🛶"),
+  pack("抽","chōu","chou","🧻"),
+  pack("手","shǒu","shou","✋"),
+  pack("庄","zhuāng","zhuang","🏡"),
+  pack("窗","chuāng","chuang","🪟"),
+  pack("双","shuāng","shuang","🧦"),
+  pack("钟","zhōng","zhong","🕰️"),
+  pack("虫","chóng","chong","🐛"),
+  pack("龙","lóng","long","🐉"),
+  pack("亮","liàng","liang","💡"),
+  pack("六","liù","liu","6️⃣"),
+  pack("楼","lóu","lou","🏢"),
+  pack("蓝","lán","lan","🔵"),
+  pack("莲","lián","lian","🪷"),
+  pack("铃","líng","ling","🔔"),
+  pack("来","lái","lai","👋"),
+  pack("雷","léi","lei","🌩️"),
+  pack("年","nián","nian","🧧"),
+  pack("宁","níng","ning","🍃"),
+  pack("南","nán","nan","🧭"),
+  pack("挪","nuó","nuo","📦"),
+  pack("能","néng","neng","💪"),
+  pack("牛","niú","niu","🐮"),
+  pack("选","xuǎn","xuan","✅"),
+  pack("雪","xuě","xue","❄️"),
+  pack("小","xiǎo","xiao","🐜"),
+  pack("熊","xióng","xiong","🐻"),
+  pack("泉","quán","quan","💧"),
+  pack("球","qiú","qiu","⚽"),
+  pack("钱","qián","qian","🪙"),
+  pack("桥","qiáo","qiao","🌉"),
+  pack("圆","yuán","yuan","⭕"),
+  pack("月","yuè","yue","🌙")]},
+ {name:'词语练习',sub:'双音节 · 拼成一个小词语',words:[pack('小猫','xiǎo māo','xiaomao','🐱'),pack('苹果','píng guǒ','pingguo','🍎'),pack('白兔','bái tù','baitu','🐰'),pack('花朵','huā duǒ','huaduo','🌼'),pack('太阳','tài yáng','taiyang','☀️'),pack('月亮','yuè liang','yueliang','🌙'),pack('小鸟','xiǎo niǎo','xiaoniao','🐦'),pack('大树','dà shù','dashu','🌳'),
+  pack("小狗","xiǎo gǒu","xiaogou","🐶"),
+  pack("小羊","xiǎo yáng","xiaoyang","🐑"),
+  pack("小牛","xiǎo niú","xiaoniu","🐮"),
+  pack("小马","xiǎo mǎ","xiaoma","🐴"),
+  pack("小鱼","xiǎo yú","xiaoyu","🐟"),
+  pack("小熊","xiǎo xióng","xiaoxiong","🐻"),
+  pack("松鼠","sōng shǔ","songshu","🐿️"),
+  pack("狐狸","hú li","huli","🦊"),
+  pack("小鹿","xiǎo lù","xiaolu","🦌"),
+  pack("乌龟","wū guī","wugui","🐢"),
+  pack("小猪","xiǎo zhū","xiaozhu","🐷"),
+  pack("小鸭","xiǎo yā","xiaoya","🦆"),
+  pack("公鸡","gōng jī","gongji","🐓"),
+  pack("母鸡","mǔ jī","muji","🐔"),
+  pack("飞机","fēi jī","feiji","✈️"),
+  pack("火车","huǒ chē","huoche","🚂"),
+  pack("汽车","qì chē","qiche","🚗"),
+  pack("轮船","lún chuán","lunchuan","🚢"),
+  pack("气球","qì qiú","qiqiu","🎈"),
+  pack("风筝","fēng zheng","fengzheng","🪁"),
+  pack("书包","shū bāo","shubao","🎒"),
+  pack("铅笔","qiān bǐ","qianbi","✏️"),
+  pack("橡皮","xiàng pí","xiangpi","🧽"),
+  pack("尺子","chǐ zi","chizi","📏"),
+  pack("桌子","zhuō zi","zhuozi","🪑"),
+  pack("椅子","yǐ zi","yizi","🪑"),
+  pack("书本","shū běn","shuben","📚"),
+  pack("学校","xué xiào","xuexiao","🏫"),
+  pack("老师","lǎo shī","laoshi","👩‍🏫"),
+  pack("同学","tóng xué","tongxue","👧"),
+  pack("妈妈","mā ma","mama","👩"),
+  pack("爸爸","bà ba","baba","👨"),
+  pack("哥哥","gē ge","gege","👦"),
+  pack("姐姐","jiě jie","jiejie","👧"),
+  pack("弟弟","dì di","didi","👦"),
+  pack("妹妹","mèi mei","meimei","👧"),
+  pack("西瓜","xī guā","xigua","🍉"),
+  pack("香蕉","xiāng jiāo","xiangjiao","🍌"),
+  pack("草莓","cǎo méi","caomei","🍓"),
+  pack("葡萄","pú tao","putao","🍇"),
+  pack("牛奶","niú nǎi","niunai","🥛"),
+  pack("面包","miàn bāo","mianbao","🍞")]}
 ];
+function lessonTotal(i){return LESSONS[i].words.length;}
+var TOTAL=LESSONS.reduce(function(n,l){return n+l.words.length;},0);
 var MAIL=[pack('小猫','xiǎo māo','xiaomao','🐱'),pack('白兔','bái tù','baitu','🐰'),pack('松鼠','sōng shǔ','songshu','🐿️'),pack('小鸟','xiǎo niǎo','xiaoniao','🐦'),pack('小熊','xiǎo xióng','xiaoxiong','🐻'),pack('海豚','hǎi tún','haitun','🐬'),pack('海星','hǎi xīng','haixing','⭐'),pack('小鱼','xiǎo yú','xiaoyu','🐟'),pack('螃蟹','páng xiè','pangxie','🦀'),pack('海鸥','hǎi ōu','haiou','🐦'),pack('企鹅','qǐ é','qie','🐧'),pack('雪人','xuě rén','xueren','⛄'),pack('白熊','bái xióng','baixiong','🐻‍❄️'),pack('雪兔','xuě tù','xuetu','🐰'),pack('小鹿','xiǎo lù','xiaolu','🦌'),pack('猫头鹰','māo tóu yīng','maotouying','🦉'),pack('萤火虫','yíng huǒ chóng','yinghuochong','✨'),pack('月亮','yuè liang','yueliang','🌙'),pack('星星','xīng xing','xingxing','⭐'),pack('小狐狸','xiǎo hú li','xiaohuli','🦊')];
 var THEMES=[{name:'森林邮路',sky:'#dcebd8',hill:'#bed3aa',ground:'#93b48c',house:'#e9c18e',ink:'#426b4e',night:false},
 {name:'海边邮路',sky:'#dceef0',hill:'#a5d0d2',ground:'#e3d5ad',house:'#f1c3a0',ink:'#427a80',night:false},
@@ -220,8 +348,8 @@ function sound(kind){
   if(audio.state==='suspended'){var resumed=audio.resume();if(resumed&&resumed.then)resumed.then(play).catch(function(){});else play();}else play();
  }catch(e){}
 }
-function complete(){return state.rounds.every(function(r){return r.done===8;});}
-function word(){if(state.screen==='post')return MAIL[(state.mail.sent-(state.mail.delivering?1:0))%MAIL.length];var r=state.rounds[state.level];return LESSONS[state.level].words[Math.min(7,r.done-(busy&&r.done>0?1:0))];}
+function complete(){return state.rounds.every(function(r,i){return r.done===lessonTotal(i);});}
+function word(){if(state.screen==='post')return MAIL[(state.mail.sent-(state.mail.delivering?1:0))%MAIL.length];var r=state.rounds[state.level];return LESSONS[state.level].words[Math.min(lessonTotal(state.level)-1,r.done-(busy&&r.done>0?1:0))];}
 function typed(){return state.screen==='post'?state.mail.typed:state.rounds[state.level].typed;}
 function setTyped(value){if(state.screen==='post')state.mail.typed=value;else state.rounds[state.level].typed=value;}
 function save(){if(preview)return;try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
@@ -230,7 +358,7 @@ function prefix(value,target){return typeof value==='string'&&value.length<targe
 function restore(){
  if(preview)return;
  try{var d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d||d.v!==1)return;
-  if(Array.isArray(d.rounds))state.rounds.forEach(function(r,i){var a=d.rounds[i];if(!a||!number(a.done,8))return;r.done=a.done;r.typed=r.done<8?prefix(a.typed,LESSONS[i].words[r.done].raw):'';});
+  if(Array.isArray(d.rounds))state.rounds.forEach(function(r,i){var a=d.rounds[i];if(!a||!number(a.done,lessonTotal(i)))return;r.done=a.done;r.typed=r.done<lessonTotal(i)?prefix(a.typed,LESSONS[i].words[r.done].raw):'';});
   if(number(d.level,2))state.level=d.level;if(typeof d.sound==='boolean')state.sound=d.sound;
   if(d.mail&&number(d.mail.sent,100000000)){state.mail.sent=d.mail.sent;state.mail.typed=d.mail.delivering?'':prefix(d.mail.typed,MAIL[d.mail.sent%MAIL.length].raw);}
   if(complete())state.screen=d.screen==='post'?'post':'invite';
@@ -243,7 +371,7 @@ function selectLesson(i){if(state.screen!=='practice')return;stopTimer();state.l
 function buildNav(){LESSONS.forEach(function(l,i){var b=document.createElement('button');b.className='lesson';b.dataset.level=i;b.innerHTML='<span class="number">0'+(i+1)+'</span><span><b>'+l.name+'</b><small>'+l.sub+'</small></span><span class="tally"></span>';b.addEventListener('click',function(){selectLesson(i);});$('lessonNav').appendChild(b);});}
 var FINGERS=[['qaz','左手小指'],['wsx','左手无名指'],['edc','左手中指'],['rfvtgb','左手食指'],['yuhjnm','右手食指'],['ik','右手中指'],['ol','右手无名指'],['p','右手小指']];
 function buildKeyboard(){['qwertyuiop','asdfghjkl','zxcvbnm'].forEach(function(row){var line=document.createElement('div');line.className='key-row';row.split('').forEach(function(c){var k=document.createElement('span');k.className='key'+(c==='f'||c==='j'?' home':'');k.id='key-'+c;k.textContent=c.toUpperCase();line.appendChild(k);});$('keyboard').appendChild(line);});}
-function hint(){var c=busy||state.screen==='invite'||state.screen==='practice'&&state.rounds[state.level].done===8?'':word().raw[typed().length],finger='';FINGERS.forEach(function(f){if(c&&f[0].indexOf(c)!==-1)finger=f[1];});
+function hint(){var c=busy||state.screen==='invite'||state.screen==='practice'&&state.rounds[state.level].done===lessonTotal(state.level)?'':word().raw[typed().length],finger='';FINGERS.forEach(function(f){if(c&&f[0].indexOf(c)!==-1)finger=f[1];});
  document.querySelectorAll('.key').forEach(function(k){k.classList.toggle('active',k.id==='key-'+c);});document.querySelectorAll('.hand-finger').forEach(function(f){f.classList.toggle('active',f.getAttribute('data-finger')===finger);});
  $('fingerHint').textContent=c?'下一键 '+c.toUpperCase()+' · '+finger:'这一封，写好啦';$('hands').setAttribute('aria-label',finger?finger+'按键提示':'双手指法');
  $('soundToggle').textContent=state.sound?'提示音：开':'提示音：关';$('soundToggle').setAttribute('aria-pressed',String(state.sound));
@@ -260,12 +388,12 @@ function landscape(){var post=state.screen==='post',station=Math.floor(state.mai
  '<g class="delivery-van" transform="translate(0 0)"><g transform="translate(205 282)"><rect x="0" y="-8" width="63" height="41" rx="7" fill="#cf6b45"/><path d="M63 1 H80 L95 20 V33 H63Z" fill="#e18c59"/><path d="M68 5 H78 L87 19 H68Z" fill="#e2ecda"/><rect x="14" y="3" width="29" height="19" rx="3" fill="#fff2d6"/><path d="M17 6 L28 13 40 6" stroke="#cc805a" stroke-width="2" fill="none"/><circle cx="19" cy="34" r="10" fill="#445c51"/><circle cx="78" cy="34" r="10" fill="#445c51"/><circle cx="19" cy="34" r="4" fill="#ced7ba"/><circle cx="78" cy="34" r="4" fill="#ced7ba"/></g></g></svg>';
 }
 function render(){
- var post=state.screen==='post',invite=state.screen==='invite',r=state.rounds[state.level],w=word(),done=!post&&r.done===8;
+ var post=state.screen==='post',invite=state.screen==='invite',r=state.rounds[state.level],w=word(),done=!post&&r.done===lessonTotal(state.level);
  $('lessonNav').hidden=post;$('routes').hidden=!post;$('invitation').hidden=!invite;$('subtitle').textContent=post?'隐藏关 · 森林送信员':'每一个拼音，都是一封小小的信。';
- $('headerCount').innerHTML=post?'已送达 <strong>'+state.mail.sent+'</strong> 封信':'已完成练习 <strong>'+state.rounds.reduce(function(n,a){return n+a.done;},0)+'</strong> / 24';
- document.querySelectorAll('.lesson').forEach(function(b,i){b.classList.toggle('active',i===state.level);b.classList.toggle('done',state.rounds[i].done===8);b.querySelector('.tally').textContent=state.rounds[i].done===8?'✓ 完成':state.rounds[i].done+' / 8';b.setAttribute('aria-current',i===state.level?'step':'false');});
+ $('headerCount').innerHTML=post?'已送达 <strong>'+state.mail.sent+'</strong> 封信':'已完成练习 <strong>'+state.rounds.reduce(function(n,a){return n+a.done;},0)+'</strong> / '+TOTAL;
+ document.querySelectorAll('.lesson').forEach(function(b,i){b.classList.toggle('active',i===state.level);b.classList.toggle('done',state.rounds[i].done===lessonTotal(i));b.querySelector('.tally').textContent=state.rounds[i].done===lessonTotal(i)?'✓ 完成':state.rounds[i].done+' / '+lessonTotal(i);b.setAttribute('aria-current',i===state.level?'step':'false');});
  if(post){var station=Math.floor(state.mail.sent/5)+1;$('routeTitle').textContent='第 '+station+' 站 · '+THEMES[(station-1)%4].name;$('routeProgress').innerHTML='';for(var i=0;i<5;i++){var dot=document.createElement('span');dot.className='route-dot'+(i<state.mail.sent%5?' done':'');dot.textContent=i<state.mail.sent%5?'✉':String(i+1);$('routeProgress').appendChild(dot);}$('routeProgress').setAttribute('aria-label','本邮路已送达 '+state.mail.sent%5+' / 5 封信');}
- $('roundLabel').textContent=post?'第 '+(state.mail.sent+ (state.mail.delivering?0:1))+' 封信':(done?'8 / 8 · 已完成':(r.done+1)+' / 8');
+ $('roundLabel').textContent=post?'第 '+(state.mail.sent+ (state.mail.delivering?0:1))+' 封信':(done?lessonTotal(state.level)+' / '+lessonTotal(state.level)+' · 已完成':(r.done+1)+' / '+lessonTotal(state.level));
  $('wordName').textContent=w.name;$('wordIcon').textContent=w.icon;$('pinyin').textContent=w.tone;
  $('instruction').textContent=post?'输入收件人的拼音，信封就会自动盖章出发。':'照着拼音敲字母，不用打声调和空格。';
  $('tokens').innerHTML='';w.raw.split('').forEach(function(c,i){var span=document.createElement('span');span.className='token'+(done||busy||i<typed().length?' correct':i===typed().length?' current':'');span.textContent=c;$('tokens').appendChild(span);});$('tokens').setAttribute('aria-label','需要输入 '+w.raw+'，已输入 '+typed());
@@ -288,18 +416,18 @@ function accept(e){
  if(state.screen==='invite'){if(e.key==='Tab'){e.preventDefault();$('enterPost').focus();}return;}
  if(e.isComposing||e.key==='Process'||e.key==='Unidentified'){status('请切换到英文输入，再按字母键。');return;}
  if(e.key===' '||e.key==='Enter'||e.key==='Backspace')e.preventDefault();
- if(e.repeat||busy||state.screen==='practice'&&state.rounds[state.level].done===8)return;
+ if(e.repeat||busy||state.screen==='practice'&&state.rounds[state.level].done===lessonTotal(state.level))return;
  if(e.key==='Backspace'){setTyped(typed().slice(0,-1));feedback='';save();render();return;}
  if(!/^[a-zA-Z]$/.test(e.key))return;e.preventDefault();var key=e.key.toLowerCase(),w=word();
  if(key!==w.raw[typed().length]){sound('wrong');status('没关系，下一键是 '+w.raw[typed().length].toUpperCase()+'，再试一次。');$('tokens').classList.remove('wrong');void $('tokens').offsetWidth;$('tokens').classList.add('wrong');return;}
  setTyped(typed()+key);feedback='';if(typed()===w.raw){finishWord();return;}sound('tap');save();render();
 }
-$('nextLesson').addEventListener('click',function(){var i=state.rounds.findIndex(function(r){return r.done<8;});if(i>=0)selectLesson(i);});
+$('nextLesson').addEventListener('click',function(){var i=state.rounds.findIndex(function(r,i){return r.done<lessonTotal(i);});if(i>=0)selectLesson(i);});
 $('enterPost').addEventListener('click',function(){if(!complete())return;stopTimer();state.screen='post';feedback='';save();render();focusApp();});
 $('soundToggle').addEventListener('click',function(){state.sound=!state.sound;save();hint();if(state.sound)sound('done');focusApp();});
 document.addEventListener('keydown',accept);window.addEventListener('focus',focusApp);document.addEventListener('visibilitychange',function(){if(!document.hidden)focusApp();});$('workspace').addEventListener('pointerdown',focusApp);
 restore();
-if(preview){state.rounds.forEach(function(r){r.done=8;r.typed='';});state.screen=params.get('post')==='1'?'post':'invite';var station=parseInt(params.get('station'),10);if(number(station,100000)&&station>0)state.mail.sent=(station-1)*5;}
+if(preview){state.rounds.forEach(function(r,i){r.done=lessonTotal(i);r.typed='';});state.screen=params.get('post')==='1'?'post':'invite';var station=parseInt(params.get('station'),10);if(number(station,100000)&&station>0)state.mail.sent=(station-1)*5;}
 buildNav();buildKeyboard();render();focusApp();
 /* 只读快照供课堂自检使用，不绕过键盘操作。 */
 window.__post={snapshot:function(){return JSON.parse(JSON.stringify(state));},target:function(){return word().raw;},lessons:LESSONS};

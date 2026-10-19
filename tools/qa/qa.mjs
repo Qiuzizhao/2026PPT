@@ -2340,6 +2340,11 @@ add({name:'拼音邮局-清档',page:'index.html',steps:[{label:'旧版关闭提
 add({name:'拼音邮局-基础输入',page:'拼音小邮局.html',viewport:[1024,768],steps:[
  {label:'只有三关，隐藏关未解锁；错键、长按、组合键不计入；退格可纠正',js:wrap(postHelpers+`
   if(snap().screen!=='practice'||!__$('#invitation').hidden||__$$('.lesson').length!==3)throw new Error('初始解锁错误');
+  for(const lesson of window.__post.lessons){
+    if(lesson.words.length!==50||new Set(lesson.words.map(w=>w.raw)).size!==50)throw new Error('每关不是50个不同的题目');
+    for(const w of lesson.words)if(w.tone.normalize('NFD').replace(/[\u0300-\u036f ]/g,'')!==w.raw)throw new Error('拼音与输入不匹配：'+w.name);
+  }
+  if(!__$('#headerCount').textContent.includes('/ 150')||!__$('#roundLabel').textContent.includes('/ 50'))throw new Error('总题数显示错误');
   key('z');if(snap().rounds[0].typed)throw new Error('错键被接受');
   key('b',{repeat:true});key('b',{ctrlKey:true});if(snap().rounds[0].typed)throw new Error('长按或组合键被接受');
   key('Process',{isComposing:true});if(!__$('#status').textContent.includes('英文输入'))throw new Error('未提示英文输入');
@@ -2362,19 +2367,25 @@ add({name:'拼音邮局-刷新续练与切关',page:'拼音小邮局.html',steps
  `),shot:true}
 ]});
 add({name:'拼音邮局-三关真实全通',page:'拼音小邮局.html',steps:[
- {label:'完成24题才解锁邀请函，逐字推进，已完成关不重记',js:wrap(postHelpers+`
-  for(let i=0;i<3;i++){
-    __$('.lesson[data-level="'+i+'"]').click();
-    while(snap().rounds[i].done<8){finish();await __wait(720);if(i<2&&!__$('#invitation').hidden)throw new Error('提前解锁');}
-    if(i<2){const before=snap().rounds[i].done;key('a');if(snap().rounds[i].done!==before)throw new Error('重复累计');}
-  }
-  if(snap().screen!=='invite'||__$('#invitation').hidden||snap().rounds.reduce((n,r)=>n+r.done,0)!==24)throw new Error('未全通解锁');
+ {label:'完成150题才解锁邀请函，逐字推进，已完成关不重记',js:wrap(postHelpers+`
+  const realTimer=window.setTimeout,hadSound=snap().sound;
+  if(hadSound)__$('#soundToggle').click();
+  /* 仅缩短盖章等待，150题仍逐字通过真实事件处理器完成。 */
+  window.setTimeout=(fn,ms,...args)=>realTimer(fn,ms===650?0:ms,...args);
+  try{
+    for(let i=0;i<3;i++){
+      __$('.lesson[data-level="'+i+'"]').click();
+      while(snap().rounds[i].done<50){finish();await __wait(5);if(i<2&&!__$('#invitation').hidden)throw new Error('提前解锁');}
+      if(i<2){const before=snap().rounds[i].done;key('a');if(snap().rounds[i].done!==before)throw new Error('重复累计');}
+    }
+  }finally{window.setTimeout=realTimer;if(snap().sound!==hadSound)__$('#soundToggle').click();}
+  if(snap().screen!=='invite'||__$('#invitation').hidden||snap().rounds.reduce((n,r)=>n+r.done,0)!==150)throw new Error('未全通解锁');
   if(!__$('#invitation').contains(document.activeElement))throw new Error('邀请函焦点错误');
   return JSON.stringify(snap());
  `),shot:true}
 ]});
 add({name:'拼音邮局-邀请函存档',page:'拼音小邮局.html',steps:[
- {label:'全通后刷新仍显示隐藏入口',js:wrap(`if(__$('#invitation').hidden||window.__post.snapshot().screen!=='invite'||!__$('#roundLabel').textContent.includes('8 / 8'))throw new Error('解锁状态或完成题数错误');return 'ok';`),shot:true},
+ {label:'全通后刷新仍显示隐藏入口',js:wrap(`if(__$('#invitation').hidden||window.__post.snapshot().screen!=='invite'||!__$('#roundLabel').textContent.includes('50 / 50'))throw new Error('解锁状态或完成题数错误');return 'ok';`),shot:true},
  {label:'进入隐藏关，写半封信即存档',nativeClicks:['#enterPost'],js:wrap(postHelpers+`
   if(snap().screen!=='post'||!__$('#lessonNav').hidden)throw new Error('未进入邮路');
   type('xiao');if(snap().mail.typed!=='xiao')throw new Error('隐藏关输入错误');return JSON.stringify(snap());
@@ -2423,6 +2434,20 @@ add({name:'拼音邮局-损坏存档恢复',page:'拼音小邮局.html',steps:[{
  if(snap().rounds[0].done!==1)throw new Error('禁用存储不能练习');return 'ok';
 `)}]});
 
+
+
+add({name:'拼音邮局-扩充旧档种进度',page:'index.html',steps:[{label:'旧版三关各8题已完成，保留送信成绩',js:wrap(`
+ localStorage.setItem('pinyinPost.progress.v1',JSON.stringify({v:1,level:0,screen:'post',sound:false,rounds:[{done:8,typed:''},{done:8,typed:''},{done:8,typed:''}],mail:{sent:12,typed:'',delivering:false}}));return 'ok';
+`)}]});
+add({name:'拼音邮局-扩充旧档继续练',page:'拼音小邮局.html',steps:[{label:'从第9题继续，不能以原24题解锁；新旧成绩均保留',js:wrap(postHelpers+`
+ if(snap().screen!=='practice'||!__$('#invitation').hidden||snap().mail.sent!==12||!snap().rounds.every(r=>r.done===8)||!__$('#headerCount').textContent.includes('24')||!__$('#roundLabel').textContent.includes('9 / 50'))throw new Error('旧进度迁移错误');
+ __$('#enterPost').click();if(snap().screen!=='practice')throw new Error('提前进入隐藏关');
+ if(window.__post.target()!=='bo')throw new Error('新增题序不正确');finish();await __wait(720);
+ if(snap().rounds[0].done!==9||snap().mail.sent!==12)throw new Error('新增题不能继续累计');return JSON.stringify(snap());
+`),shot:true}]});
+add({name:'拼音邮局-扩充旧档刷新',page:'拼音小邮局.html',steps:[{label:'新增题目进度也能刷新续练',js:wrap(`
+ const s=window.__post.snapshot();if(s.rounds[0].done!==9||s.screen!=='practice'||!__$('#roundLabel').textContent.includes('10 / 50'))throw new Error('扩充后的进度丢失');return 'ok';
+`)}]});
 
 /* 监听真实 Web Audio 图：确认已恢复播放并产生非零波形，不只检查按钮文字。 */
 add({name:'拼音邮局-音效清档',page:'index.html',steps:[{label:'准备音效测试',js:wrap(`localStorage.removeItem('pinyinPost.progress.v1');return 'ok';`)}]});
