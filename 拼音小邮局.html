@@ -30,7 +30,7 @@ html.no-flexgap .scene-note>*:not(:last-child){margin-right:8px}
 .scene-note b{font-size:16px;display:block;margin-top:6px}.postmark{border:2px solid currentColor;border-radius:50%;width:59px;height:59px;display:flex;align-items:center;justify-content:center;transform:rotate(-15deg);font-size:10px;text-align:center;line-height:1.7;opacity:.6;flex-shrink:0}
 .scene-caption{position:absolute;left:20px;bottom:18px;font-size:11px;color:#356249;background:#fafff2e6;border-radius:20px;padding:8px 13px;max-width:90%}
 .task{padding:23px 27px 18px;min-width:0;display:flex;flex-direction:column;position:relative}
-.task-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:1px;color:var(--muted);min-height:20px}
+.task-head{display:flex;justify-content:flex-end;align-items:center;font-size:11px;letter-spacing:1px;color:var(--muted);min-height:20px}
 .task-head b{color:var(--green);background:#e9f0e4;border-radius:20px;padding:5px 10px;letter-spacing:0}
 .word{display:flex;align-items:center;margin:14px 0 2px;gap:14px;min-height:68px}html.no-flexgap .word>*:not(:last-child){margin-right:14px}
 .word-icon{width:65px;height:65px;background:#f5efdc;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0}
@@ -40,7 +40,7 @@ html.no-flexgap .scene-note>*:not(:last-child){margin-right:8px}
 .token{font-family:Consolas,monospace;font-size:27px;display:inline-flex;align-items:center;justify-content:center;width:35px;height:43px;background:#f0f1e8;border-bottom:3px solid #dce0d3;border-radius:7px;color:#a9b0a1}
 .token.correct{color:var(--green);background:#dfeddb;border-color:#a8c5a2}.token.current{background:#fff2d9;color:#aa542b;border:2px solid #df9d59;border-bottom-width:4px}
 .status{font-size:12px;line-height:1.5;min-height:34px;margin:8px 0 0;color:var(--orange);display:flex;align-items:center}
-.task-foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:9px;border-top:1px dashed var(--line);font-size:11px;color:var(--muted)}
+.task-foot{margin-top:auto;display:flex;justify-content:flex-end;align-items:center}
 .next-button{border:0;border-radius:8px;padding:8px 14px;background:var(--green);color:#fff}
 .keyboard-panel{display:grid;grid-template-columns:60% 40%;margin-top:13px;border:1px solid var(--line);border-radius:18px;padding:12px 18px 8px;background:#fafbf5;align-items:center}
 .keyboard-head{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:8px;color:var(--muted)}.keyboard-head b{color:var(--green);font-weight:700}
@@ -49,6 +49,7 @@ html.no-flexgap .scene-note>*:not(:last-child){margin-right:8px}
 .key-row{display:flex;justify-content:center;gap:5px;margin-bottom:5px}html.no-flexgap .key-row>*:not(:last-child){margin-right:5px}
 .key{width:35px;height:29px;border:1px solid #d6dfd1;border-bottom-width:3px;border-radius:6px;background:#f1f4e9;font:14px Consolas,monospace;text-align:center;line-height:25px;color:#7a8b76}
 .key.active{background:var(--orange);color:white;border-color:#b95431;font-weight:bold;transform:translateY(-2px);box-shadow:0 3px 0 #f4d8c0}.key.home{text-decoration:underline;text-underline-offset:4px}
+.hint-icon{width:27px;height:24px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--line);border-radius:6px}.hint-icon[aria-pressed="false"]{opacity:.5}
 .hands{display:block;width:100%;height:113px;padding-left:20px}.hand-palm,.digit{fill:#ebe4d1;stroke:#b6b69c;stroke-width:2}.nail{fill:#fffaf0}.hand-finger.active .digit{fill:#e9a16b;stroke:#b56a3d}.hand-finger.active .nail{fill:#fff1db}.hand-label{font-size:16px;fill:#85927c;text-anchor:middle}
 .tiny-note{text-align:center;font-size:11px;color:#8a9585;margin:11px 0 0}.hint-off .key.active{background:#f1f4e9;color:#7a8b76;border-color:#d6dfd1;transform:none;box-shadow:none}.hint-off .hand-finger.active .digit{fill:#ebe4d1;stroke:#b6b69c}.hint-off .hand-finger.active .nail{fill:#fffaf0}
 .invitation{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(32,58,46,.62);z-index:500;display:flex;align-items:center;justify-content:center;padding:22px;overflow:auto}
@@ -132,15 +133,15 @@ html.no-flexgap .scene-note>*:not(:last-child){margin-right:8px}
 <div class="routes" id="routes" hidden><span class="route-title" id="routeTitle"></span><span id="routeProgress" class="progress-dots"></span></div>
 <section class="workspace" id="workspace" aria-label="拼音练习">
 <div class="scene" id="scene"><div id="landscape"></div><div class="scene-note"><div><span id="sceneKicker">FOREST POST OFFICE</span><b id="sceneTitle">今天，也有一封信在等你</b></div><div class="postmark" aria-hidden="true">森林邮局<br>PIN YIN</div></div><span class="scene-caption" id="sceneCaption">先练会拼音，再出发送信。</span></div>
-<div class="task" id="task"><div class="task-head"><span id="taskLabel">今日练习</span><b id="roundLabel">1 / 8</b></div>
+<div class="task" id="task"><div class="task-head"><b id="roundLabel">1 / 8</b></div>
 <div class="word"><div class="word-icon" id="wordIcon" aria-hidden="true"></div><div><h2 id="wordName"></h2><p class="pinyin" id="pinyin"></p></div></div>
 <p class="instruction" id="instruction">照着拼音敲字母，不用打声调和空格。</p>
 <div class="tokens" id="tokens" aria-label="当前输入进度"></div>
 <p class="status" id="status" role="status" aria-live="polite"></p>
-<div class="task-foot"><span id="taskFoot">打完自动盖章 · 打错不扣分</span><button class="next-button" id="nextLesson" hidden>下一关</button></div>
+<div class="task-foot"><button class="next-button" id="nextLesson" hidden>下一关</button></div>
 <div class="stamp" id="stamp" hidden>投递成功<br><small>✉</small></div>
 </div></section>
-<section class="keyboard-panel" id="keyboardPanel" aria-label="键盘指法提示"><div><div class="keyboard-head"><b id="fingerHint">下一键</b><span class="keyboard-actions"><button class="hints-toggle" id="soundToggle" aria-pressed="true">提示音：开</button><button class="hints-toggle" id="hintsToggle" aria-pressed="true">隐藏键位提示</button></span></div><div id="keyboard"></div></div>
+<section class="keyboard-panel" id="keyboardPanel" aria-label="键盘指法提示"><div><div class="keyboard-head"><b id="fingerHint">下一键</b><span class="keyboard-actions"><button class="hints-toggle" id="soundToggle" aria-pressed="true">提示音：开</button><button class="hints-toggle hint-icon" id="hintsToggle" aria-pressed="true" aria-label="隐藏键位提示" title="隐藏键位提示"><svg width="19" height="15" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1" y="1" width="22" height="16" rx="3"/><path d="M5 5h2m3 0h2m3 0h2m-12 4h2m3 0h2m3 0h4M6 13h12"/></svg></button></span></div><div id="keyboard"></div></div>
 <svg class="hands" id="hands" viewBox="0 0 660 190" role="img" aria-label="双手指法">
 <g>
 <rect class="hand-palm" x="72" y="93" width="157" height="70" rx="30"/>
@@ -247,7 +248,7 @@ function buildKeyboard(){['qwertyuiop','asdfghjkl','zxcvbnm'].forEach(function(r
 function hint(){var c=busy||state.screen==='invite'||state.screen==='practice'&&state.rounds[state.level].done===8?'':word().raw[typed().length],finger='';FINGERS.forEach(function(f){if(c&&f[0].indexOf(c)!==-1)finger=f[1];});
  document.querySelectorAll('.key').forEach(function(k){k.classList.toggle('active',k.id==='key-'+c);});document.querySelectorAll('.hand-finger').forEach(function(f){f.classList.toggle('active',f.getAttribute('data-finger')===finger);});
  $('fingerHint').textContent=c?(state.hints?'下一键 '+c.toUpperCase()+' · '+finger:'按拼音继续输入'):'这一封，写好啦';$('hands').setAttribute('aria-label',state.hints&&finger?finger+'按键提示':'双手指法');
- $('keyboardPanel').classList.toggle('hint-off',!state.hints);$('hintsToggle').textContent=state.hints?'隐藏键位提示':'显示键位提示';$('hintsToggle').setAttribute('aria-pressed',String(state.hints));$('soundToggle').textContent=state.sound?'提示音：开':'提示音：关';$('soundToggle').setAttribute('aria-pressed',String(state.sound));
+ $('keyboardPanel').classList.toggle('hint-off',!state.hints);$('hintsToggle').setAttribute('aria-label',state.hints?'隐藏键位提示':'显示键位提示');$('hintsToggle').title=state.hints?'隐藏键位提示':'显示键位提示';$('hintsToggle').setAttribute('aria-pressed',String(state.hints));$('soundToggle').textContent=state.sound?'提示音：开':'提示音：关';$('soundToggle').setAttribute('aria-pressed',String(state.sound));
 }
 function landscape(){var post=state.screen==='post',station=Math.floor(state.mail.sent/5)+1,index=post?Math.floor((state.mail.sent-(state.mail.delivering?1:0))/5)%4:0,t=THEMES[index],key=post?String(index):'base';
  $('sceneTitle').textContent=post?t.name:'今天，也有一封信在等你';$('sceneKicker').textContent=post?'第 '+(Math.floor((state.mail.sent-(state.mail.delivering?1:0))/5)+1)+' 站 · 每送达 5 封信，开启新邮路':'FOREST POST OFFICE';
@@ -266,12 +267,11 @@ function render(){
  $('headerCount').innerHTML=post?'已送达 <strong>'+state.mail.sent+'</strong> 封信':'已完成练习 <strong>'+state.rounds.reduce(function(n,a){return n+a.done;},0)+'</strong> / 24';
  document.querySelectorAll('.lesson').forEach(function(b,i){b.classList.toggle('active',i===state.level);b.classList.toggle('done',state.rounds[i].done===8);b.querySelector('.tally').textContent=state.rounds[i].done===8?'✓ 完成':state.rounds[i].done+' / 8';b.setAttribute('aria-current',i===state.level?'step':'false');});
  if(post){var station=Math.floor(state.mail.sent/5)+1;$('routeTitle').textContent='第 '+station+' 站 · '+THEMES[(station-1)%4].name;$('routeProgress').innerHTML='';for(var i=0;i<5;i++){var dot=document.createElement('span');dot.className='route-dot'+(i<state.mail.sent%5?' done':'');dot.textContent=i<state.mail.sent%5?'✉':String(i+1);$('routeProgress').appendChild(dot);}$('routeProgress').setAttribute('aria-label','本邮路已送达 '+state.mail.sent%5+' / 5 封信');}
- $('taskLabel').textContent=post?'收件人 · 请写好信封':LESSONS[state.level].name+' · 照着拼音打字';$('roundLabel').textContent=post?'第 '+(state.mail.sent+ (state.mail.delivering?0:1))+' 封信':(done?'8 / 8 · 已完成':(r.done+1)+' / 8');
+ $('roundLabel').textContent=post?'第 '+(state.mail.sent+ (state.mail.delivering?0:1))+' 封信':(done?'8 / 8 · 已完成':(r.done+1)+' / 8');
  $('wordName').textContent=w.name;$('wordIcon').textContent=w.icon;$('pinyin').textContent=w.tone;
  $('instruction').textContent=post?'输入收件人的拼音，信封就会自动盖章出发。':'照着拼音敲字母，不用打声调和空格。';
  $('tokens').innerHTML='';w.raw.split('').forEach(function(c,i){var span=document.createElement('span');span.className='token'+(done||busy||i<typed().length?' correct':i===typed().length?' current':'');span.textContent=c;$('tokens').appendChild(span);});$('tokens').setAttribute('aria-label','需要输入 '+w.raw+'，已输入 '+typed());
  $('nextLesson').hidden=!done;$('nextLesson').textContent='继续下一关';$('stamp').hidden=!busy;$('workspace').classList.toggle('delivering',busy&&post);
- $('taskFoot').textContent=done?'这一关的 8 枚邮票，集齐啦！':post?'每送达 5 封，换一条新邮路':'打完自动盖章 · 打错不扣分';
  $('status').textContent=feedback;landscape();hint();
  if(invite)$('enterPost').focus({preventScroll:true});
 }
