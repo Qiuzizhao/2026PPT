@@ -102,3 +102,9 @@ node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 拼音邮局
 ```powershell
 node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-资源加载
 ```
+
+角色迈步动画（换帧、沿路位移、连续输入不回退、静止站稳）：
+
+```powershell
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-行走动画
+```

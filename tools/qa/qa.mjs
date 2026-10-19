@@ -2336,18 +2336,31 @@ const postHelpers=`
   const type=text=>{for(const c of text)key(c);};
   const finish=()=>{const s=snap(),prefix=s.screen==='post'?s.mail.typed:s.rounds[s.level].typed;type(window.__post.target().slice(prefix.length));};
 `;
+add({name:'拼音邮局-行走动画',page:'拼音小邮局.html?post=1&station=13',steps:[{label:'逐字母迈腿换帧，停止后站稳，无旋转摇晃且持续输入不回退',js:wrap(postHelpers+`
+ const poses=new Set(),positions=[];
+ for(let i=0;i<3;i++){
+  const letter=window.__post.target()[snap().mail.typed.length];key(letter);
+  for(let n=0;n<5;n++){await __wait(25);poses.add(__$('#courierArt').getAttribute('data-pose'));positions.push(Number(__$('#journeyWorld').getAttribute('data-camera')));}
+  await __wait(55);
+ }
+ if(poses.size<2)throw new Error('只有平移，没有迈步换帧');
+ if(positions.some((p,i)=>i&&p<positions[i-1]-.001))throw new Error('持续输入位置回退');
+ const still=__$('#courierFrame').getAttribute('x');await __wait(250);if(__$('#courierFrame').getAttribute('x')!==still)throw new Error('停下还在晃动');
+ if(__$('#courierArt').getAttribute('transform')||getComputedStyle(__$('#courierFrame')).animationName!=='none')throw new Error('人物存在整体摇晃');
+ return JSON.stringify({poses:[...poses],stable:true});
+`),shot:true}]});
 add({name:'拼音邮局-资源加载-基础',page:'拼音小邮局.html',steps:[{label:'基础练习不下载隐藏地图和角色',js:wrap(`
  await __wait(300);const assets=performance.getEntriesByType('resource').filter(r=>r.name.includes('/assets/pinyin-post/'));if(assets.length)throw new Error('基础练习提前加载了隐藏素材');return 'ok';
 `)}]});
 add({name:'拼音邮局-资源加载-隐藏',page:'拼音小邮局.html?post=1&station=13',viewport:[1024,768],steps:[{label:'只请求当前和下一张WebP，角色保持透明小尺寸，预取不抢当前地图',js:wrap(`
  const load=src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('图片加载失败：'+src));im.src=src;});
  const current=__$('#journeyWorld image').getAttribute('href');
- const map=await load(current),courier=await load('assets/pinyin-post/courier.webp');await __wait(2100);
- if(map.naturalWidth!==1536||map.naturalHeight!==1024||courier.naturalWidth!==128||courier.naturalHeight!==192)throw new Error('图片尺寸错误');
+ const map=await load(current),courier=await load('assets/pinyin-post/courier-walk.webp');await __wait(2100);
+ if(map.naturalWidth!==1536||map.naturalHeight!==1024||courier.naturalWidth!==512||courier.naturalHeight!==192)throw new Error('图片尺寸错误');
  const entries=performance.getEntriesByType('resource').filter(r=>r.name.includes('/assets/pinyin-post/')),urls=[...new Set(entries.map(r=>r.name))];
  if(urls.length!==3||urls.some(u=>!u.endsWith('.webp')))throw new Error('图片没有按需加载或仍请求PNG：'+urls);
  if(entries.some(r=>r.decodedBodySize>600000))throw new Error('单张图片超出600KB预算');
- const first=entries.filter(r=>r.name.endsWith(current)).sort((a,b)=>a.startTime-b.startTime)[0],next=entries.find(r=>!r.name.endsWith(current)&&!r.name.endsWith('/courier.webp'));
+ const first=entries.filter(r=>r.name.endsWith(current)).sort((a,b)=>a.startTime-b.startTime)[0],next=entries.find(r=>!r.name.endsWith(current)&&!r.name.endsWith('/courier-walk.webp'));
  if(!first||!next||next.startTime<first.responseEnd)throw new Error('下一张地图抢占当前地图带宽');
  return JSON.stringify({assets:urls.length,mapBytes:first.decodedBodySize,courierPixels:[courier.naturalWidth,courier.naturalHeight],deferred:true});
 `),shot:true}]});
