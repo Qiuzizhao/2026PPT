@@ -1,6 +1,6 @@
 # 拼音小邮局场景素材
 
-使用内置 imagegen 生成。场景和人物保存在本目录，课件只加载本地资源。15张地图均为1536×1024，人物为透明PNG。路径和镜头由课件根据曲线计算，不把文字或交互界面画进图片。
+使用内置 imagegen 生成。场景和人物保存在本目录，课件只加载本地资源。15张地图均为1536×1024，人物为128×192透明WebP。路径和镜头由课件根据曲线计算，不把文字或交互界面画进图片。
 
 ## 场景提示词
 
@@ -10,18 +10,18 @@
 
 | 文件 | 场景主题 |
 | --- | --- |
-| forest.png | Lush woodland, rounded pines, ferns, mossy rocks, wildflowers, tiny wooden forest cottage, soft sunlight. |
-| city.png | Charming pastel European town, bookstore, tiled roofs, cafe, planters, warm sun on cobblestones. |
-| beach.png | Turquoise coastal cove, pale sand, palms, shells, tide pools, white lighthouse. |
-| snow.png | Snowy mountain valley, powdery pines, icy blue rocks, warm glowing cabin. |
-| night.png | Magical midnight woodland, indigo trees, fireflies, moonlit flowers, warm lantern lodge. |
-| flowers.png | Meadow of pink, lavender and cream flowers, green grass, flower kiosk. |
-| bamboo.png | Chinese bamboo grove, jade bamboo, stones, shallow stream, traditional tea house. |
-| orchard.png | Golden apple orchard, harvest baskets, wildflowers, farm cottage. |
-| lake.png | Clear lakeside garden, willows, lily pads, docked boat, lake cabin. |
-| desert.png | Golden desert oasis, dunes, succulents, date palms, spring, adobe mail station. |
-| village.png | Countryside farm, cream windmill, vegetables, wheat fields, red-roof farmhouse. |
-| autumn.png | Autumn park, ochre and coral maple trees, fallen leaves, postal cottage. |
+| forest.webp | Lush woodland, rounded pines, ferns, mossy rocks, wildflowers, tiny wooden forest cottage, soft sunlight. |
+| city.webp | Charming pastel European town, bookstore, tiled roofs, cafe, planters, warm sun on cobblestones. |
+| beach.webp | Turquoise coastal cove, pale sand, palms, shells, tide pools, white lighthouse. |
+| snow.webp | Snowy mountain valley, powdery pines, icy blue rocks, warm glowing cabin. |
+| night.webp | Magical midnight woodland, indigo trees, fireflies, moonlit flowers, warm lantern lodge. |
+| flowers.webp | Meadow of pink, lavender and cream flowers, green grass, flower kiosk. |
+| bamboo.webp | Chinese bamboo grove, jade bamboo, stones, shallow stream, traditional tea house. |
+| orchard.webp | Golden apple orchard, harvest baskets, wildflowers, farm cottage. |
+| lake.webp | Clear lakeside garden, willows, lily pads, docked boat, lake cabin. |
+| desert.webp | Golden desert oasis, dunes, succulents, date palms, spring, adobe mail station. |
+| village.webp | Countryside farm, cream windmill, vegetables, wheat fields, red-roof farmhouse. |
+| autumn.webp | Autumn park, ochre and coral maple trees, fallen leaves, postal cottage. |
 
 ## 人物提示词
 
@@ -30,8 +30,15 @@
 
 ## 新增中世纪地图
 
-- `medieval-city.png`：城墙、塔楼、石桥、公会建筑。
-- `medieval-town.png`：半木结构房屋、集市摊棚、水车、旅店。
-- `medieval-village.png`：茅屋、麦田、菜园、风车和小教堂。
+- `medieval-city.webp`：城墙、塔楼、石桥、公会建筑。
+- `medieval-town.webp`：半木结构房屋、集市摊棚、水车、旅店。
+- `medieval-village.webp`：茅屋、麦田、菜园、风车和小教堂。
 
 由内置 imagegen 分别生成，完整提示词见 `medieval-prompts.json`。继续采用窄小径和跟随镜头，每图50词。
+
+
+## 网页图片优化
+
+发布素材统一使用 WebP。地图保留1536×1024，quality=82；角色缩为128×192，quality=90，保留透明度。16张图片从54,906,042字节压缩至6,512,464字节，约减少88.1%。原始PNG保留在imagegen生成目录，仓库只发布压缩后的图片。
+
+基础练习不加载隐藏地图。进入隐藏关只加载当前地图和角色；当前地图完成加载后，浏览器空闲时最多预加载下一张。开启节省流量模式时跳过预加载。地图沿途移动不重建图片、不重复预加载整套素材。

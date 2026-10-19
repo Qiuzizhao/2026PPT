@@ -2336,6 +2336,21 @@ const postHelpers=`
   const type=text=>{for(const c of text)key(c);};
   const finish=()=>{const s=snap(),prefix=s.screen==='post'?s.mail.typed:s.rounds[s.level].typed;type(window.__post.target().slice(prefix.length));};
 `;
+add({name:'拼音邮局-资源加载-基础',page:'拼音小邮局.html',steps:[{label:'基础练习不下载隐藏地图和角色',js:wrap(`
+ await __wait(300);const assets=performance.getEntriesByType('resource').filter(r=>r.name.includes('/assets/pinyin-post/'));if(assets.length)throw new Error('基础练习提前加载了隐藏素材');return 'ok';
+`)}]});
+add({name:'拼音邮局-资源加载-隐藏',page:'拼音小邮局.html?post=1&station=13',viewport:[1024,768],steps:[{label:'只请求当前和下一张WebP，角色保持透明小尺寸，预取不抢当前地图',js:wrap(`
+ const load=src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('图片加载失败：'+src));im.src=src;});
+ const current=__$('#journeyWorld image').getAttribute('href');
+ const map=await load(current),courier=await load('assets/pinyin-post/courier.webp');await __wait(2100);
+ if(map.naturalWidth!==1536||map.naturalHeight!==1024||courier.naturalWidth!==128||courier.naturalHeight!==192)throw new Error('图片尺寸错误');
+ const entries=performance.getEntriesByType('resource').filter(r=>r.name.includes('/assets/pinyin-post/')),urls=[...new Set(entries.map(r=>r.name))];
+ if(urls.length!==3||urls.some(u=>!u.endsWith('.webp')))throw new Error('图片没有按需加载或仍请求PNG：'+urls);
+ if(entries.some(r=>r.decodedBodySize>600000))throw new Error('单张图片超出600KB预算');
+ const first=entries.filter(r=>r.name.endsWith(current)).sort((a,b)=>a.startTime-b.startTime)[0],next=entries.find(r=>!r.name.endsWith(current)&&!r.name.endsWith('/courier.webp'));
+ if(!first||!next||next.startTime<first.responseEnd)throw new Error('下一张地图抢占当前地图带宽');
+ return JSON.stringify({assets:urls.length,mapBytes:first.decodedBodySize,courierPixels:[courier.naturalWidth,courier.naturalHeight],deferred:true});
+`),shot:true}]});
 add({name:'拼音邮局-清档',page:'index.html',steps:[{label:'旧版关闭提示的空进度也必须显示指法',js:wrap(`localStorage.setItem('${postKey}',JSON.stringify({v:1,hints:false}));return 'ok';`)}]});
 add({name:'拼音邮局-基础输入',page:'拼音小邮局.html',viewport:[1024,768],steps:[
  {label:'只有三关，隐藏关未解锁；错键、长按、组合键不计入；退格可纠正',js:wrap(postHelpers+`
