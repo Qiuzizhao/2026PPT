@@ -330,7 +330,7 @@ var LESSONS=[
 ];
 function lessonTotal(i){return LESSONS[i].words.length;}
 var TOTAL=LESSONS.reduce(function(n,l){return n+l.words.length;},0);
-/* 隐藏关只有打字和前进：每条邮路50词，十二种风景随机循环。 */
+/* 隐藏关只有打字和前进：每条邮路50词，十五种风景随机循环。 */
 var SCENES=[
  {name:'森林',place:'森林小屋',sky:'#e4efe8',hill:'#bdd3bd',ground:'#b0c6a0',road:'#ead8b7',accent:'#6f987a',kind:'forest'},
  {name:'城市',place:'街角书店',sky:'#e7eff4',hill:'#ccdce2',ground:'#c0d1c3',road:'#d5d6d0',accent:'#7899a3',kind:'city'},
@@ -343,7 +343,10 @@ var SCENES=[
  {name:'湖畔',place:'湖畔小屋',sky:'#e4eff3',hill:'#bbcdd1',ground:'#b7cbbd',road:'#e7e2cc',accent:'#85abb3',kind:'lake'},
  {name:'沙漠',place:'绿洲驿站',sky:'#f7eddb',hill:'#e2c6a1',ground:'#e7cba7',road:'#f4e1c0',accent:'#bda186',kind:'desert'},
  {name:'乡村',place:'风车农场',sky:'#edf0df',hill:'#c7d3aa',ground:'#b1c395',road:'#e9dab7',accent:'#9caf7c',kind:'village'},
- {name:'秋野',place:'秋日邮亭',sky:'#f5eadd',hill:'#dbc7a8',ground:'#d4c095',road:'#eee0c3',accent:'#be9979',kind:'autumn'}
+ {name:'秋野',place:'秋日邮亭',sky:'#f5eadd',hill:'#dbc7a8',ground:'#d4c095',road:'#eee0c3',accent:'#be9979',kind:'autumn'},
+ {name:'中世纪城市',place:'城堡公会',sky:'#e8e5dc',kind:'medieval-city'},
+ {name:'中世纪小镇',place:'小镇旅店',sky:'#eee7da',kind:'medieval-town'},
+ {name:'中世纪乡村',place:'乡间茅屋',sky:'#ebeddb',kind:'medieval-village'}
 ];
 function randomStep(seed){return (Math.imul(seed,1664525)+1013904223)>>>0;}
 function shuffled(list,seed){var a=list.slice();for(var i=a.length-1;i>0;i--){seed=randomStep(seed);var j=seed%(i+1),v=a[i];a[i]=a[j];a[j]=v;}return a;}
@@ -364,7 +367,10 @@ var sceneryWords=[
  '湖水/hushui/小船/xiaochuan/荷花/hehua/青蛙/qingwa/小鱼/xiaoyu/白云/baiyun/柳树/liushu/鸭子/yazi/水草/shuicao/倒影/daoying',
  '沙漠/shamo/骆驼/luotuo/绿洲/lvzhou/沙丘/shaqiu/水壶/shuihu/脚印/jiaoyin/远方/yuanfang/仙人掌/xianrenzhang/天空/tiankong/泉水/quanshui',
  '乡村/xiangcun/风车/fengche/农田/nongtian/麦子/maizi/小鸡/xiaoji/稻谷/daogu/小羊/xiaoyang/南瓜/nangua/农场/nongchang/小狗/xiaogou',
- '秋天/qiutian/落叶/luoye/枫树/fengshu/果实/guoshi/松果/songguo/南瓜/nangua/田野/tianye/微风/weifeng/小鹿/xiaolu/丰收/fengshou'
+ '秋天/qiutian/落叶/luoye/枫树/fengshu/果实/guoshi/松果/songguo/南瓜/nangua/田野/tianye/微风/weifeng/小鹿/xiaolu/丰收/fengshou',
+ '城堡/chengbao/城墙/chengqiang/石桥/shiqiao/钟楼/zhonglou/塔楼/talou/大门/damen/广场/guangchang/旗帜/qizhi/马车/mache/石头/shitou',
+ '小镇/xiaozhen/集市/jishi/面包/mianbao/铁匠/tiejiang/酒馆/jiuguan/木桶/mutong/屋顶/wuding/石板/shiban/铃铛/lingdang/水车/shuiche',
+ '村庄/cunzhuang/茅屋/maowu/麦田/maitian/谷仓/gucang/稻草/daocao/木桥/muqiao/菜园/caiyuan/牧场/muchang/水井/shuijing/篱笆/liba'
 ];
 var sceneryTones=[
  'shù mù/sōng shǔ/xiǎo niǎo/sēn lín/xiǎo lù/mó gu/shù yè/sōng guǒ/xiǎo xī/mù wū',
@@ -378,7 +384,10 @@ var sceneryTones=[
  'hú shuǐ/xiǎo chuán/hé huā/qīng wā/xiǎo yú/bái yún/liǔ shù/yā zi/shuǐ cǎo/dào yǐng',
  'shā mò/luò tuo/lǜ zhōu/shā qiū/shuǐ hú/jiǎo yìn/yuǎn fāng/xiān rén zhǎng/tiān kōng/quán shuǐ',
  'xiāng cūn/fēng chē/nóng tián/mài zi/xiǎo jī/dào gǔ/xiǎo yáng/nán guā/nóng chǎng/xiǎo gǒu',
- 'qiū tiān/luò yè/fēng shù/guǒ shí/sōng guǒ/nán guā/tián yě/wēi fēng/xiǎo lù/fēng shōu'
+ 'qiū tiān/luò yè/fēng shù/guǒ shí/sōng guǒ/nán guā/tián yě/wēi fēng/xiǎo lù/fēng shōu',
+ 'chéng bǎo/chéng qiáng/shí qiáo/zhōng lóu/tǎ lóu/dà mén/guǎng chǎng/qí zhì/mǎ chē/shí tou',
+ 'xiǎo zhèn/jí shì/miàn bāo/tiě jiàng/jiǔ guǎn/mù tǒng/wū dǐng/shí bǎn/líng dang/shuǐ chē',
+ 'cūn zhuāng/máo wū/mài tián/gǔ cāng/dào cǎo/mù qiáo/cài yuán/mù chǎng/shuǐ jǐng/lí ba'
 ];
 var routeCache=null,motion=null;
 function routeWords(trip){
@@ -463,7 +472,7 @@ function renderRoute(){
 
 /* 生成的2.5D大地图与窄小径；人物和镜头沿同一条曲线前进。 */
 var MAP_ROUTE='M130 580 C220 600 680 570 730 460 C780 360 370 420 400 290 C450 220 720 220 850 125';
-var MAP_ROUTES={bamboo:'M130 580 C250 560 600 600 690 510 C740 440 320 460 350 330 C380 240 740 280 850 125',night:'M130 580 C230 590 650 580 700 500 C720 440 350 440 350 340 C500 290 650 240 850 125',forest:'M130 580 C190 500 420 510 430 440 C440 390 300 370 350 300 C420 220 700 230 850 125',city:'M130 580 C180 500 470 530 500 450 C530 400 260 390 290 300 C370 230 700 250 850 125'};
+var MAP_ROUTES={'medieval-village':'M150 530 C230 550 600 550 620 450 C620 410 350 410 400 330 C450 250 730 270 850 125','medieval-town':'M150 530 C220 550 420 530 420 450 C400 420 300 400 350 330 C420 260 730 280 850 125','medieval-city':'M150 530 C250 550 510 530 520 450 C520 420 380 410 400 330 C450 280 720 230 850 125',bamboo:'M130 580 C250 560 600 600 690 510 C740 440 320 460 350 330 C380 240 740 280 850 125',night:'M130 580 C230 590 650 580 700 500 C720 440 350 440 350 340 C500 290 650 240 850 125',forest:'M130 580 C190 500 420 510 430 440 C440 390 300 370 350 300 C420 220 700 230 850 125',city:'M130 580 C180 500 470 530 500 450 C530 400 260 390 290 300 C370 230 700 250 850 125'};
 function mapPoint(position){var path=$('mapRoute'),length=path.getTotalLength();return path.getPointAtLength(length*Math.max(0,Math.min(50,position))/50);}
 function routePosition(trip,done,partial){
  var words=routeWords(trip),letters=0,total=0;
@@ -552,7 +561,7 @@ $('nextLesson').addEventListener('click',function(){var i=state.rounds.findIndex
 $('enterPost').addEventListener('click',function(){if(!complete())return;stopTimer();state.screen='post';feedback='';save();render();focusApp();});
 document.addEventListener('keydown',accept);window.addEventListener('focus',focusApp);document.addEventListener('visibilitychange',function(){if(!document.hidden)focusApp();});$('workspace').addEventListener('pointerdown',focusApp);
 restore();
-if(preview){state.mail.seed=17;state.rounds.forEach(function(r,i){r.done=lessonTotal(i);r.typed='';});state.screen=params.get('post')==='1'?'post':'invite';var station=parseInt(params.get('station'),10);if(number(station,12)&&station>0){var order=shuffled(SCENES.map(function(s,i){return i;}),state.mail.seed);state.mail.sent=order.indexOf(station-1);}var step=parseInt(params.get('step'),10);if(number(step,49))state.mail.done=step;}
+if(preview){state.mail.seed=17;state.rounds.forEach(function(r,i){r.done=lessonTotal(i);r.typed='';});state.screen=params.get('post')==='1'?'post':'invite';var station=parseInt(params.get('station'),10);if(number(station,SCENES.length)&&station>0){var order=shuffled(SCENES.map(function(s,i){return i;}),state.mail.seed);state.mail.sent=order.indexOf(station-1);}var step=parseInt(params.get('step'),10);if(number(step,49))state.mail.done=step;}
 
 buildNav();buildKeyboard();render();focusApp();
 /* 只读快照供课堂自检使用，不绕过键盘操作。 */

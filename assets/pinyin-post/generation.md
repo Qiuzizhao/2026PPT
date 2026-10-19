@@ -1,6 +1,6 @@
 # 拼音小邮局场景素材
 
-使用内置 imagegen 生成。场景和人物保存在本目录，课件只加载本地资源。12张地图均为1536×1024，人物为透明PNG。路径和镜头由课件根据曲线计算，不把文字或交互界面画进图片。
+使用内置 imagegen 生成。场景和人物保存在本目录，课件只加载本地资源。15张地图均为1536×1024，人物为透明PNG。路径和镜头由课件根据曲线计算，不把文字或交互界面画进图片。
 
 ## 场景提示词
 
@@ -26,3 +26,12 @@
 ## 人物提示词
 
 > Use case: stylized-concept. Game character sprite: ONE adorable young adult male postal courier, green cap and sage green jacket, cream trousers, small brown shoes, tan canvas shoulder satchel, holding one small parcel. Full body, feet and hat fully inside frame. Soft dimensional clay-like storybook 2.5D miniature with delicate painted details, same perspective as an elevated three-quarter bird's-eye map viewed 35 degrees from above. Three-quarter facing toward upper right, friendly and simple readable silhouette, face visible a little, cute professional messenger. Character alone centered on truly transparent background, no ground plane, no scenery, no props around him, no text, no border. Very small soft contact shadow directly under shoes only. Render detailed character suitable for scaling to 55 pixels tall on a map.
+
+
+## 新增中世纪地图
+
+- `medieval-city.png`：城墙、塔楼、石桥、公会建筑。
+- `medieval-town.png`：半木结构房屋、集市摊棚、水车、旅店。
+- `medieval-village.png`：茅屋、麦田、菜园、风车和小教堂。
+
+由内置 imagegen 分别生成，完整提示词见 `medieval-prompts.json`。继续采用窄小径和跟随镜头，每图50词。
