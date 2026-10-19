@@ -140,3 +140,9 @@ node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 独立拼音聚焦布局
 node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-资源加载
 node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 独立拼音加载
 ```
+
+持久图片缓存（首次写入、重新打开零网络传输、原邮局共享）：
+
+```powershell
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音地图缓存
+```

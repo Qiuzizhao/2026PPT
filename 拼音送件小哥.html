@@ -165,6 +165,7 @@ html.no-flexgap .journey-on .tokens>*{margin-right:6px;margin-bottom:0}
   } catch (e) {}
 })();
 </script>
+<script src="assets/pinyin-post/map-cache.js"></script>
 </head>
 <body>
 <main class="app journey-on" id="app" tabindex="-1">
@@ -575,7 +576,7 @@ function drawJourney(){
     });
    });
   }
-  baseMap.addEventListener('load',function(){idle(refine);},{once:true});
+  baseMap.addEventListener('load',refine,{once:true});
   /* 预览加载失败时仍尝试原图，失败也不会影响打字。 */
   baseMap.addEventListener('error',function(){idle(refine);},{once:true});
  }

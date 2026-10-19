@@ -72,6 +72,8 @@ def main():
         out = out.replace("</head>", "<script>document.documentElement.className += ' no-flexgap';</script>\n</head>", 1)
         open(os.path.join(OUT, f), "w", encoding="utf-8", newline="").write(out)
         print("simulated:", f)
+    if os.path.isfile("pinyin-map-sw.js"):
+        shutil.copy2("pinyin-map-sw.js", os.path.join(OUT, "pinyin-map-sw.js"))
     if os.path.isdir("assets"):
         shutil.copytree("assets", os.path.join(OUT, "assets"), dirs_exist_ok=True)
         print("simulated: assets")
