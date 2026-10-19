@@ -2408,6 +2408,17 @@ add({name:'拼音邮局-资源加载-隐藏',page:'拼音小邮局.html?post=1&s
  if(!first||!next||next.startTime<first.responseEnd)throw new Error('下一张地图抢占当前地图带宽');
  return JSON.stringify({assets:urls.length,mapBytes:first.decodedBodySize,courierPixels:[courier.naturalWidth,courier.naturalHeight],deferred:true});
 `),shot:true}]});
+for(const size of [[1024,768],[1920,1080],[390,844]])add({name:'独立拼音聚焦布局-'+size.join('x'),page:'拼音送件小哥.html?preview=1&station=13',viewport:size,steps:[{label:'汉字拼音在字母正上方，放大集中显示；50词和错键不引起面板晃动',js:wrap(postHelpers+`
+ const word=__$('.word').getBoundingClientRect(),tokens=__$('#tokens').getBoundingClientRect(),name=__$('#wordName').getBoundingClientRect(),pinyin=__$('#pinyin').getBoundingClientRect();
+ if(tokens.top<word.bottom-1||tokens.top-word.bottom>12||Math.abs(tokens.left-word.left)>1)throw new Error('输入与词语没有紧邻排列');
+ if(pinyin.left-name.right>20||pinyin.top>name.bottom)throw new Error('汉字拼音距离过远');
+ if(innerWidth>=1024&&(parseFloat(getComputedStyle(__$('#wordName')).fontSize)<32||parseFloat(getComputedStyle(__$('#tokens .token')).fontSize)<28))throw new Error('提示不够显眼');
+ const ids=['#scene','#task','.word','#wordName','#pinyin','#tokens','#tokens .token:first-child','#status','#keyboardPanel'],measure=()=>ids.map(sel=>{const r=__$(sel).getBoundingClientRect();return [r.x,r.y,r.width,r.height];}),base=JSON.stringify(measure());
+ const check=()=>{if(JSON.stringify(measure())!==base)throw new Error('错键或换词导致布局变化');};
+ const realTimer=window.setTimeout;window.setTimeout=(fn,ms,...args)=>realTimer(fn,ms===180?0:ms,...args);window.AudioContext=undefined;window.webkitAudioContext=undefined;
+ try{for(let i=0;i<50;i++){key(window.__post.target()[0]==='z'?'x':'z');check();key('Process',{isComposing:true});check();finish();await __wait(5);check();}}finally{window.setTimeout=realTimer;}
+ if(innerWidth>=1024&&__$('#keyboardPanel').getBoundingClientRect().bottom>innerHeight)throw new Error('键盘超出视口');return JSON.stringify({close:true,stable:true,words:50});
+`),shot:true}]});
 /* 独立送件页：新入口直接玩，自己的存档与原邮局完全隔离。 */
 add({name:'独立拼音送件-准备',page:'index.html',steps:[{label:'保留原邮局的基础练习现场，独立页面有目录入口',js:wrap(`
  const original=JSON.stringify({v:1,level:1,screen:'practice',rounds:[{done:12,typed:''},{done:8,typed:''},{done:3,typed:''}],mail:{journey:2,seed:42,sent:7,done:9,typed:'',delivering:false}});
