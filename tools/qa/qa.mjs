@@ -2336,7 +2336,7 @@ const postHelpers=`
   const type=text=>{for(const c of text)key(c);};
   const finish=()=>{const s=snap(),prefix=s.screen==='post'?s.mail.typed:s.rounds[s.level].typed;type(window.__post.target().slice(prefix.length));};
 `;
-add({name:'拼音邮局-清档',page:'index.html',steps:[{label:'准备独立测试存档',js:wrap(`localStorage.removeItem('${postKey}');return 'ok';`)}]});
+add({name:'拼音邮局-清档',page:'index.html',steps:[{label:'旧版关闭提示的空进度也必须显示指法',js:wrap(`localStorage.setItem('${postKey}',JSON.stringify({v:1,hints:false}));return 'ok';`)}]});
 add({name:'拼音邮局-基础输入',page:'拼音小邮局.html',viewport:[1024,768],steps:[
  {label:'只有三关，隐藏关未解锁；错键、长按、组合键不计入；退格可纠正',js:wrap(postHelpers+`
   if(snap().screen!=='practice'||!__$('#invitation').hidden||__$$('.lesson').length!==3)throw new Error('初始解锁错误');
@@ -2357,8 +2357,8 @@ add({name:'拼音邮局-刷新续练与切关',page:'拼音小邮局.html',steps
   if(snap().level!==1||window.__post.target()!=='mao')throw new Error('旧回调干扰切关');
   type('ma');__$('.lesson[data-level="2"]').click();__$('.lesson[data-level="1"]').click();
   if(snap().rounds[1].typed!=='ma')throw new Error('切关丢失现场');
-  __$('#hintsToggle').click();if(!__$('#keyboardPanel').classList.contains('hint-off'))throw new Error('不能关闭指法');
-  __$('#hintsToggle').click();return JSON.stringify(snap());
+  if(__$('#hintsToggle')||!__$('#key-o').classList.contains('active')||!__$('.hand-finger.active'))throw new Error('键位与指法未始终显示');
+  return JSON.stringify(snap());
  `),shot:true}
 ]});
 add({name:'拼音邮局-三关真实全通',page:'拼音小邮局.html',steps:[
