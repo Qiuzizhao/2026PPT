@@ -2388,24 +2388,52 @@ add({name:'拼音邮局-邀请函存档',page:'拼音小邮局.html',steps:[
  {label:'全通后刷新仍显示隐藏入口',js:wrap(`if(__$('#invitation').hidden||window.__post.snapshot().screen!=='invite'||!__$('#roundLabel').textContent.includes('50 / 50'))throw new Error('解锁状态或完成题数错误');return 'ok';`),shot:true},
  {label:'进入隐藏关，写半封信即存档',nativeClicks:['#enterPost'],js:wrap(postHelpers+`
   if(snap().screen!=='post'||!__$('#lessonNav').hidden)throw new Error('未进入邮路');
-  type('xiao');if(snap().mail.typed!=='xiao')throw new Error('隐藏关输入错误');return JSON.stringify(snap());
+  type(window.__post.target().slice(0,2));if(snap().mail.typed!==window.__post.target().slice(0,2))throw new Error('隐藏关输入错误');return JSON.stringify(snap());
  `),shot:true}
 ]});
 add({name:'拼音邮局-隐藏关中途续写',page:'拼音小邮局.html',steps:[
  {label:'刷新继续写信，完成立刻计数，盖章发车期间不重复计分',js:wrap(postHelpers+`
-  if(snap().screen!=='post'||snap().mail.typed!=='xiao')throw new Error('隐藏现场丢失');finish();
-  if(snap().mail.sent!==1||!snap().mail.delivering||!__$('#workspace').classList.contains('delivering'))throw new Error('未发车');
-  type('xiaomao');if(snap().mail.sent!==1)throw new Error('重复计数');return JSON.stringify(snap());
+  if(snap().screen!=='post'||snap().mail.typed!==window.__post.target().slice(0,2))throw new Error('隐藏现场丢失');finish();
+  if(snap().mail.sent!==0||snap().mail.done!==1||!snap().mail.delivering||!__$('#workspace').classList.contains('delivering'))throw new Error('未发车');
+  type(window.__post.target());if(snap().mail.sent!==0||snap().mail.done!==1)throw new Error('重复推进');return JSON.stringify(snap());
  `),shot:true}
 ]});
 add({name:'拼音邮局-隐藏关持续送信',page:'拼音小邮局.html',steps:[
- {label:'发车后刷新不重复得分，满五封切换新邮路，持续出新信',js:wrap(postHelpers+`
-  if(snap().mail.sent!==1||snap().mail.delivering||snap().mail.typed)throw new Error('发车刷新重复奖励');
-  for(let i=0;i<4;i++){finish();await __wait(1170);}
-  if(snap().mail.sent!==5||!__$('#routeTitle').textContent.includes('第 2 站')||!__$('#scene').getAttribute('aria-label').includes('海边'))throw new Error('未切换邮路');
-  finish();await __wait(1170);if(snap().mail.sent!==6||window.__post.target()!=='haixing')throw new Error('没有持续刷新信件');
-  if(__$$('.delivery-van').length!==1||__$$('#tokens .token').length>11)throw new Error('图形节点累积');
-  return JSON.stringify({sent:snap().mail.sent,route:__$('#routeTitle').textContent,target:window.__post.target()});
+ {label:'逐字母平滑前进，50词才送达，十二种场景随机循环；旧现场刷新不重复奖励',js:wrap(postHelpers+`
+  if(snap().mail.sent!==0||snap().mail.done!==1||snap().mail.delivering||snap().mail.typed)throw new Error('行走中刷新进度错误');
+  const seed=snap().mail.seed,start=Number(__$('#journeyWorld').getAttribute('data-camera'));
+  finish();if(snap().mail.done!==2)throw new Error('词语未推进');await __wait(570);
+  if(Number(__$('#journeyWorld').getAttribute('data-camera'))<=start)throw new Error('地图未向前移动');
+  const pose=__$('#courier').getAttribute('transform');key(window.__post.target()[0]);await __wait(170);
+  if(__$('#courier').getAttribute('transform')===pose||snap().mail.done!==2)throw new Error('单个字母未移动或提前完成整词');
+  const stepped=__$('#courier').getAttribute('transform');key('z');await __wait(170);if(__$('#courier').getAttribute('transform')!==stepped)throw new Error('错键让人物移动');
+  finish();await __wait(230);
+  const path=__$('#mapRoute');for(let n=0;n<=50;n++){const p=path.getPointAtLength(path.getTotalLength()*n/50);if(p.x<0||p.x>1000||p.y<0||p.y>667)throw new Error('路线越界');}
+  if(__$$('#courier').length!==1||__$$('.journey-event').length)throw new Error('角色重复或仍有杂乱事件');
+  const realTimer=window.setTimeout;window.setTimeout=(fn,ms,...args)=>realTimer(fn,ms===180?0:ms,...args);
+  window.AudioContext=undefined;window.webkitAudioContext=undefined;
+  try{
+   for(let trip=0;trip<12;trip++){
+    const words=window.__post.routeWords(trip);
+    if(words.length!==50||new Set(words.map(w=>w.raw)).size!==50)throw new Error('每场景不是50个不同词');
+    for(const w of words)if(w.tone.replace(/ǖ|ǘ|ǚ|ǜ|ü/g,'v').normalize('NFD').replace(/[\u0300-\u036f ]/g,'')!==w.raw)throw new Error('词语拼音不匹配：'+w.name);
+    while(snap().mail.sent===trip){
+     const before=snap().mail.done;finish();
+     if(before<49&&snap().mail.sent!==trip)throw new Error('不到50词提前换场景');
+     if(before===49&&snap().mail.sent!==trip+1)throw new Error('50词未送达');await __wait(5);
+    }
+    if(__$$('#courier').length!==1||__$$('#journeyWorld g').length>400)throw new Error('场景节点不断增长');
+   }
+  }finally{window.setTimeout=realTimer;}
+  for(let cycle=0;cycle<20;cycle++){
+   const ids=Array.from({length:12},(_,i)=>window.__post.sceneIndex(cycle*12+i));
+   if(new Set(ids).size!==12)throw new Error('一轮没有遍历12种场景');
+   if(cycle&&ids[0]===window.__post.sceneIndex(cycle*12-1))throw new Error('边界连续重复场景');
+  }
+  if(snap().mail.seed!==seed)throw new Error('随机种子改变');
+  type(window.__post.target().slice(0,2));window.__routeResume={sent:snap().mail.sent,done:snap().mail.done,typed:snap().mail.typed,target:window.__post.target(),scene:window.__post.mission().name};
+  localStorage.setItem('qa.postResume',JSON.stringify(window.__routeResume));
+  return JSON.stringify({sent:snap().mail.sent,words:600,scenes:12});
  `),shot:true},
  {label:'右键拦截但传播、输入框放行、前后退不卸载',js:wrap(`
   let bubbled=false;document.body.addEventListener('contextmenu',()=>bubbled=true,{once:true});
@@ -2416,17 +2444,22 @@ add({name:'拼音邮局-隐藏关持续送信',page:'拼音小邮局.html',steps
   if(window.__probe!=='kept'||location.pathname!==path)throw new Error('历史哨兵错误');return 'ok';
  `)}
 ]});
-for(const item of [{name:'雪山',station:3},{name:'夜晚',station:4},{name:'循环',station:5}])add({name:'拼音邮局-隐藏预览-'+item.name,page:'拼音小邮局.html?post=1&station='+item.station,viewport:[1024,768],steps:[
- {label:'预览指定场景，不读写学生进度，内容完整可见',js:wrap(postHelpers+`
+add({name:'拼音邮局-行走刷新续练',page:'拼音小邮局.html',steps:[{label:'保存随机路线、已走词数和半词输入',js:wrap(postHelpers+`
+ const prior=JSON.parse(localStorage.getItem('qa.postResume'));localStorage.removeItem('qa.postResume');
+ if(snap().mail.sent!==prior.sent||snap().mail.done!==prior.done||snap().mail.typed!==prior.typed||window.__post.target()!==prior.target||window.__post.mission().name!==prior.scene)throw new Error('刷新改变路线或丢失进度');return 'ok';
+`)}]});
+for(const [index,name] of ['森林','城市','海滩','雪山','星夜','花田','竹林','果园','湖畔','沙漠','乡村','秋野'].entries())add({name:'拼音邮局-隐藏预览-'+name,page:'拼音小邮局.html?post=1&station='+(index+1),viewport:[1024,768],steps:[
+ {label:'预览指定风景，不读写学生进度，内容完整可见',js:wrap(postHelpers+`
   const before=localStorage.getItem('${postKey}');
-  if(snap().mail.sent!==${(item.station-1)*5}||snap().screen!=='post')throw new Error('预览站点错误');
-  finish();await __wait(1170);if(localStorage.getItem('${postKey}')!==before)throw new Error('预览污染存档');
+  const src=__$('#journeyWorld image').getAttribute('href'),img=new Image();img.src=src;await new Promise((resolve,reject)=>{if(img.complete&&img.naturalWidth)resolve();else{img.onload=resolve;img.onerror=()=>reject(new Error('地图资源加载失败：'+src));}});
+  if(window.__post.mission().name!=='${name}'||snap().screen!=='post')throw new Error('预览场景错误');
+  finish();await __wait(570);if(localStorage.getItem('${postKey}')!==before)throw new Error('预览污染存档');
   const task=__$('#workspace').getBoundingClientRect(),keys=__$('#keyboardPanel').getBoundingClientRect();
   if(document.documentElement.scrollWidth>innerWidth||task.left<0||task.right>innerWidth||keys.bottom>innerHeight)throw new Error('1024布局不完整');
-  return JSON.stringify({station:${item.station},title:__$('#scene').getAttribute('aria-label')});
+  return JSON.stringify({scene:window.__post.mission().name});
  `),shot:true}
 ]});
-add({name:'拼音邮局-宽屏预览',page:'拼音小邮局.html?post=1&station=4',viewport:[1920,1080],steps:[{label:'宽屏布局与焦点正常',js:wrap(`if(document.documentElement.scrollWidth>innerWidth||__$('#keyboardPanel').getBoundingClientRect().bottom>innerHeight)throw new Error('宽屏溢出');return 'ok';`),shot:true}]});
+add({name:'拼音邮局-宽屏预览',page:'拼音小邮局.html?post=1&station=5',viewport:[1920,1080],steps:[{label:'宽屏布局与焦点正常',js:wrap(`if(document.documentElement.scrollWidth>innerWidth||__$('#keyboardPanel').getBoundingClientRect().bottom>innerHeight)throw new Error('宽屏溢出');return 'ok';`),shot:true}]});
 add({name:'拼音邮局-损坏存档',page:'index.html',steps:[{label:'准备不合法进度',js:wrap(`localStorage.setItem('${postKey}',JSON.stringify({v:1,screen:'post',level:99,rounds:[{done:999,typed:'bad'}],mail:{sent:-1}}));return 'ok';`)}]});
 add({name:'拼音邮局-损坏存档恢复',page:'拼音小邮局.html',steps:[{label:'不能靠坏数据解锁；存储禁用时仍可练习',js:wrap(postHelpers+`
  if(snap().screen!=='practice'||snap().mail.sent!==0||snap().rounds[0].done!==0)throw new Error('坏数据越过解锁');
@@ -2488,7 +2521,7 @@ add({name:'拼音邮局-音效刷新',page:'拼音小邮局.html',steps:[
 ]});
 add({name:'拼音邮局-音效隐藏关',page:'拼音小邮局.html?post=1',steps:[
  {label:'隐藏关真实按键有声音，预览不写档',js:wrap(postAudioProbe+`window.__audioProbe.saved=localStorage.getItem('pinyinPost.progress.v1');return 'ok';`)},
- {label:'送信输入也有按键音',nativeKeys:['x'],js:wrap(`
+ {label:'送件输入也有按键音',nativeKeys:['s'],js:wrap(`
   await __wait(150);const p=window.__audioProbe;
   if(p.notes.length!==1||p.peak<.001||localStorage.getItem('pinyinPost.progress.v1')!==p.saved)throw new Error('隐藏关音效或预览存档错误');return 'ok';
  `)}

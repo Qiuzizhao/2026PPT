@@ -57,6 +57,24 @@ html.no-flexgap .lesson>*:not(:last-child){margin-right:11px}
 @media(max-height:720px){.app{padding-top:12px;padding-bottom:12px}header{margin-bottom:10px}nav{margin-bottom:10px}.scene{min-height:310px}.task{padding:16px 22px}.word{margin-top:7px}.word-icon{width:55px;height:55px;font-size:33px}.word h2{font-size:26px}.pinyin{font-size:20px}.keyboard-panel{margin-top:9px;padding-top:8px;padding-bottom:5px}.hands{height:100px}}
 @media(max-width:800px){.app{padding:12px}.brand-mark{width:44px;height:44px}h1{font-size:21px}.header-count{padding-left:8px}.header-count strong{font-size:20px}.lesson{padding:9px;gap:5px}.lesson .number{display:none}.lesson b{font-size:12px}.workspace{grid-template-columns:35% 65%}.task{padding:15px}.word h2{font-size:25px}.word-icon{width:47px;height:47px;font-size:30px}.pinyin{font-size:19px}.token{width:28px;height:37px;font-size:23px}.hands{padding-left:8px;height:90px}.keyboard-panel{grid-template-columns:65% 35%;padding:10px}.key{width:27px;height:26px;line-height:22px}.key-row{gap:3px}}
 @media(max-width:520px){.workspace{grid-template-columns:1fr}.scene{min-height:175px}.scene svg{object-fit:cover}.keyboard-panel{grid-template-columns:1fr}.hands{display:none}.task{min-height:290px}.header-count{font-size:10px}.header-count strong{font-size:17px}.lesson .tally{display:none}}
+
+/* 隐藏关：整条邮路随邮车向前推进，词语面板收在场景下方。 */
+.parcel-label{position:absolute;top:14px;left:18px;max-width:90%;padding:8px 13px;background:#fffdf4;border:1px solid #d5dfcf;border-radius:12px;font-size:12px;color:#45644e;box-shadow:0 3px 10px #263e3610}
+.journey-on .workspace{grid-template-columns:1fr}.journey-on .scene{height:285px;min-height:0}.journey-on .task{display:grid;grid-template-columns:38% 62%;padding:10px 22px 8px;border-top:1px solid var(--line);align-items:center}
+.journey-on .task-head{grid-column:1 / -1;min-height:24px}.task-head .journey-goal{margin-right:auto;padding:0;background:none;font-size:13px}
+.journey-on .word{margin:0;min-height:58px;gap:10px}.journey-on .word-icon{width:49px;height:49px;font-size:31px}.journey-on .word h2{font-size:25px;letter-spacing:2px}.journey-on .pinyin{font-size:19px;letter-spacing:1px}
+.journey-on .tokens{margin:0;justify-content:flex-end;gap:4px}.journey-on .token{width:30px;height:37px;font-size:24px}.journey-on .status{grid-column:1 / -1;min-height:18px;margin:0}.journey-on .task-foot{display:none}
+.journey-on{max-width:1500px;padding:10px 18px}
+.journey-on header{margin-bottom:8px}.journey-on .brand-mark{width:36px;height:36px;border-radius:11px;font-size:23px}.journey-on h1{font-size:21px}.journey-on .header-count strong{font-size:20px}
+.journey-on .routes{margin-bottom:8px;min-height:20px}
+.journey-on .scene{height:458px;height:calc(100vh - 335px);min-height:260px;max-height:780px}
+.journey-on .word-icon,.journey-on .journey-goal{display:none}.journey-on .status:empty{display:none}
+.journey-on .keyboard-panel{margin-top:9px;padding:8px 18px 5px}.journey-on .key{height:24px;line-height:20px}.journey-on .key-row{margin-bottom:3px}.journey-on .keyboard-head{margin-bottom:5px}.journey-on .hands{height:88px}
+.route-track{display:block;width:170px;height:5px;border-radius:4px;background:#dce4d8;overflow:hidden}.route-track>span{display:block;height:100%;background:#649582;transition:width .3s}
+.courier-body{transform-origin:center bottom}
+@media(min-width:1550px){.journey-on .task{padding:14px 28px 10px}.journey-on .word h2{font-size:29px}.journey-on .token{width:37px;height:45px;font-size:28px}}
+@media(max-height:720px){.journey-on .task{padding:7px 18px}.journey-on .word{min-height:52px}.journey-on .word-icon{width:44px;height:44px}.journey-on .word h2{font-size:23px}.journey-on .keyboard-panel{margin-top:9px}}
+@media(max-width:800px){.journey-on .task{grid-template-columns:1fr;padding:10px 14px}.journey-on .tokens{justify-content:flex-start;margin-top:6px}.journey-on .word h2{font-size:23px}.parcel-label{font-size:11px;top:10px;left:10px}}
 </style>
 <script>
 /* ===== 防误触兜底 =====
@@ -123,8 +141,8 @@ html.no-flexgap .lesson>*:not(:last-child){margin-right:11px}
 <nav id="lessonNav" aria-label="基础练习关卡"></nav>
 <div class="routes" id="routes" hidden><span class="route-title" id="routeTitle"></span><span id="routeProgress" class="progress-dots"></span></div>
 <section class="workspace" id="workspace" aria-label="拼音练习">
-<div class="scene" id="scene" aria-label="森林邮局"><div id="landscape"></div></div>
-<div class="task" id="task"><div class="task-head"><b id="roundLabel">1 / 50</b></div>
+<div class="scene" id="scene" aria-label="森林邮局"><div id="landscape"></div><div class="parcel-label" id="parcelLabel" hidden></div></div>
+<div class="task" id="task"><div class="task-head"><b class="journey-goal" id="journeyGoal" hidden></b><b id="roundLabel">1 / 50</b></div>
 <div class="word"><div class="word-icon" id="wordIcon" aria-hidden="true"></div><div><h2 id="wordName"></h2><p class="pinyin" id="pinyin"></p></div></div>
 <div class="tokens" id="tokens" aria-label="当前输入进度"></div>
 <p class="status" id="status" role="status" aria-live="polite"></p>
@@ -173,7 +191,7 @@ html.no-flexgap .lesson>*:not(:last-child){margin-right:11px}
 </svg>
 </section>
 </main>
-<section class="invitation" id="invitation" hidden role="dialog" aria-modal="true" aria-labelledby="inviteTitle"><div class="invite-card"><div class="invite-icon">💌</div><h2 id="inviteTitle">隐藏关已解锁</h2><button id="enterPost">出发送信</button></div></section>
+<section class="invitation" id="invitation" hidden role="dialog" aria-modal="true" aria-labelledby="inviteTitle"><div class="invite-card"><div class="invite-icon">💌</div><h2 id="inviteTitle">隐藏关已解锁</h2><button id="enterPost">出发送件</button></div></section>
 <script>
 (function(){
 'use strict';
@@ -312,13 +330,73 @@ var LESSONS=[
 ];
 function lessonTotal(i){return LESSONS[i].words.length;}
 var TOTAL=LESSONS.reduce(function(n,l){return n+l.words.length;},0);
-var MAIL=[pack('小猫','xiǎo māo','xiaomao','🐱'),pack('白兔','bái tù','baitu','🐰'),pack('松鼠','sōng shǔ','songshu','🐿️'),pack('小鸟','xiǎo niǎo','xiaoniao','🐦'),pack('小熊','xiǎo xióng','xiaoxiong','🐻'),pack('海豚','hǎi tún','haitun','🐬'),pack('海星','hǎi xīng','haixing','⭐'),pack('小鱼','xiǎo yú','xiaoyu','🐟'),pack('螃蟹','páng xiè','pangxie','🦀'),pack('海鸥','hǎi ōu','haiou','🐦'),pack('企鹅','qǐ é','qie','🐧'),pack('雪人','xuě rén','xueren','⛄'),pack('白熊','bái xióng','baixiong','🐻‍❄️'),pack('雪兔','xuě tù','xuetu','🐰'),pack('小鹿','xiǎo lù','xiaolu','🦌'),pack('猫头鹰','māo tóu yīng','maotouying','🦉'),pack('萤火虫','yíng huǒ chóng','yinghuochong','✨'),pack('月亮','yuè liang','yueliang','🌙'),pack('星星','xīng xing','xingxing','⭐'),pack('小狐狸','xiǎo hú li','xiaohuli','🦊')];
+/* 隐藏关只有打字和前进：每条邮路50词，十二种风景随机循环。 */
+var SCENES=[
+ {name:'森林',place:'森林小屋',sky:'#e4efe8',hill:'#bdd3bd',ground:'#b0c6a0',road:'#ead8b7',accent:'#6f987a',kind:'forest'},
+ {name:'城市',place:'街角书店',sky:'#e7eff4',hill:'#ccdce2',ground:'#c0d1c3',road:'#d5d6d0',accent:'#7899a3',kind:'city'},
+ {name:'海滩',place:'海边灯塔',sky:'#e3f2f4',hill:'#a7d3da',ground:'#efdfbe',road:'#f7e9cf',accent:'#7aafb4',kind:'beach'},
+ {name:'雪山',place:'山脚木屋',sky:'#e6edf4',hill:'#bfcfdf',ground:'#edf2f4',road:'#dce5e9',accent:'#8faaba',kind:'snow'},
+ {name:'星夜',place:'星光旅舍',sky:'#34445e',hill:'#53677f',ground:'#71817c',road:'#bcc4b6',accent:'#708a9b',kind:'night'},
+ {name:'花田',place:'花田小站',sky:'#f5ebe9',hill:'#d3d8b6',ground:'#bfcea1',road:'#eee1c3',accent:'#b48da1',kind:'flowers'},
+ {name:'竹林',place:'竹林茶屋',sky:'#e8f0e5',hill:'#c3d5bb',ground:'#acbf9b',road:'#e6dfc5',accent:'#7e9c79',kind:'bamboo'},
+ {name:'果园',place:'果园农舍',sky:'#f3ecd9',hill:'#d5d9b0',ground:'#bfcc96',road:'#ecdcad',accent:'#a4b57e',kind:'orchard'},
+ {name:'湖畔',place:'湖畔小屋',sky:'#e4eff3',hill:'#bbcdd1',ground:'#b7cbbd',road:'#e7e2cc',accent:'#85abb3',kind:'lake'},
+ {name:'沙漠',place:'绿洲驿站',sky:'#f7eddb',hill:'#e2c6a1',ground:'#e7cba7',road:'#f4e1c0',accent:'#bda186',kind:'desert'},
+ {name:'乡村',place:'风车农场',sky:'#edf0df',hill:'#c7d3aa',ground:'#b1c395',road:'#e9dab7',accent:'#9caf7c',kind:'village'},
+ {name:'秋野',place:'秋日邮亭',sky:'#f5eadd',hill:'#dbc7a8',ground:'#d4c095',road:'#eee0c3',accent:'#be9979',kind:'autumn'}
+];
+function randomStep(seed){return (Math.imul(seed,1664525)+1013904223)>>>0;}
+function shuffled(list,seed){var a=list.slice();for(var i=a.length-1;i>0;i--){seed=randomStep(seed);var j=seed%(i+1),v=a[i];a[i]=a[j];a[j]=v;}return a;}
+function sceneIndex(trip){
+ var cycle=Math.floor(trip/SCENES.length),order=shuffled(SCENES.map(function(s,i){return i;}),state.mail.seed+cycle*7919);
+ if(cycle>0){var prior=shuffled(SCENES.map(function(s,i){return i;}),state.mail.seed+(cycle-1)*7919);if(order[0]===prior[prior.length-1]){var v=order[0];order[0]=order[1];order[1]=v;}}
+ return order[trip%SCENES.length];
+}
+var sceneryWords=[
+ '树木/shumu/松鼠/songshu/小鸟/xiaoniao/森林/senlin/小路/xiaolu/蘑菇/mogu/树叶/shuye/松果/songguo/小溪/xiaoxi/木屋/muwu',
+ '城市/chengshi/街道/jiedao/商店/shangdian/学校/xuexiao/公园/gongyuan/图书/tushu/汽车/qiche/路灯/ludeng/大楼/dalou/小猫/xiaomao',
+ '海滩/haitan/贝壳/beike/海浪/hailang/螃蟹/pangxie/海星/haixing/沙子/shazi/海鸥/haiou/小船/xiaochuan/灯塔/dengta/海豚/haitun',
+ '雪山/xueshan/雪花/xuehua/雪人/xueren/围巾/weijin/手套/shoutao/企鹅/qie/白熊/baixiong/冰块/bingkuai/热水/reshui/木屋/muwu',
+ '星星/xingxing/月亮/yueliang/夜晚/yewan/灯笼/denglong/萤火虫/yinghuochong/猫头鹰/maotouying/路灯/ludeng/晚风/wanfeng/银河/yinhe/美梦/meimeng',
+ '花朵/huaduo/蝴蝶/hudie/蜜蜂/mifeng/花园/huayuan/春天/chuntian/小草/xiaocao/花瓣/huaban/阳光/yangguang/香气/xiangqi/彩虹/caihong',
+ '竹子/zhuzi/熊猫/xiongmao/绿叶/lvye/春雨/chunyu/茶叶/chaye/竹林/zhulin/小溪/xiaoxi/石头/shitou/清风/qingfeng/山谷/shangu',
+ '苹果/pingguo/桃子/taozi/梨子/lizi/橘子/juzi/果园/guoyuan/篮子/lanzi/树叶/shuye/水果/shuiguo/果汁/guozhi/农夫/nongfu',
+ '湖水/hushui/小船/xiaochuan/荷花/hehua/青蛙/qingwa/小鱼/xiaoyu/白云/baiyun/柳树/liushu/鸭子/yazi/水草/shuicao/倒影/daoying',
+ '沙漠/shamo/骆驼/luotuo/绿洲/lvzhou/沙丘/shaqiu/水壶/shuihu/脚印/jiaoyin/远方/yuanfang/仙人掌/xianrenzhang/天空/tiankong/泉水/quanshui',
+ '乡村/xiangcun/风车/fengche/农田/nongtian/麦子/maizi/小鸡/xiaoji/稻谷/daogu/小羊/xiaoyang/南瓜/nangua/农场/nongchang/小狗/xiaogou',
+ '秋天/qiutian/落叶/luoye/枫树/fengshu/果实/guoshi/松果/songguo/南瓜/nangua/田野/tianye/微风/weifeng/小鹿/xiaolu/丰收/fengshou'
+];
+var sceneryTones=[
+ 'shù mù/sōng shǔ/xiǎo niǎo/sēn lín/xiǎo lù/mó gu/shù yè/sōng guǒ/xiǎo xī/mù wū',
+ 'chéng shì/jiē dào/shāng diàn/xué xiào/gōng yuán/tú shū/qì chē/lù dēng/dà lóu/xiǎo māo',
+ 'hǎi tān/bèi ké/hǎi làng/páng xiè/hǎi xīng/shā zi/hǎi ōu/xiǎo chuán/dēng tǎ/hǎi tún',
+ 'xuě shān/xuě huā/xuě rén/wéi jīn/shǒu tào/qǐ é/bái xióng/bīng kuài/rè shuǐ/mù wū',
+ 'xīng xing/yuè liang/yè wǎn/dēng long/yíng huǒ chóng/māo tóu yīng/lù dēng/wǎn fēng/yín hé/měi mèng',
+ 'huā duǒ/hú dié/mì fēng/huā yuán/chūn tiān/xiǎo cǎo/huā bàn/yáng guāng/xiāng qì/cǎi hóng',
+ 'zhú zi/xióng māo/lǜ yè/chūn yǔ/chá yè/zhú lín/xiǎo xī/shí tou/qīng fēng/shān gǔ',
+ 'píng guǒ/táo zi/lí zi/jú zi/guǒ yuán/lán zi/shù yè/shuǐ guǒ/guǒ zhī/nóng fū',
+ 'hú shuǐ/xiǎo chuán/hé huā/qīng wā/xiǎo yú/bái yún/liǔ shù/yā zi/shuǐ cǎo/dào yǐng',
+ 'shā mò/luò tuo/lǜ zhōu/shā qiū/shuǐ hú/jiǎo yìn/yuǎn fāng/xiān rén zhǎng/tiān kōng/quán shuǐ',
+ 'xiāng cūn/fēng chē/nóng tián/mài zi/xiǎo jī/dào gǔ/xiǎo yáng/nán guā/nóng chǎng/xiǎo gǒu',
+ 'qiū tiān/luò yè/fēng shù/guǒ shí/sōng guǒ/nán guā/tián yě/wēi fēng/xiǎo lù/fēng shōu'
+];
+var routeCache=null,motion=null;
+function routeWords(trip){
+ if(routeCache&&routeCache.trip===trip&&routeCache.seed===state.mail.seed)return routeCache.words;
+ var scene=sceneIndex(trip),parts=sceneryWords[scene].split('/'),tones=sceneryTones[scene].split('/'),a=[],seen={};
+ for(var i=0;i<parts.length;i+=2){a.push(pack(parts[i],tones[i/2],parts[i+1],''));seen[parts[i+1]]=true;}
+ var rest=shuffled(LESSONS[2].words,state.mail.seed+trip*97);
+ for(i=0;i<rest.length&&a.length<50;i++)if(!seen[rest[i].raw]){a.push(rest[i]);seen[rest[i].raw]=true;}
+ routeCache={trip:trip,seed:state.mail.seed,words:shuffled(a,state.mail.seed+trip*313)};return routeCache.words;
+}
+function currentJourney(){return motion||{trip:state.mail.sent,done:state.mail.done};}
+function mission(){return SCENES[sceneIndex(currentJourney().trip)];}
 var THEMES=[{name:'森林邮路',sky:'#dcebd8',hill:'#bed3aa',ground:'#93b48c',house:'#e9c18e',ink:'#426b4e',night:false},
 {name:'海边邮路',sky:'#dceef0',hill:'#a5d0d2',ground:'#e3d5ad',house:'#f1c3a0',ink:'#427a80',night:false},
 {name:'雪山邮路',sky:'#e4edf2',hill:'#c4d5df',ground:'#eef2ee',house:'#c7c2d1',ink:'#55778b',night:false},
 {name:'夜晚邮路',sky:'#303f5b',hill:'#435573',ground:'#556650',house:'#a4acb8',ink:'#edf3cd',night:true}];
 var KEY='pinyinPost.progress.v1',params=new URLSearchParams(location.search),preview=params.get('finale')==='1'||params.get('post')==='1';
-var state={v:1,level:0,screen:'practice',rounds:[{done:0,typed:''},{done:0,typed:''},{done:0,typed:''}],mail:{sent:0,typed:'',delivering:false}};
+var state={v:1,level:0,screen:'practice',rounds:[{done:0,typed:''},{done:0,typed:''},{done:0,typed:''}],mail:{journey:2,seed:Math.floor(Math.random()*2147483647),sent:0,done:0,typed:'',delivering:false}};
 var busy=false,timer=0,feedback='',lastScene='';
 /* 提示音离线合成；仅在按键或点击后创建/恢复音频上下文。 */
 var audio=null;
@@ -340,7 +418,7 @@ function sound(kind){
  }catch(e){}
 }
 function complete(){return state.rounds.every(function(r,i){return r.done===lessonTotal(i);});}
-function word(){if(state.screen==='post')return MAIL[(state.mail.sent-(state.mail.delivering?1:0))%MAIL.length];var r=state.rounds[state.level];return LESSONS[state.level].words[Math.min(lessonTotal(state.level)-1,r.done-(busy&&r.done>0?1:0))];}
+function word(){if(state.screen==='post')return routeWords(currentJourney().trip)[Math.min(49,currentJourney().done)];var r=state.rounds[state.level];return LESSONS[state.level].words[Math.min(lessonTotal(state.level)-1,r.done-(busy&&r.done>0?1:0))];}
 function typed(){return state.screen==='post'?state.mail.typed:state.rounds[state.level].typed;}
 function setTyped(value){if(state.screen==='post')state.mail.typed=value;else state.rounds[state.level].typed=value;}
 function save(){if(preview)return;try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
@@ -351,7 +429,14 @@ function restore(){
  try{var d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d||d.v!==1)return;
   if(Array.isArray(d.rounds))state.rounds.forEach(function(r,i){var a=d.rounds[i];if(!a||!number(a.done,lessonTotal(i)))return;r.done=a.done;r.typed=r.done<lessonTotal(i)?prefix(a.typed,LESSONS[i].words[r.done].raw):'';});
   if(number(d.level,2))state.level=d.level;
-  if(d.mail&&number(d.mail.sent,100000000)){state.mail.sent=d.mail.sent;state.mail.typed=d.mail.delivering?'':prefix(d.mail.typed,MAIL[d.mail.sent%MAIL.length].raw);}
+  if(d.mail&&number(d.mail.sent,100000000)){
+   state.mail.sent=d.mail.sent;
+   if(d.mail.journey===2){
+    if(number(d.mail.seed,2147483647))state.mail.seed=d.mail.seed;
+    if(number(d.mail.done,49))state.mail.done=d.mail.done;
+    state.mail.typed=d.mail.delivering?'':prefix(d.mail.typed,routeWords(state.mail.sent)[state.mail.done].raw);
+   }
+  }
   if(complete())state.screen=d.screen==='post'?'post':'invite';
  }catch(e){}
 }
@@ -366,7 +451,61 @@ function hint(){var c=busy||state.screen==='invite'||state.screen==='practice'&&
  document.querySelectorAll('.key').forEach(function(k){k.classList.toggle('active',k.id==='key-'+c);});document.querySelectorAll('.hand-finger').forEach(function(f){f.classList.toggle('active',f.getAttribute('data-finger')===finger);});
  $('fingerHint').textContent=c?'下一键 '+c.toUpperCase()+' · '+finger:'';$('hands').setAttribute('aria-label',finger?finger+'按键提示':'双手指法');
 }
-function landscape(){var post=state.screen==='post',station=Math.floor(state.mail.sent/5)+1,index=post?Math.floor((state.mail.sent-(state.mail.delivering?1:0))/5)%4:0,t=THEMES[index],key=post?String(index):'base';
+
+function renderRoute(){
+ var view=currentJourney(),m=mission();
+ $('routeTitle').textContent=m.name+'邮路';
+ $('journeyGoal').textContent='';
+ $('parcelLabel').textContent='送往 · '+m.place;
+ $('routeProgress').innerHTML='<span class="route-track"><span style="width:'+((view.done+(motion?1:0))*2)+'%"></span></span>';
+ $('routeProgress').setAttribute('aria-label','本段完成 '+view.done+' / 50');
+}
+
+/* 生成的2.5D大地图与窄小径；人物和镜头沿同一条曲线前进。 */
+var MAP_ROUTE='M130 580 C220 600 680 570 730 460 C780 360 370 420 400 290 C450 220 720 220 850 125';
+var MAP_ROUTES={bamboo:'M130 580 C250 560 600 600 690 510 C740 440 320 460 350 330 C380 240 740 280 850 125',night:'M130 580 C230 590 650 580 700 500 C720 440 350 440 350 340 C500 290 650 240 850 125',forest:'M130 580 C190 500 420 510 430 440 C440 390 300 370 350 300 C420 220 700 230 850 125',city:'M130 580 C180 500 470 530 500 450 C530 400 260 390 290 300 C370 230 700 250 850 125'};
+function mapPoint(position){var path=$('mapRoute'),length=path.getTotalLength();return path.getPointAtLength(length*Math.max(0,Math.min(50,position))/50);}
+function routePosition(trip,done,partial){
+ var words=routeWords(trip),letters=0,total=0;
+ words.forEach(function(w,i){total+=w.raw.length;if(i<done)letters+=w.raw.length;});
+ return (letters+(partial?partial.length:0))/total*50;
+}
+function mapCamera(point){
+ var el=$('scene'),width=740,height=Math.min(620,el.clientHeight/el.clientWidth*width);
+ return {x:Math.max(0,Math.min(1000-width,point.x-width*.5)),y:Math.max(0,Math.min(667-height,point.y-height*.58)),width:width,height:height};
+}
+var walkFrame=0,mapPosition=0,mapTarget=0;
+function setMapFrame(position){
+ var point=mapPoint(position),c=mapCamera(point);
+ $('journeySvg').setAttribute('viewBox',c.x+' '+c.y+' '+c.width+' '+c.height);
+ $('courier').setAttribute('transform','translate('+point.x+' '+point.y+')');
+ $('journeyWorld').setAttribute('data-camera',String(position*110));
+ mapPosition=position;
+}
+function moveOnMap(target){
+ if(Math.abs(target-mapTarget)<.00001)return;
+ cancelAnimationFrame(walkFrame);mapTarget=target;
+ var from=mapPosition,begun=performance.now();
+ function frame(now){var t=Math.min(1,(now-begun)/140),ease=1-Math.pow(1-t,3);setMapFrame(from+(target-from)*ease);if(t<1)walkFrame=requestAnimationFrame(frame);else walkFrame=0;}
+ walkFrame=requestAnimationFrame(frame);
+}
+
+function drawJourney(){
+ var view=currentJourney(),t=mission(),key='map-'+view.trip,target=motion?routePosition(view.trip,view.done+1,''):routePosition(view.trip,view.done,state.mail.typed);
+ $('scene').setAttribute('aria-label',t.name+'邮路');$('scene').style.background=t.sky;
+ if(lastScene!==key){
+  lastScene=key;cancelAnimationFrame(walkFrame);
+  var image='assets/pinyin-post/'+t.kind+'.png',route=MAP_ROUTES[t.kind]||MAP_ROUTE;
+  var pathColor=t.kind==='snow'?'#f6f5e8':t.kind==='city'?'#ddd0b8':t.kind==='night'?'#c4bfa3':'#d8c5a2';
+  $('landscape').innerHTML='<svg id="journeySvg" viewBox="0 0 1000 667" preserveAspectRatio="xMidYMid slice" role="img" aria-label="'+t.name+'立体地图与送件小哥"><defs><filter id="courierShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".16"/></filter></defs><g id="journeyWorld"><image href="'+image+'" xlink:href="'+image+'" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="667" preserveAspectRatio="none"/><path d="'+route+'" fill="none" stroke="#5f6544" stroke-opacity=".055" stroke-width="12" stroke-linecap="round" transform="translate(0 2)"/><path id="mapRoute" d="'+route+'" fill="none" stroke="'+pathColor+'" stroke-width="9" stroke-linecap="round"/><path d="'+route+'" fill="none" stroke="#fff6df" stroke-opacity=".10" stroke-width="2" stroke-linecap="round"/><circle cx="850" cy="125" r="8" fill="#fff4c6" stroke="#b79260" stroke-width="2"/><g id="courier"><ellipse cy="1" rx="11" ry="4" fill="#263e3640"/><g id="courierArt"><image class="courier-body" href="assets/pinyin-post/courier.png" xlink:href="assets/pinyin-post/courier.png" xmlns:xlink="http://www.w3.org/1999/xlink" x="-23" y="-53" width="46" height="56" preserveAspectRatio="xMidYMax meet"/></g></g></g></svg>';
+  mapTarget=target;setMapFrame(target);
+  var nextMap=new Image();nextMap.src='assets/pinyin-post/'+SCENES[sceneIndex(view.trip+1)].kind+'.png';
+ }
+ moveOnMap(target);
+}
+window.addEventListener('resize',function(){if(state.screen==='post')setMapFrame(mapPosition);});
+
+function landscape(){if(state.screen==='post'){drawJourney();return;}var post=state.screen==='post',station=Math.floor(state.mail.sent/5)+1,index=post?Math.floor((state.mail.sent-(state.mail.delivering?1:0))/5)%4:0,t=THEMES[index],key=post?String(index):'base';
  $('scene').setAttribute('aria-label',t.name);$('scene').style.background=t.sky;
  if(lastScene===key)return;lastScene=key;
  var decorations=index===1?'<path d="M0 285 Q60 265 120 285 T240 285 T360 285 T500 285 V370 H0Z" fill="#77b9c1"/><path d="M12 290 Q50 278 88 290 M260 298 Q300 286 340 298" fill="none" stroke="#d5f0ef" stroke-width="4"/>':index===2?'<path d="M0 240 L85 120 168 240 246 97 365 240 430 160 500 240Z" fill="#b9cdd6"/><path d="M65 150 L85 120 110 156 85 148Z M220 135 L246 97 280 141 248 130Z" fill="#fff"/>':index===3?'<g fill="#fce6ad"><circle cx="80" cy="90" r="2"/><circle cx="242" cy="70" r="2"/><circle cx="355" cy="133" r="2"/><circle cx="420" cy="55" r="3"/><circle cx="148" cy="141" r="2"/></g>':'';
@@ -378,26 +517,25 @@ function landscape(){var post=state.screen==='post',station=Math.floor(state.mai
 }
 function render(){
  var post=state.screen==='post',invite=state.screen==='invite',r=state.rounds[state.level],w=word(),done=!post&&r.done===lessonTotal(state.level);
- $('lessonNav').hidden=post;$('routes').hidden=!post;$('invitation').hidden=!invite;
- $('headerCount').innerHTML=post?'已送达 <strong>'+state.mail.sent+'</strong> 封信':'已完成练习 <strong>'+state.rounds.reduce(function(n,a){return n+a.done;},0)+'</strong> / '+TOTAL;
+ $('app').classList.toggle('journey-on',post);$('parcelLabel').hidden=!post;$('journeyGoal').hidden=!post;$('lessonNav').hidden=post;$('routes').hidden=!post;$('invitation').hidden=!invite;
+ $('headerCount').innerHTML=post?'已送达 <strong>'+state.mail.sent+'</strong> 件':'已完成练习 <strong>'+state.rounds.reduce(function(n,a){return n+a.done;},0)+'</strong> / '+TOTAL;
  document.querySelectorAll('.lesson').forEach(function(b,i){b.classList.toggle('active',i===state.level);b.classList.toggle('done',state.rounds[i].done===lessonTotal(i));b.querySelector('.tally').textContent=state.rounds[i].done===lessonTotal(i)?'✓ 完成':state.rounds[i].done+' / '+lessonTotal(i);b.setAttribute('aria-current',i===state.level?'step':'false');});
- if(post){var station=Math.floor(state.mail.sent/5)+1;$('routeTitle').textContent='第 '+station+' 站 · '+THEMES[(station-1)%4].name;$('routeProgress').innerHTML='';for(var i=0;i<5;i++){var dot=document.createElement('span');dot.className='route-dot'+(i<state.mail.sent%5?' done':'');dot.textContent=i<state.mail.sent%5?'✉':String(i+1);$('routeProgress').appendChild(dot);}$('routeProgress').setAttribute('aria-label','本邮路已送达 '+state.mail.sent%5+' / 5 封信');}
- $('roundLabel').textContent=post?'第 '+(state.mail.sent+ (state.mail.delivering?0:1))+' 封信':(done?lessonTotal(state.level)+' / '+lessonTotal(state.level)+' · 已完成':(r.done+1)+' / '+lessonTotal(state.level));
- $('wordName').textContent=w.name;$('wordIcon').textContent=w.icon;$('pinyin').textContent=w.tone;
+ if(post){renderRoute();} $('roundLabel').textContent=post?(currentJourney().done+(motion?1:0))+' / 50':(done?lessonTotal(state.level)+' / '+lessonTotal(state.level)+' · 已完成':(r.done+1)+' / '+lessonTotal(state.level));
+ $('wordName').textContent=w.name;$('wordIcon').textContent=post?'':w.icon;$('pinyin').textContent=w.tone;
  $('tokens').innerHTML='';w.raw.split('').forEach(function(c,i){var span=document.createElement('span');span.className='token'+(done||busy||i<typed().length?' correct':i===typed().length?' current':'');span.textContent=c;$('tokens').appendChild(span);});$('tokens').setAttribute('aria-label','需要输入 '+w.raw+'，已输入 '+typed());
- $('nextLesson').hidden=!done;$('nextLesson').textContent='下一关';$('stamp').hidden=!busy;$('workspace').classList.toggle('delivering',busy&&post);
+ $('nextLesson').hidden=!done;$('nextLesson').textContent='下一关';$('stamp').hidden=!busy||post;$('workspace').classList.toggle('delivering',busy&&post);
  $('status').textContent=feedback;landscape();hint();
  if(invite)$('enterPost').focus({preventScroll:true});
 }
 function finishWord(){
  sound('done');
  busy=true;feedback='';
- if(state.screen==='post'){state.mail.sent++;state.mail.delivering=true;}
+ if(state.screen==='post'){motion={trip:state.mail.sent,done:state.mail.done};state.mail.done++;if(state.mail.done===50){state.mail.sent++;state.mail.done=0;}state.mail.typed='';state.mail.delivering=true;}
  else{var r=state.rounds[state.level];r.done++;r.typed='';if(complete())state.screen='invite';}
  save();
  if(state.screen==='invite'){busy=false;render();return;}
  render();
- timer=setTimeout(function(){busy=false;if(state.screen==='post'){state.mail.delivering=false;state.mail.typed='';}feedback='';save();render();focusApp();},state.screen==='post'?1100:650);
+ timer=setTimeout(function(){busy=false;if(state.screen==='post'){state.mail.delivering=false;motion=null;}feedback='';save();render();focusApp();},state.screen==='post'?180:650);
 }
 function accept(e){
  if(e.ctrlKey||e.altKey||e.metaKey)return;
@@ -414,10 +552,11 @@ $('nextLesson').addEventListener('click',function(){var i=state.rounds.findIndex
 $('enterPost').addEventListener('click',function(){if(!complete())return;stopTimer();state.screen='post';feedback='';save();render();focusApp();});
 document.addEventListener('keydown',accept);window.addEventListener('focus',focusApp);document.addEventListener('visibilitychange',function(){if(!document.hidden)focusApp();});$('workspace').addEventListener('pointerdown',focusApp);
 restore();
-if(preview){state.rounds.forEach(function(r,i){r.done=lessonTotal(i);r.typed='';});state.screen=params.get('post')==='1'?'post':'invite';var station=parseInt(params.get('station'),10);if(number(station,100000)&&station>0)state.mail.sent=(station-1)*5;}
+if(preview){state.mail.seed=17;state.rounds.forEach(function(r,i){r.done=lessonTotal(i);r.typed='';});state.screen=params.get('post')==='1'?'post':'invite';var station=parseInt(params.get('station'),10);if(number(station,12)&&station>0){var order=shuffled(SCENES.map(function(s,i){return i;}),state.mail.seed);state.mail.sent=order.indexOf(station-1);}var step=parseInt(params.get('step'),10);if(number(step,49))state.mail.done=step;}
+
 buildNav();buildKeyboard();render();focusApp();
 /* 只读快照供课堂自检使用，不绕过键盘操作。 */
-window.__post={snapshot:function(){return JSON.parse(JSON.stringify(state));},target:function(){return word().raw;},lessons:LESSONS};
+window.__post={snapshot:function(){return JSON.parse(JSON.stringify(state));},target:function(){return word().raw;},mission:function(){return mission();},scenes:SCENES,routeWords:routeWords,sceneIndex:sceneIndex,lessons:LESSONS};
 })();
 </script>
 </body>
