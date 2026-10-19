@@ -49,7 +49,6 @@ html.no-flexgap .scene-note>*:not(:last-child){margin-right:8px}
 .key{width:35px;height:29px;border:1px solid #d6dfd1;border-bottom-width:3px;border-radius:6px;background:#f1f4e9;font:14px Consolas,monospace;text-align:center;line-height:25px;color:#7a8b76}
 .key.active{background:var(--orange);color:white;border-color:#b95431;font-weight:bold;transform:translateY(-2px);box-shadow:0 3px 0 #f4d8c0}.key.home{text-decoration:underline;text-underline-offset:4px}
 .hands{display:block;width:100%;height:113px;padding-left:20px}.hand-palm,.digit{fill:#ebe4d1;stroke:#b6b69c;stroke-width:2}.nail{fill:#fffaf0}.hand-finger.active .digit{fill:#e9a16b;stroke:#b56a3d}.hand-finger.active .nail{fill:#fff1db}.hand-label{font-size:16px;fill:#85927c;text-anchor:middle}
-.tiny-note{text-align:center;font-size:11px;color:#8a9585;margin:11px 0 0}
 .invitation{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(32,58,46,.62);z-index:500;display:flex;align-items:center;justify-content:center;padding:22px;overflow:auto}
 .invite-card{width:560px;max-width:100%;background:#fffdf3;border-radius:23px;padding:37px 35px;text-align:center;box-shadow:0 24px 80px #14352344;border:6px solid #e9dcae}
 .invite-icon{font-size:62px;margin-bottom:15px}.invite-card small{font-size:12px;letter-spacing:4px;color:#a57a37}.invite-card h2{font-size:29px;margin:14px 0}.invite-card p{color:#75836a;font-size:14px;line-height:1.9}.invite-card button{display:block;margin:24px auto 0;padding:14px 30px;border:0;border-radius:12px;background:var(--green);color:white;font-weight:bold;font-size:18px}
@@ -61,7 +60,7 @@ html.no-flexgap .scene-note>*:not(:last-child){margin-right:8px}
 @keyframes stamp-in{from{transform:rotate(-14deg) scale(1.4);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:1}}
 @keyframes wiggle{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}.wrong{animation:wiggle .22s linear}
 @media(min-width:1550px){.app{max-width:1300px;padding-top:32px}.scene{min-height:400px}.task{padding:27px 34px}.word h2{font-size:36px}.word{margin-top:23px}.tokens{margin-top:6px}.token{width:41px;height:49px;font-size:31px}.keyboard-panel{padding:16px 24px}.key{width:40px;height:34px;line-height:30px}.hands{height:126px}}
-@media(max-height:720px){.app{padding-top:12px;padding-bottom:12px}header{margin-bottom:10px}nav{margin-bottom:10px}.scene{min-height:310px}.task{padding:16px 22px}.word{margin-top:7px}.word-icon{width:55px;height:55px;font-size:33px}.word h2{font-size:26px}.pinyin{font-size:20px}.instruction{margin:5px 0 7px}.keyboard-panel{margin-top:9px;padding-top:8px;padding-bottom:5px}.hands{height:100px}.tiny-note{margin-top:7px}}
+@media(max-height:720px){.app{padding-top:12px;padding-bottom:12px}header{margin-bottom:10px}nav{margin-bottom:10px}.scene{min-height:310px}.task{padding:16px 22px}.word{margin-top:7px}.word-icon{width:55px;height:55px;font-size:33px}.word h2{font-size:26px}.pinyin{font-size:20px}.instruction{margin:5px 0 7px}.keyboard-panel{margin-top:9px;padding-top:8px;padding-bottom:5px}.hands{height:100px}}
 @media(max-width:800px){.app{padding:12px}.brand-mark{width:44px;height:44px}h1{font-size:21px}.header-count{padding-left:8px}.header-count strong{font-size:20px}.lesson{padding:9px;gap:5px}.lesson .number{display:none}.lesson b{font-size:12px}.lesson small{font-size:10px}.workspace{grid-template-columns:35% 65%}.task{padding:15px}.scene-note{left:10px;top:15px}.scene-note .postmark{display:none}.scene-note b{font-size:12px}.scene-caption{left:8px;font-size:10px}.word h2{font-size:25px}.word-icon{width:47px;height:47px;font-size:30px}.pinyin{font-size:19px}.token{width:28px;height:37px;font-size:23px}.hands{padding-left:8px;height:90px}.keyboard-panel{grid-template-columns:65% 35%;padding:10px}.key{width:27px;height:26px;line-height:22px}.key-row{gap:3px}.subtitle{font-size:10px}}
 @media(max-width:520px){.workspace{grid-template-columns:1fr}.scene{min-height:175px}.scene svg{object-fit:cover}.keyboard-panel{grid-template-columns:1fr}.hands{display:none}.task{min-height:290px}.scene-note b{font-size:14px}.scene-caption{display:none}.header-count{font-size:10px}.header-count strong{font-size:17px}.lesson .tally{display:none}}
 </style>
@@ -179,7 +178,7 @@ html.no-flexgap .scene-note>*:not(:last-child){margin-right:8px}
 </g>
 <text class="hand-label" x="163" y="184">左手</text><text class="hand-label" x="497" y="184">右手</text>
 </svg>
-</section><p class="tiny-note">使用英文输入 · 不用按回车 · Backspace 可以退一格</p>
+</section>
 </main>
 <section class="invitation" id="invitation" hidden role="dialog" aria-modal="true" aria-labelledby="inviteTitle"><div class="invite-card"><div class="invite-icon">💌</div><small>一封来自森林的邀请函</small><h2 id="inviteTitle">小小邮递员，准备出发！</h2><p>三关练习全部完成，150 枚邮票已集齐。<br>森林里的小伙伴，正在等你送来第一封信。</p><button id="enterPost">打开隐藏关 · 森林送信员</button></div></section>
 <script>
