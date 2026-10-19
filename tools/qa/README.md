@@ -87,3 +87,12 @@ node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 鼠标切切乐
 ```powershell
 node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 搬砖建房子
 ```
+
+## 拼音小邮局
+
+```powershell
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局
+node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 拼音邮局
+```
+
+覆盖三关共24题真实输入、退格/大小写/错键/长按/组合键/输入法提示、刷新续写与切关、指法开关、全通解锁、隐藏关送信及邮路升级、发车刷新不重复计数、预览不写档、存储异常降级、防误触和1024/1920布局。`sim-old-edge.py` 同样包含本页。

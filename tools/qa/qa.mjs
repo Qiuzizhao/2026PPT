@@ -2327,6 +2327,102 @@ for (let level = 1; level <= 20; level++) {
   });
 }
 
+
+/* 拼音小邮局：真实键盘事件推进基础练习与隐藏送信，不调用通关捷径。 */
+const postKey='pinyinPost.progress.v1';
+const postHelpers=`
+  const key=(value,extra={})=>document.dispatchEvent(new KeyboardEvent('keydown',{key:value,bubbles:true,cancelable:true,...extra}));
+  const snap=()=>window.__post.snapshot();
+  const type=text=>{for(const c of text)key(c);};
+  const finish=()=>{const s=snap(),prefix=s.screen==='post'?s.mail.typed:s.rounds[s.level].typed;type(window.__post.target().slice(prefix.length));};
+`;
+add({name:'拼音邮局-清档',page:'index.html',steps:[{label:'准备独立测试存档',js:wrap(`localStorage.removeItem('${postKey}');return 'ok';`)}]});
+add({name:'拼音邮局-基础输入',page:'拼音小邮局.html',viewport:[1024,768],steps:[
+ {label:'只有三关，隐藏关未解锁；错键、长按、组合键不计入；退格可纠正',js:wrap(postHelpers+`
+  if(snap().screen!=='practice'||!__$('#invitation').hidden||__$$('.lesson').length!==3)throw new Error('初始解锁错误');
+  key('z');if(snap().rounds[0].typed)throw new Error('错键被接受');
+  key('b',{repeat:true});key('b',{ctrlKey:true});if(snap().rounds[0].typed)throw new Error('长按或组合键被接受');
+  key('Process',{isComposing:true});if(!__$('#status').textContent.includes('英文输入'))throw new Error('未提示英文输入');
+  key('B');if(snap().rounds[0].typed!=='b'||!__$('#key-a').classList.contains('active'))throw new Error('大小写或下一键错误');
+  key('Backspace');if(snap().rounds[0].typed)throw new Error('退格错误');key('b');
+  if(JSON.parse(localStorage.getItem('${postKey}')).rounds[0].typed!=='b')throw new Error('中途未保存');return JSON.stringify(snap());
+ `),shot:true},
+ {label:'真实键盘退格和字母输入',nativeKeys:['Backspace','b'],js:wrap(`if(window.__post.snapshot().rounds[0].typed!=='b')throw new Error('真实键盘事件未被接受');return 'ok';`)}
+]});
+add({name:'拼音邮局-刷新续练与切关',page:'拼音小邮局.html',steps:[
+ {label:'刷新接着输入；切关保留现场并取消旧回调',js:wrap(postHelpers+`
+  if(snap().rounds[0].typed!=='b')throw new Error('刷新丢失输入');key('a');
+  if(snap().rounds[0].done!==1)throw new Error('未自动完成拼音');
+  __$('.lesson[data-level="1"]').click();await __wait(800);
+  if(snap().level!==1||window.__post.target()!=='mao')throw new Error('旧回调干扰切关');
+  type('ma');__$('.lesson[data-level="2"]').click();__$('.lesson[data-level="1"]').click();
+  if(snap().rounds[1].typed!=='ma')throw new Error('切关丢失现场');
+  __$('#hintsToggle').click();if(!__$('#keyboardPanel').classList.contains('hint-off'))throw new Error('不能关闭指法');
+  __$('#hintsToggle').click();return JSON.stringify(snap());
+ `),shot:true}
+]});
+add({name:'拼音邮局-三关真实全通',page:'拼音小邮局.html',steps:[
+ {label:'完成24题才解锁邀请函，逐字推进，已完成关不重记',js:wrap(postHelpers+`
+  for(let i=0;i<3;i++){
+    __$('.lesson[data-level="'+i+'"]').click();
+    while(snap().rounds[i].done<8){finish();await __wait(720);if(i<2&&!__$('#invitation').hidden)throw new Error('提前解锁');}
+    if(i<2){const before=snap().rounds[i].done;key('a');if(snap().rounds[i].done!==before)throw new Error('重复累计');}
+  }
+  if(snap().screen!=='invite'||__$('#invitation').hidden||snap().rounds.reduce((n,r)=>n+r.done,0)!==24)throw new Error('未全通解锁');
+  if(!__$('#invitation').contains(document.activeElement))throw new Error('邀请函焦点错误');
+  return JSON.stringify(snap());
+ `),shot:true}
+]});
+add({name:'拼音邮局-邀请函存档',page:'拼音小邮局.html',steps:[
+ {label:'全通后刷新仍显示隐藏入口',js:wrap(`if(__$('#invitation').hidden||window.__post.snapshot().screen!=='invite'||!__$('#roundLabel').textContent.includes('8 / 8'))throw new Error('解锁状态或完成题数错误');return 'ok';`),shot:true},
+ {label:'进入隐藏关，写半封信即存档',nativeClicks:['#enterPost'],js:wrap(postHelpers+`
+  if(snap().screen!=='post'||!__$('#lessonNav').hidden)throw new Error('未进入邮路');
+  type('xiao');if(snap().mail.typed!=='xiao')throw new Error('隐藏关输入错误');return JSON.stringify(snap());
+ `),shot:true}
+]});
+add({name:'拼音邮局-隐藏关中途续写',page:'拼音小邮局.html',steps:[
+ {label:'刷新继续写信，完成立刻计数，盖章发车期间不重复计分',js:wrap(postHelpers+`
+  if(snap().screen!=='post'||snap().mail.typed!=='xiao')throw new Error('隐藏现场丢失');finish();
+  if(snap().mail.sent!==1||!snap().mail.delivering||!__$('#workspace').classList.contains('delivering'))throw new Error('未发车');
+  type('xiaomao');if(snap().mail.sent!==1)throw new Error('重复计数');return JSON.stringify(snap());
+ `),shot:true}
+]});
+add({name:'拼音邮局-隐藏关持续送信',page:'拼音小邮局.html',steps:[
+ {label:'发车后刷新不重复得分，满五封切换新邮路，持续出新信',js:wrap(postHelpers+`
+  if(snap().mail.sent!==1||snap().mail.delivering||snap().mail.typed)throw new Error('发车刷新重复奖励');
+  for(let i=0;i<4;i++){finish();await __wait(1170);}
+  if(snap().mail.sent!==5||!__$('#routeTitle').textContent.includes('第 2 站')||!__$('#sceneTitle').textContent.includes('海边'))throw new Error('未切换邮路');
+  finish();await __wait(1170);if(snap().mail.sent!==6||window.__post.target()!=='haixing')throw new Error('没有持续刷新信件');
+  if(__$$('.delivery-van').length!==1||__$$('#tokens .token').length>11)throw new Error('图形节点累积');
+  return JSON.stringify({sent:snap().mail.sent,route:__$('#routeTitle').textContent,target:window.__post.target()});
+ `),shot:true},
+ {label:'右键拦截但传播、输入框放行、前后退不卸载',js:wrap(`
+  let bubbled=false;document.body.addEventListener('contextmenu',()=>bubbled=true,{once:true});
+  const e=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});document.body.dispatchEvent(e);
+  if(!e.defaultPrevented||!bubbled)throw new Error('右键拦截错误');
+  const input=document.createElement('input');document.body.appendChild(input);const native=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});input.dispatchEvent(native);input.remove();if(native.defaultPrevented)throw new Error('输入框未放行');
+  window.__probe='kept';const path=location.pathname;history.back();await __wait(150);history.forward();await __wait(150);
+  if(window.__probe!=='kept'||location.pathname!==path)throw new Error('历史哨兵错误');return 'ok';
+ `)}
+]});
+for(const item of [{name:'雪山',station:3},{name:'夜晚',station:4},{name:'循环',station:5}])add({name:'拼音邮局-隐藏预览-'+item.name,page:'拼音小邮局.html?post=1&station='+item.station,viewport:[1024,768],steps:[
+ {label:'预览指定场景，不读写学生进度，内容完整可见',js:wrap(postHelpers+`
+  const before=localStorage.getItem('${postKey}');
+  if(snap().mail.sent!==${(item.station-1)*5}||snap().screen!=='post')throw new Error('预览站点错误');
+  finish();await __wait(1170);if(localStorage.getItem('${postKey}')!==before)throw new Error('预览污染存档');
+  const task=__$('#workspace').getBoundingClientRect(),keys=__$('#keyboardPanel').getBoundingClientRect();
+  if(document.documentElement.scrollWidth>innerWidth||task.left<0||task.right>innerWidth||keys.bottom>innerHeight)throw new Error('1024布局不完整');
+  return JSON.stringify({station:${item.station},title:__$('#sceneTitle').textContent});
+ `),shot:true}
+]});
+add({name:'拼音邮局-宽屏预览',page:'拼音小邮局.html?post=1&station=4',viewport:[1920,1080],steps:[{label:'宽屏布局与焦点正常',js:wrap(`if(document.documentElement.scrollWidth>innerWidth||__$('#keyboardPanel').getBoundingClientRect().bottom>innerHeight)throw new Error('宽屏溢出');return 'ok';`),shot:true}]});
+add({name:'拼音邮局-损坏存档',page:'index.html',steps:[{label:'准备不合法进度',js:wrap(`localStorage.setItem('${postKey}',JSON.stringify({v:1,screen:'post',level:99,rounds:[{done:999,typed:'bad'}],mail:{sent:-1}}));return 'ok';`)}]});
+add({name:'拼音邮局-损坏存档恢复',page:'拼音小邮局.html',steps:[{label:'不能靠坏数据解锁；存储禁用时仍可练习',js:wrap(postHelpers+`
+ if(snap().screen!=='practice'||snap().mail.sent!==0||snap().rounds[0].done!==0)throw new Error('坏数据越过解锁');
+ const original=Storage.prototype.setItem;Storage.prototype.setItem=()=>{throw new Error('blocked');};type('ba');Storage.prototype.setItem=original;
+ if(snap().rounds[0].done!==1)throw new Error('禁用存储不能练习');return 'ok';
+`)}]});
+
 const userDir = join(tmpdir(), 'cdp-qa-' + Date.now());
 add({name:'鼠标练习营4-自由切关种档',page:'index.html',steps:[
   {label:'准备各关不同轮数',js:wrap(`localStorage.setItem('mousecamp4.progress.v2',JSON.stringify({v:2,cleared:{},rounds:{s1:4,s2:1,s3:0},ts:Date.now()}));return 'ok';`)}
@@ -2667,6 +2763,12 @@ for (const sc of SCENARIOS) {
           y: from.y + (to.y-from.y)*j/20, button: 'left', buttons: 1 });
       }
       await s('Input.dispatchMouseEvent', { type: 'mouseReleased', x: to.x, y: to.y, button: 'left', buttons: 0, clickCount: 1 });
+    }
+    for (const key of st.nativeKeys || []) {
+      const code = key === 'Backspace' ? 8 : key.toUpperCase().charCodeAt(0);
+      const spec = {key, code:key === 'Backspace' ? key : 'Key'+key.toUpperCase(), windowsVirtualKeyCode:code};
+      await s('Input.dispatchKeyEvent', {type:'keyDown', ...spec});
+      await s('Input.dispatchKeyEvent', {type:'keyUp', ...spec});
     }
     const value = await evalIn(s, st.js);
     const errs = events.filter(e => e.method === 'Runtime.exceptionThrown')

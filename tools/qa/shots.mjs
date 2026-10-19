@@ -273,6 +273,13 @@ const SHOTS = [
       const card = __$('#cards .card'); if (card) card.click(); await __wait(600); return 'ok';`) }
 ];
 
+/* 拼音小邮局：基础页、解锁函与四条送信邮路。 */
+SHOTS.push({name:'拼音邮局-基础练习',page:'拼音小邮局.html',viewport:[1024,768],js:j(`return 'ok';`)},
+  {name:'拼音邮局-解锁邀请函',page:'拼音小邮局.html?finale=1',viewport:[1024,768],js:j(`return 'ok';`)});
+for(const [station,name] of [[1,'森林'],[2,'海边'],[3,'雪山'],[4,'夜晚']]){
+  SHOTS.push({name:'拼音邮局-隐藏邮路-'+name,page:'拼音小邮局.html?post=1&station='+station,viewport:[1024,768],js:j(`return 'ok';`)});
+}
+
 const userDir = join(tmpdir(), 'cdp-shots-' + Date.now());
 const chrome = spawn(CHROME, [
   '--headless=new', '--disable-gpu', '--no-first-run', '--remote-debugging-port=9336',
