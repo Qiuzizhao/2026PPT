@@ -120,3 +120,10 @@ node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-布局稳定
 ```powershell
 node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-转弯朝向
 ```
+
+独立拼音送件（直接开玩、50词送达、刷新续写、双向存档隔离、原课件不变、预览与防误触）：
+
+```powershell
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 独立拼音送件
+node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 独立拼音送件
+```

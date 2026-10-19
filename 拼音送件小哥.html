@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>拼音送件小哥 · 无限送件</title>
+<style>
+:root{--ink:#263e36;--muted:#6a7d72;--green:#2b6b52;--orange:#d9683d;--line:#dce4d8;--paper:#fffef9}
+*{box-sizing:border-box} [hidden]{display:none !important}
+body{margin:0;background:#f4f3e9;color:var(--ink);font-family:"Microsoft YaHei","Segoe UI",sans-serif;user-select:none}
+.app:focus{outline:none}
+button{font:inherit;cursor:pointer} button:focus{outline:3px solid #e4a460;outline-offset:3px}
+button:disabled{cursor:default} .app{max-width:1180px;margin:0 auto;padding:20px 26px 22px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px;gap:15px}
+html.no-flexgap header>*:not(:last-child){margin-right:15px}
+.brand{display:flex;align-items:center;gap:13px}html.no-flexgap .brand>*:not(:last-child){margin-right:13px}
+.brand-mark{width:53px;height:53px;background:var(--green);border-radius:17px;display:flex;align-items:center;justify-content:center;color:white;font-size:30px;transform:rotate(-6deg)}
+h1{font-size:27px;letter-spacing:2px;margin:0}
+.header-count{border-left:1px solid #cbd8ca;padding-left:22px;text-align:right;font-size:12px;color:var(--muted)}.header-count strong{color:var(--green);font-size:24px;margin:0 4px}
+nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-gap:10px;margin-bottom:16px}
+.lesson{background:#e9ede2;border:1px solid transparent;border-radius:13px;display:flex;align-items:center;text-align:left;padding:11px 14px;color:var(--ink);gap:11px}
+html.no-flexgap .lesson>*:not(:last-child){margin-right:11px}
+.lesson.active{background:var(--green);color:white}.lesson.done{border-color:#82aa89}.lesson.done:not(.active){background:#e0eddf}
+.lesson .number{font-family:Georgia,serif;font-size:25px;opacity:.6}.lesson b{font-size:15px;display:block}.lesson .tally{margin-left:auto;font-size:12px;white-space:nowrap}
+.workspace{display:grid;grid-template-columns:43% 57%;background:var(--paper);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 8px 25px rgba(49,77,49,.035)}
+.scene{position:relative;min-height:347px;background:#dcebd8;overflow:hidden;display:flex;align-items:flex-end}
+.scene svg{display:block;width:100%;height:100%;position:absolute;top:0;left:0}
+.task{padding:23px 27px 18px;min-width:0;display:flex;flex-direction:column;position:relative}
+.task-head{display:flex;justify-content:flex-end;align-items:center;font-size:11px;letter-spacing:1px;color:var(--muted);min-height:20px}
+.task-head b{color:var(--green);background:#e9f0e4;border-radius:20px;padding:5px 10px;letter-spacing:0}
+.word{display:flex;align-items:center;margin:14px 0 2px;gap:14px;min-height:68px}html.no-flexgap .word>*:not(:last-child){margin-right:14px}
+.word-icon{width:65px;height:65px;background:#f5efdc;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0}
+.word h2{font-size:30px;letter-spacing:5px;margin:0 0 4px}.pinyin{font-family:"Segoe UI","Microsoft YaHei",sans-serif;font-size:23px;letter-spacing:2px;color:#5c745f;margin:0}
+.tokens{margin-top:14px;display:flex;flex-wrap:wrap;gap:5px;min-height:45px;align-items:center}html.no-flexgap .tokens>*{margin-right:5px;margin-bottom:5px}
+.token{font-family:Consolas,monospace;font-size:27px;display:inline-flex;align-items:center;justify-content:center;width:35px;height:43px;background:#f0f1e8;border-bottom:3px solid #dce0d3;border-radius:7px;color:#a9b0a1}
+.token.correct{color:var(--green);background:#dfeddb;border-color:#a8c5a2}.token.current{background:#fff2d9;color:#aa542b;border:2px solid #df9d59;border-bottom-width:4px}
+.status{font-size:12px;line-height:1.5;min-height:34px;margin:8px 0 0;color:var(--orange);display:flex;align-items:center}
+.task-foot{margin-top:auto;display:flex;justify-content:flex-end;align-items:center}
+.next-button{min-width:190px;min-height:66px;border:0;border-radius:14px;padding:16px 30px;background:var(--green);color:#fff;font-size:24px;font-weight:700}
+.keyboard-panel{display:grid;grid-template-columns:60% 40%;margin-top:13px;border:1px solid var(--line);border-radius:18px;padding:12px 18px 8px;background:#fafbf5;align-items:center}
+.keyboard-head{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:8px;color:var(--muted)}.keyboard-head b{color:var(--green);font-weight:700}
+.key-row{display:flex;justify-content:center;gap:5px;margin-bottom:5px}html.no-flexgap .key-row>*:not(:last-child){margin-right:5px}
+.key{width:35px;height:29px;border:1px solid #d6dfd1;border-bottom-width:3px;border-radius:6px;background:#f1f4e9;font:14px Consolas,monospace;text-align:center;line-height:25px;color:#7a8b76}
+.key.active{background:var(--orange);color:white;border-color:#b95431;font-weight:bold;transform:translateY(-2px);box-shadow:0 3px 0 #f4d8c0}.key.home{text-decoration:underline;text-underline-offset:4px}
+.hands{display:block;width:100%;height:113px;padding-left:20px}.hand-palm,.digit{fill:#ebe4d1;stroke:#b6b69c;stroke-width:2}.nail{fill:#fffaf0}.hand-finger.active .digit{fill:#e9a16b;stroke:#b56a3d}.hand-finger.active .nail{fill:#fff1db}.hand-label{font-size:16px;fill:#85927c;text-anchor:middle}
+.invitation{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(32,58,46,.62);z-index:500;display:flex;align-items:center;justify-content:center;padding:22px;overflow:auto}
+.invite-card{width:560px;max-width:100%;background:#fffdf3;border-radius:23px;padding:37px 35px;text-align:center;box-shadow:0 24px 80px #14352344;border:6px solid #e9dcae}
+.invite-icon{font-size:62px;margin-bottom:15px}.invite-card h2{font-size:29px;margin:14px 0}.invite-card button{display:block;margin:24px auto 0;padding:14px 30px;border:0;border-radius:12px;background:var(--green);color:white;font-weight:bold;font-size:18px}
+.progress-dots{display:flex;gap:7px}html.no-flexgap .progress-dots>*:not(:last-child){margin-right:7px}
+.routes{display:flex;gap:7px;align-items:center;margin-bottom:13px}html.no-flexgap .routes>*:not(:last-child){margin-right:7px}.route-dot{width:25px;height:25px;border-radius:50%;border:1px dashed #a7be9b;background:#f6f5e8;color:#9bad90;font-size:12px;display:flex;align-items:center;justify-content:center}.route-dot.done{background:#2b6b52;color:#fff;border-style:solid}.route-title{font-size:13px;margin-right:auto;font-weight:bold;color:var(--green)}
+.stamp{position:absolute;right:20px;top:74px;width:88px;height:88px;border:3px double #c15a3e;border-radius:50%;color:#c15a3e;text-align:center;padding-top:24px;font-size:16px;font-weight:bold;transform:rotate(-14deg);background:#fff8e6ed;pointer-events:none}
+.delivering .stamp{animation:stamp-in .25s ease-out}.delivery-van{transform:translateX(0)}.delivering .delivery-van{animation:drive 1s ease-in-out forwards}
+@keyframes drive{0%{transform:translateX(0)}100%{transform:translateX(230px)}}
+@keyframes stamp-in{from{transform:rotate(-14deg) scale(1.4);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:1}}
+.wrong .token.current{box-shadow:0 0 0 2px #e6b2a1}
+@media(min-width:1550px){.app{max-width:1300px;padding-top:32px}.scene{min-height:400px}.task{padding:27px 34px}.word h2{font-size:36px}.word{margin-top:23px}.tokens{margin-top:6px}.token{width:41px;height:49px;font-size:31px}.keyboard-panel{padding:16px 24px}.key{width:40px;height:34px;line-height:30px}.hands{height:126px}}
+@media(max-height:720px){.app{padding-top:12px;padding-bottom:12px}header{margin-bottom:10px}nav{margin-bottom:10px}.scene{min-height:310px}.task{padding:16px 22px}.word{margin-top:7px}.word-icon{width:55px;height:55px;font-size:33px}.word h2{font-size:26px}.pinyin{font-size:20px}.keyboard-panel{margin-top:9px;padding-top:8px;padding-bottom:5px}.hands{height:100px}}
+@media(max-width:800px){.app{padding:12px}.brand-mark{width:44px;height:44px}h1{font-size:21px}.header-count{padding-left:8px}.header-count strong{font-size:20px}.lesson{padding:9px;gap:5px}.lesson .number{display:none}.lesson b{font-size:12px}.workspace{grid-template-columns:35% 65%}.task{padding:15px}.word h2{font-size:25px}.word-icon{width:47px;height:47px;font-size:30px}.pinyin{font-size:19px}.token{width:28px;height:37px;font-size:23px}.hands{padding-left:8px;height:90px}.keyboard-panel{grid-template-columns:65% 35%;padding:10px}.key{width:27px;height:26px;line-height:22px}.key-row{gap:3px}}
+@media(max-width:520px){.workspace{grid-template-columns:1fr}.scene{min-height:175px}.scene svg{object-fit:cover}.keyboard-panel{grid-template-columns:1fr}.hands{display:none}.task{min-height:290px}.header-count{font-size:10px}.header-count strong{font-size:17px}.lesson .tally{display:none}}
+
+/* 隐藏关：整条邮路随邮车向前推进，词语面板收在场景下方。 */
+.parcel-label{position:absolute;top:14px;left:18px;max-width:90%;padding:8px 13px;background:#fffdf4;border:1px solid #d5dfcf;border-radius:12px;font-size:12px;color:#45644e;box-shadow:0 3px 10px #263e3610}
+.journey-on .workspace{grid-template-columns:1fr}.journey-on .scene{height:285px;min-height:0}.journey-on .task{display:grid;grid-template-columns:38% 62%;padding:10px 22px 8px;border-top:1px solid var(--line);align-items:center}
+.journey-on .task-head{grid-column:1 / -1;min-height:24px}.task-head .journey-goal{margin-right:auto;padding:0;background:none;font-size:13px}
+.journey-on .word{margin:0;min-height:58px;gap:10px}.journey-on .word-icon{width:49px;height:49px;font-size:31px}.journey-on .word h2{font-size:25px;letter-spacing:2px}.journey-on .pinyin{font-size:19px;letter-spacing:1px}
+.journey-on .tokens{margin:0;justify-content:flex-end;gap:4px}.journey-on .token{width:30px;height:37px;font-size:24px}.journey-on .status{grid-column:1 / -1;min-height:18px;margin:0}.journey-on .task-foot{display:none}
+.journey-on{max-width:1500px;padding:10px 18px}
+.journey-on header{margin-bottom:8px}.journey-on .brand-mark{width:36px;height:36px;border-radius:11px;font-size:23px}.journey-on h1{font-size:21px}.journey-on .header-count strong{font-size:20px}
+.journey-on .routes{margin-bottom:8px;min-height:20px}
+.journey-on .scene{height:458px;height:calc(100vh - 365px);min-height:260px;max-height:780px}
+.journey-on .word-icon,.journey-on .journey-goal{display:none}
+.journey-on .keyboard-panel{margin-top:9px;padding:8px 18px 5px}.journey-on .key{height:24px;line-height:20px}.journey-on .key-row{margin-bottom:3px}.journey-on .keyboard-head{margin-bottom:5px}.journey-on .hands{height:88px}
+.route-track{display:block;width:170px;height:5px;border-radius:4px;background:#dce4d8;overflow:hidden}.route-track>span{display:block;height:100%;background:#649582;transition:width .3s}
+.courier-body{transform-origin:center bottom}
+@media(min-width:1550px){.journey-on .task{padding:14px 28px 10px}.journey-on .word h2{font-size:29px}.journey-on .token{width:37px;height:45px;font-size:28px}}
+@media(max-height:720px){.journey-on .task{padding:7px 18px}.journey-on .word{min-height:52px}.journey-on .word-icon{width:44px;height:44px}.journey-on .word h2{font-size:23px}.journey-on .keyboard-panel{margin-top:9px}}
+@media(max-width:800px){.journey-on .task{grid-template-columns:1fr;padding:10px 14px}.journey-on .tokens{justify-content:flex-start;margin-top:6px}.journey-on .word h2{font-size:23px}.parcel-label{font-size:11px;top:10px;left:10px}}
+/* 输入反馈和长短词共用固定槽位，内容变化不推动地图和键盘。 */
+.word{height:84px;min-height:84px;flex-shrink:0}.word>div:last-child{min-width:0;flex:1}.word h2{line-height:1.25;white-space:nowrap}.pinyin{line-height:1.3;white-space:nowrap}
+.token{flex-shrink:0}.token.unused{visibility:hidden;pointer-events:none}
+.status{height:34px;min-height:34px;flex-shrink:0;white-space:nowrap;overflow:hidden}
+.task-foot{height:66px;min-height:66px;flex-shrink:0}
+.keyboard-head{height:20px;min-height:20px;line-height:20px;white-space:nowrap}
+#roundLabel{min-width:126px;text-align:center}
+.journey-on .word{height:68px;min-height:68px}
+.journey-on .status{height:20px;min-height:20px;line-height:20px}
+.journey-on #roundLabel{min-width:70px}
+</style>
+<script>
+/* ===== 防误触兜底 =====
+   1) 右键菜单：学生鼠标不熟练，乱按时很容易弹出系统右键菜单挡住画面。
+      这里全局取消默认菜单，但只调 preventDefault、绝不 stopPropagation，
+      页内自己监听 contextmenu 的功能照常收到事件。输入框除外，要用右键粘贴。
+   2) 拖拽：防止图片/文字被拖出页面。拖拽练习走 pointer 事件，不受影响。
+   3) 防误退：Edge 的鼠标手势（右键按住向左拖动）和误按后退键都会触发浏览器
+      后退，把学生从练习页带走。压两层 history 哨兵，任何后退/前进都只会落回
+      本页，popstate 一响立刻再压一层，页面始终留在原地。
+   本页不使用 hash / history 导航，以上都不影响页内功能。 */
+(function () {
+  /* 输入框里保留原生右键菜单，方便右键粘贴 */
+  function keepNative(el) {
+    return !!(el && el.closest &&
+      el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'));
+  }
+  document.addEventListener('contextmenu', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();                    /* 只取消默认菜单，不阻断页内逻辑 */
+  }, true);
+  document.addEventListener('dragstart', function (e) {
+    if (keepNative(e.target)) return;
+    e.preventDefault();
+  }, true);
+
+  /* 防误退 */
+  if (location.protocol === 'file:') return;      /* file:// 下浏览器禁止 pushState */
+  function guard() {
+    try { history.pushState({ mtSentinel: 1 }, '', location.href); } catch (e) {}
+  }
+  try {
+    guard(); guard();
+    window.addEventListener('popstate', guard);
+  } catch (e) {}
+})();
+</script>
+<script>
+/* ===== 兼容层 A：flex gap 能力探测 =====
+   老内核（Edge 84 以前、EdgeHTML）的 flex 布局不支持 gap，间距会全部塌掉。
+   这里用真实布局量一次宽度来判断，支持就用原样，不支持就给 <html> 挂上
+   no-flexgap，样式表里预置的 margin 规则接管间距。
+   不用 CSS.supports('gap') 判断：gap 在 Chrome 66 起就作为 grid-gap 的别名存在，
+   老版本会误报"支持"。 */
+(function () {
+  try {
+    var box = document.createElement('div');
+    box.style.cssText = 'position:absolute;top:-9999px;left:-9999px;display:flex;gap:10px;width:auto;height:1px';
+    var a = document.createElement('i');
+    var b = document.createElement('i');
+    a.style.cssText = b.style.cssText = 'display:block;width:10px;height:1px';
+    box.appendChild(a); box.appendChild(b);
+    document.documentElement.appendChild(box);
+    var w = box.getBoundingClientRect().width || box.scrollWidth;
+    document.documentElement.removeChild(box);
+    if (!(w >= 30)) document.documentElement.className += ' no-flexgap';
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+<main class="app journey-on" id="app" tabindex="-1">
+<header><div class="brand"><div class="brand-mark" aria-hidden="true">✉</div><div><h1>拼音送件小哥</h1></div></div><div class="header-count" id="headerCount">已送达 <strong id="totalDone">0</strong> 件</div></header>
+<nav hidden id="lessonNav" aria-label="基础练习关卡"></nav>
+<div class="routes" id="routes" hidden><span class="route-title" id="routeTitle"></span><span id="routeProgress" class="progress-dots"></span></div>
+<section class="workspace" id="workspace" aria-label="拼音练习">
+<div class="scene" id="scene" aria-label="森林邮局"><div id="landscape"></div><div class="parcel-label" id="parcelLabel" hidden></div></div>
+<div class="task" id="task"><div class="task-head"><b class="journey-goal" id="journeyGoal" hidden></b><b id="roundLabel">1 / 50</b></div>
+<div class="word"><div class="word-icon" id="wordIcon" aria-hidden="true"></div><div><h2 id="wordName"></h2><p class="pinyin" id="pinyin"></p></div></div>
+<div class="tokens" id="tokens" aria-label="当前输入进度"></div>
+<p class="status" id="status" role="status" aria-live="polite"></p>
+<div class="task-foot"><button class="next-button" id="nextLesson" hidden>下一关</button></div>
+<div class="stamp" id="stamp" hidden>投递成功<br><small>✉</small></div>
+</div></section>
+<section class="keyboard-panel" id="keyboardPanel" aria-label="键盘指法提示"><div><div class="keyboard-head"><b id="fingerHint">下一键</b></div><div id="keyboard"></div></div>
+<svg class="hands" id="hands" viewBox="0 0 660 190" role="img" aria-label="双手指法">
+<g>
+<rect class="hand-palm" x="72" y="93" width="157" height="70" rx="30"/>
+<g class="hand-finger" data-finger="左手小指">
+<rect class="digit" x="73" y="56" width="32" height="66" rx="16"/><rect class="nail" x="81" y="66" width="16" height="18" rx="7"/>
+</g>
+<g class="hand-finger" data-finger="左手无名指">
+<rect class="digit" x="112" y="29" width="32" height="94" rx="16"/><rect class="nail" x="120" y="39" width="16" height="18" rx="7"/>
+</g>
+<g class="hand-finger" data-finger="左手中指">
+<rect class="digit" x="151" y="15" width="32" height="109" rx="16"/><rect class="nail" x="159" y="25" width="16" height="18" rx="7"/>
+</g>
+<g class="hand-finger" data-finger="左手食指">
+<rect class="digit" x="190" y="33" width="32" height="93" rx="16"/><rect class="nail" x="198" y="43" width="16" height="18" rx="7"/>
+</g>
+<g class="hand-finger" data-finger="左手拇指" transform="rotate(35 232 140)">
+<rect class="digit" x="216" y="85" width="32" height="68" rx="16"/><rect class="nail" x="224" y="95" width="16" height="18" rx="7"/>
+</g>
+</g>
+<g transform="translate(660 0) scale(-1 1)">
+<rect class="hand-palm" x="72" y="93" width="157" height="70" rx="30"/>
+<g class="hand-finger" data-finger="右手小指">
+<rect class="digit" x="73" y="56" width="32" height="66" rx="16"/><rect class="nail" x="81" y="66" width="16" height="18" rx="7"/>
+</g>
+<g class="hand-finger" data-finger="右手无名指">
+<rect class="digit" x="112" y="29" width="32" height="94" rx="16"/><rect class="nail" x="120" y="39" width="16" height="18" rx="7"/>
+</g>
+<g class="hand-finger" data-finger="右手中指">
+<rect class="digit" x="151" y="15" width="32" height="109" rx="16"/><rect class="nail" x="159" y="25" width="16" height="18" rx="7"/>
+</g>
+<g class="hand-finger" data-finger="右手食指">
+<rect class="digit" x="190" y="33" width="32" height="93" rx="16"/><rect class="nail" x="198" y="43" width="16" height="18" rx="7"/>
+</g>
+<g class="hand-finger" data-finger="右手拇指" transform="rotate(35 232 140)">
+<rect class="digit" x="216" y="85" width="32" height="68" rx="16"/><rect class="nail" x="224" y="95" width="16" height="18" rx="7"/>
+</g>
+</g>
+<text class="hand-label" x="163" y="184">左手</text><text class="hand-label" x="497" y="184">右手</text>
+</svg>
+</section>
+</main>
+<section class="invitation" id="invitation" hidden role="dialog" aria-modal="true" aria-labelledby="inviteTitle"><div class="invite-card"><div class="invite-icon">💌</div><h2 id="inviteTitle">隐藏关已解锁</h2><button id="enterPost">出发送件</button></div></section>
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var pack=function(name,tone,raw,icon){return {name:name,tone:tone,raw:raw,icon:icon};};
+var LESSONS=[
+ {name:'拼音起步',words:[pack('八','bā','ba','8️⃣'),pack('米','mǐ','mi','🍚'),pack('兔','tù','tu','🐰'),pack('马','mǎ','ma','🐴'),pack('你','nǐ','ni','👋'),pack('我','wǒ','wo','🙋'),pack('鱼','yú','yu','🐟'),pack('虎','hǔ','hu','🐯'),
+  pack("波","bō","bo","🌊"),
+  pack("坡","pō","po","⛰️"),
+  pack("摸","mō","mo","🖐️"),
+  pack("佛","fó","fo","🪷"),
+  pack("的","de","de","📖"),
+  pack("特","tè","te","⭐"),
+  pack("呢","ne","ne","💬"),
+  pack("乐","lè","le","😄"),
+  pack("歌","gē","ge","🎵"),
+  pack("课","kè","ke","📚"),
+  pack("河","hé","he","🏞️"),
+  pack("鸡","jī","ji","🐔"),
+  pack("旗","qí","qi","🚩"),
+  pack("西","xī","xi","🧭"),
+  pack("子","zǐ","zi","👶"),
+  pack("刺","cì","ci","🌵"),
+  pack("丝","sī","si","🧵"),
+  pack("日","rì","ri","☀️"),
+  pack("入","rù","ru","🚪"),
+  pack("木","mù","mu","🪵"),
+  pack("怒","nù","nu","😠"),
+  pack("布","bù","bu","🧶"),
+  pack("铺","pù","pu","🏪"),
+  pack("斧","fǔ","fu","🪓"),
+  pack("读","dú","du","📖"),
+  pack("鹿","lù","lu","🦌"),
+  pack("鼓","gǔ","gu","🥁"),
+  pack("哭","kū","ku","😢"),
+  pack("爬","pá","pa","🐾"),
+  pack("发","fā","fa","📨"),
+  pack("大","dà","da","🐘"),
+  pack("他","tā","ta","👦"),
+  pack("拿","ná","na","🤲"),
+  pack("拉","lā","la","🪢"),
+  pack("嘎","gā","ga","🦆"),
+  pack("卡","kǎ","ka","💳"),
+  pack("哈","hā","ha","😄"),
+  pack("笔","bǐ","bi","🖊️"),
+  pack("皮","pí","pi","🍊"),
+  pack("地","dì","di","🌱"),
+  pack("梯","tī","ti","🪜"),
+  pack("梨","lí","li","🍐")]},
+ {name:'音节进阶',words:[pack('猫','māo','mao','🐱'),pack('水','shuǐ','shui','💧'),pack('羊','yáng','yang','🐑'),pack('山','shān','shan','⛰️'),pack('鸟','niǎo','niao','🐦'),pack('船','chuán','chuan','⛵'),pack('星','xīng','xing','⭐'),pack('掌','zhǎng','zhang','🖐️'),
+  pack("纸","zhǐ","zhi","📃"),
+  pack("吃","chī","chi","🍽️"),
+  pack("诗","shī","shi","📜"),
+  pack("竹","zhú","zhu","🎋"),
+  pack("出","chū","chu","🚪"),
+  pack("书","shū","shu","📖"),
+  pack("找","zhǎo","zhao","🔎"),
+  pack("炒","chǎo","chao","🍳"),
+  pack("勺","sháo","shao","🥄"),
+  pack("舟","zhōu","zhou","🛶"),
+  pack("抽","chōu","chou","🧻"),
+  pack("手","shǒu","shou","✋"),
+  pack("庄","zhuāng","zhuang","🏡"),
+  pack("窗","chuāng","chuang","🪟"),
+  pack("双","shuāng","shuang","🧦"),
+  pack("钟","zhōng","zhong","🕰️"),
+  pack("虫","chóng","chong","🐛"),
+  pack("龙","lóng","long","🐉"),
+  pack("亮","liàng","liang","💡"),
+  pack("六","liù","liu","6️⃣"),
+  pack("楼","lóu","lou","🏢"),
+  pack("蓝","lán","lan","🔵"),
+  pack("莲","lián","lian","🪷"),
+  pack("铃","líng","ling","🔔"),
+  pack("来","lái","lai","👋"),
+  pack("雷","léi","lei","🌩️"),
+  pack("年","nián","nian","🧧"),
+  pack("宁","níng","ning","🍃"),
+  pack("南","nán","nan","🧭"),
+  pack("挪","nuó","nuo","📦"),
+  pack("能","néng","neng","💪"),
+  pack("牛","niú","niu","🐮"),
+  pack("选","xuǎn","xuan","✅"),
+  pack("雪","xuě","xue","❄️"),
+  pack("小","xiǎo","xiao","🐜"),
+  pack("熊","xióng","xiong","🐻"),
+  pack("泉","quán","quan","💧"),
+  pack("球","qiú","qiu","⚽"),
+  pack("钱","qián","qian","🪙"),
+  pack("桥","qiáo","qiao","🌉"),
+  pack("圆","yuán","yuan","⭕"),
+  pack("月","yuè","yue","🌙")]},
+ {name:'词语练习',words:[pack('小猫','xiǎo māo','xiaomao','🐱'),pack('苹果','píng guǒ','pingguo','🍎'),pack('白兔','bái tù','baitu','🐰'),pack('花朵','huā duǒ','huaduo','🌼'),pack('太阳','tài yáng','taiyang','☀️'),pack('月亮','yuè liang','yueliang','🌙'),pack('小鸟','xiǎo niǎo','xiaoniao','🐦'),pack('大树','dà shù','dashu','🌳'),
+  pack("小狗","xiǎo gǒu","xiaogou","🐶"),
+  pack("小羊","xiǎo yáng","xiaoyang","🐑"),
+  pack("小牛","xiǎo niú","xiaoniu","🐮"),
+  pack("小马","xiǎo mǎ","xiaoma","🐴"),
+  pack("小鱼","xiǎo yú","xiaoyu","🐟"),
+  pack("小熊","xiǎo xióng","xiaoxiong","🐻"),
+  pack("松鼠","sōng shǔ","songshu","🐿️"),
+  pack("狐狸","hú li","huli","🦊"),
+  pack("小鹿","xiǎo lù","xiaolu","🦌"),
+  pack("乌龟","wū guī","wugui","🐢"),
+  pack("小猪","xiǎo zhū","xiaozhu","🐷"),
+  pack("小鸭","xiǎo yā","xiaoya","🦆"),
+  pack("公鸡","gōng jī","gongji","🐓"),
+  pack("母鸡","mǔ jī","muji","🐔"),
+  pack("飞机","fēi jī","feiji","✈️"),
+  pack("火车","huǒ chē","huoche","🚂"),
+  pack("汽车","qì chē","qiche","🚗"),
+  pack("轮船","lún chuán","lunchuan","🚢"),
+  pack("气球","qì qiú","qiqiu","🎈"),
+  pack("风筝","fēng zheng","fengzheng","🪁"),
+  pack("书包","shū bāo","shubao","🎒"),
+  pack("铅笔","qiān bǐ","qianbi","✏️"),
+  pack("橡皮","xiàng pí","xiangpi","🧽"),
+  pack("尺子","chǐ zi","chizi","📏"),
+  pack("桌子","zhuō zi","zhuozi","🪑"),
+  pack("椅子","yǐ zi","yizi","🪑"),
+  pack("书本","shū běn","shuben","📚"),
+  pack("学校","xué xiào","xuexiao","🏫"),
+  pack("老师","lǎo shī","laoshi","👩‍🏫"),
+  pack("同学","tóng xué","tongxue","👧"),
+  pack("妈妈","mā ma","mama","👩"),
+  pack("爸爸","bà ba","baba","👨"),
+  pack("哥哥","gē ge","gege","👦"),
+  pack("姐姐","jiě jie","jiejie","👧"),
+  pack("弟弟","dì di","didi","👦"),
+  pack("妹妹","mèi mei","meimei","👧"),
+  pack("西瓜","xī guā","xigua","🍉"),
+  pack("香蕉","xiāng jiāo","xiangjiao","🍌"),
+  pack("草莓","cǎo méi","caomei","🍓"),
+  pack("葡萄","pú tao","putao","🍇"),
+  pack("牛奶","niú nǎi","niunai","🥛"),
+  pack("面包","miàn bāo","mianbao","🍞")]}
+];
+function lessonTotal(i){return LESSONS[i].words.length;}
+var TOTAL=LESSONS.reduce(function(n,l){return n+l.words.length;},0);
+/* 隐藏关只有打字和前进：每条邮路50词，十五种风景随机循环。 */
+var SCENES=[
+ {name:'森林',place:'森林小屋',sky:'#e4efe8',hill:'#bdd3bd',ground:'#b0c6a0',road:'#ead8b7',accent:'#6f987a',kind:'forest'},
+ {name:'城市',place:'街角书店',sky:'#e7eff4',hill:'#ccdce2',ground:'#c0d1c3',road:'#d5d6d0',accent:'#7899a3',kind:'city'},
+ {name:'海滩',place:'海边灯塔',sky:'#e3f2f4',hill:'#a7d3da',ground:'#efdfbe',road:'#f7e9cf',accent:'#7aafb4',kind:'beach'},
+ {name:'雪山',place:'山脚木屋',sky:'#e6edf4',hill:'#bfcfdf',ground:'#edf2f4',road:'#dce5e9',accent:'#8faaba',kind:'snow'},
+ {name:'星夜',place:'星光旅舍',sky:'#34445e',hill:'#53677f',ground:'#71817c',road:'#bcc4b6',accent:'#708a9b',kind:'night'},
+ {name:'花田',place:'花田小站',sky:'#f5ebe9',hill:'#d3d8b6',ground:'#bfcea1',road:'#eee1c3',accent:'#b48da1',kind:'flowers'},
+ {name:'竹林',place:'竹林茶屋',sky:'#e8f0e5',hill:'#c3d5bb',ground:'#acbf9b',road:'#e6dfc5',accent:'#7e9c79',kind:'bamboo'},
+ {name:'果园',place:'果园农舍',sky:'#f3ecd9',hill:'#d5d9b0',ground:'#bfcc96',road:'#ecdcad',accent:'#a4b57e',kind:'orchard'},
+ {name:'湖畔',place:'湖畔小屋',sky:'#e4eff3',hill:'#bbcdd1',ground:'#b7cbbd',road:'#e7e2cc',accent:'#85abb3',kind:'lake'},
+ {name:'沙漠',place:'绿洲驿站',sky:'#f7eddb',hill:'#e2c6a1',ground:'#e7cba7',road:'#f4e1c0',accent:'#bda186',kind:'desert'},
+ {name:'乡村',place:'风车农场',sky:'#edf0df',hill:'#c7d3aa',ground:'#b1c395',road:'#e9dab7',accent:'#9caf7c',kind:'village'},
+ {name:'秋野',place:'秋日邮亭',sky:'#f5eadd',hill:'#dbc7a8',ground:'#d4c095',road:'#eee0c3',accent:'#be9979',kind:'autumn'},
+ {name:'中世纪城市',place:'城堡公会',sky:'#e8e5dc',kind:'medieval-city'},
+ {name:'中世纪小镇',place:'小镇旅店',sky:'#eee7da',kind:'medieval-town'},
+ {name:'中世纪乡村',place:'乡间茅屋',sky:'#ebeddb',kind:'medieval-village'}
+];
+function randomStep(seed){return (Math.imul(seed,1664525)+1013904223)>>>0;}
+function shuffled(list,seed){var a=list.slice();for(var i=a.length-1;i>0;i--){seed=randomStep(seed);var j=seed%(i+1),v=a[i];a[i]=a[j];a[j]=v;}return a;}
+function sceneIndex(trip){
+ var cycle=Math.floor(trip/SCENES.length),order=shuffled(SCENES.map(function(s,i){return i;}),state.mail.seed+cycle*7919);
+ if(cycle>0){var prior=shuffled(SCENES.map(function(s,i){return i;}),state.mail.seed+(cycle-1)*7919);if(order[0]===prior[prior.length-1]){var v=order[0];order[0]=order[1];order[1]=v;}}
+ return order[trip%SCENES.length];
+}
+var sceneryWords=[
+ '树木/shumu/松鼠/songshu/小鸟/xiaoniao/森林/senlin/小路/xiaolu/蘑菇/mogu/树叶/shuye/松果/songguo/小溪/xiaoxi/木屋/muwu',
+ '城市/chengshi/街道/jiedao/商店/shangdian/学校/xuexiao/公园/gongyuan/图书/tushu/汽车/qiche/路灯/ludeng/大楼/dalou/小猫/xiaomao',
+ '海滩/haitan/贝壳/beike/海浪/hailang/螃蟹/pangxie/海星/haixing/沙子/shazi/海鸥/haiou/小船/xiaochuan/灯塔/dengta/海豚/haitun',
+ '雪山/xueshan/雪花/xuehua/雪人/xueren/围巾/weijin/手套/shoutao/企鹅/qie/白熊/baixiong/冰块/bingkuai/热水/reshui/木屋/muwu',
+ '星星/xingxing/月亮/yueliang/夜晚/yewan/灯笼/denglong/萤火虫/yinghuochong/猫头鹰/maotouying/路灯/ludeng/晚风/wanfeng/银河/yinhe/美梦/meimeng',
+ '花朵/huaduo/蝴蝶/hudie/蜜蜂/mifeng/花园/huayuan/春天/chuntian/小草/xiaocao/花瓣/huaban/阳光/yangguang/香气/xiangqi/彩虹/caihong',
+ '竹子/zhuzi/熊猫/xiongmao/绿叶/lvye/春雨/chunyu/茶叶/chaye/竹林/zhulin/小溪/xiaoxi/石头/shitou/清风/qingfeng/山谷/shangu',
+ '苹果/pingguo/桃子/taozi/梨子/lizi/橘子/juzi/果园/guoyuan/篮子/lanzi/树叶/shuye/水果/shuiguo/果汁/guozhi/农夫/nongfu',
+ '湖水/hushui/小船/xiaochuan/荷花/hehua/青蛙/qingwa/小鱼/xiaoyu/白云/baiyun/柳树/liushu/鸭子/yazi/水草/shuicao/倒影/daoying',
+ '沙漠/shamo/骆驼/luotuo/绿洲/lvzhou/沙丘/shaqiu/水壶/shuihu/脚印/jiaoyin/远方/yuanfang/仙人掌/xianrenzhang/天空/tiankong/泉水/quanshui',
+ '乡村/xiangcun/风车/fengche/农田/nongtian/麦子/maizi/小鸡/xiaoji/稻谷/daogu/小羊/xiaoyang/南瓜/nangua/农场/nongchang/小狗/xiaogou',
+ '秋天/qiutian/落叶/luoye/枫树/fengshu/果实/guoshi/松果/songguo/南瓜/nangua/田野/tianye/微风/weifeng/小鹿/xiaolu/丰收/fengshou',
+ '城堡/chengbao/城墙/chengqiang/石桥/shiqiao/钟楼/zhonglou/塔楼/talou/大门/damen/广场/guangchang/旗帜/qizhi/马车/mache/石头/shitou',
+ '小镇/xiaozhen/集市/jishi/面包/mianbao/铁匠/tiejiang/酒馆/jiuguan/木桶/mutong/屋顶/wuding/石板/shiban/铃铛/lingdang/水车/shuiche',
+ '村庄/cunzhuang/茅屋/maowu/麦田/maitian/谷仓/gucang/稻草/daocao/木桥/muqiao/菜园/caiyuan/牧场/muchang/水井/shuijing/篱笆/liba'
+];
+var sceneryTones=[
+ 'shù mù/sōng shǔ/xiǎo niǎo/sēn lín/xiǎo lù/mó gu/shù yè/sōng guǒ/xiǎo xī/mù wū',
+ 'chéng shì/jiē dào/shāng diàn/xué xiào/gōng yuán/tú shū/qì chē/lù dēng/dà lóu/xiǎo māo',
+ 'hǎi tān/bèi ké/hǎi làng/páng xiè/hǎi xīng/shā zi/hǎi ōu/xiǎo chuán/dēng tǎ/hǎi tún',
+ 'xuě shān/xuě huā/xuě rén/wéi jīn/shǒu tào/qǐ é/bái xióng/bīng kuài/rè shuǐ/mù wū',
+ 'xīng xing/yuè liang/yè wǎn/dēng long/yíng huǒ chóng/māo tóu yīng/lù dēng/wǎn fēng/yín hé/měi mèng',
+ 'huā duǒ/hú dié/mì fēng/huā yuán/chūn tiān/xiǎo cǎo/huā bàn/yáng guāng/xiāng qì/cǎi hóng',
+ 'zhú zi/xióng māo/lǜ yè/chūn yǔ/chá yè/zhú lín/xiǎo xī/shí tou/qīng fēng/shān gǔ',
+ 'píng guǒ/táo zi/lí zi/jú zi/guǒ yuán/lán zi/shù yè/shuǐ guǒ/guǒ zhī/nóng fū',
+ 'hú shuǐ/xiǎo chuán/hé huā/qīng wā/xiǎo yú/bái yún/liǔ shù/yā zi/shuǐ cǎo/dào yǐng',
+ 'shā mò/luò tuo/lǜ zhōu/shā qiū/shuǐ hú/jiǎo yìn/yuǎn fāng/xiān rén zhǎng/tiān kōng/quán shuǐ',
+ 'xiāng cūn/fēng chē/nóng tián/mài zi/xiǎo jī/dào gǔ/xiǎo yáng/nán guā/nóng chǎng/xiǎo gǒu',
+ 'qiū tiān/luò yè/fēng shù/guǒ shí/sōng guǒ/nán guā/tián yě/wēi fēng/xiǎo lù/fēng shōu',
+ 'chéng bǎo/chéng qiáng/shí qiáo/zhōng lóu/tǎ lóu/dà mén/guǎng chǎng/qí zhì/mǎ chē/shí tou',
+ 'xiǎo zhèn/jí shì/miàn bāo/tiě jiàng/jiǔ guǎn/mù tǒng/wū dǐng/shí bǎn/líng dang/shuǐ chē',
+ 'cūn zhuāng/máo wū/mài tián/gǔ cāng/dào cǎo/mù qiáo/cài yuán/mù chǎng/shuǐ jǐng/lí ba'
+];
+var TOKEN_SLOTS=LESSONS.reduce(function(n,l){return l.words.reduce(function(max,w){return Math.max(max,w.raw.length);},n);},0);
+sceneryWords.forEach(function(row){row.split('/').forEach(function(part,i){if(i%2)TOKEN_SLOTS=Math.max(TOKEN_SLOTS,part.length);});});
+var routeCache=null,motion=null;
+function routeWords(trip){
+ if(routeCache&&routeCache.trip===trip&&routeCache.seed===state.mail.seed)return routeCache.words;
+ var scene=sceneIndex(trip),parts=sceneryWords[scene].split('/'),tones=sceneryTones[scene].split('/'),a=[],seen={};
+ for(var i=0;i<parts.length;i+=2){a.push(pack(parts[i],tones[i/2],parts[i+1],''));seen[parts[i+1]]=true;}
+ var rest=shuffled(LESSONS[2].words,state.mail.seed+trip*97);
+ for(i=0;i<rest.length&&a.length<50;i++)if(!seen[rest[i].raw]){a.push(rest[i]);seen[rest[i].raw]=true;}
+ routeCache={trip:trip,seed:state.mail.seed,words:shuffled(a,state.mail.seed+trip*313)};return routeCache.words;
+}
+function currentJourney(){return motion||{trip:state.mail.sent,done:state.mail.done};}
+function mission(){return SCENES[sceneIndex(currentJourney().trip)];}
+var THEMES=[{name:'森林邮路',sky:'#dcebd8',hill:'#bed3aa',ground:'#93b48c',house:'#e9c18e',ink:'#426b4e',night:false},
+{name:'海边邮路',sky:'#dceef0',hill:'#a5d0d2',ground:'#e3d5ad',house:'#f1c3a0',ink:'#427a80',night:false},
+{name:'雪山邮路',sky:'#e4edf2',hill:'#c4d5df',ground:'#eef2ee',house:'#c7c2d1',ink:'#55778b',night:false},
+{name:'夜晚邮路',sky:'#303f5b',hill:'#435573',ground:'#556650',house:'#a4acb8',ink:'#edf3cd',night:true}];
+var KEY='pinyinCourier.progress.v1',params=new URLSearchParams(location.search),preview=params.get('preview')==='1'||params.get('finale')==='1'||params.get('post')==='1';
+var state={v:1,level:0,screen:'post',rounds:[{done:50,typed:''},{done:50,typed:''},{done:50,typed:''}],mail:{journey:2,seed:Math.floor(Math.random()*2147483647),sent:0,done:0,typed:'',delivering:false}};
+var busy=false,timer=0,feedback='',lastScene='';
+/* 提示音离线合成；仅在按键或点击后创建/恢复音频上下文。 */
+var audio=null;
+function sound(kind){
+ try{
+  if(!audio){var Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;audio=new Context();}
+  function play(){
+   if(audio.state!=='running')return;
+   var notes=kind==='wrong'?[220]:kind==='done'?[523.25,659.25,783.99]:[660];
+   notes.forEach(function(f,i){
+    var osc=audio.createOscillator(),gain=audio.createGain(),at=audio.currentTime+i*.085,duration=kind==='tap' ? .075 : kind==='wrong' ? .1 : .17;
+    osc.type='sine';osc.frequency.setValueAtTime(f,at);
+    gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(kind==='tap' ? .045 : .075,at+.008);gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
+    osc.connect(gain);gain.connect(audio.destination);osc.start(at);osc.stop(at+duration+.02);
+    osc.onended=function(){osc.disconnect();gain.disconnect();};
+   });
+  }
+  if(audio.state==='suspended'){var resumed=audio.resume();if(resumed&&resumed.then)resumed.then(play).catch(function(){});else play();}else play();
+ }catch(e){}
+}
+function complete(){return state.rounds.every(function(r,i){return r.done===lessonTotal(i);});}
+function word(){if(state.screen==='post')return routeWords(currentJourney().trip)[Math.min(49,currentJourney().done)];var r=state.rounds[state.level];return LESSONS[state.level].words[Math.min(lessonTotal(state.level)-1,r.done-(busy&&r.done>0?1:0))];}
+function typed(){return state.screen==='post'?state.mail.typed:state.rounds[state.level].typed;}
+function setTyped(value){if(state.screen==='post')state.mail.typed=value;else state.rounds[state.level].typed=value;}
+function save(){if(preview)return;try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+function number(value,max){return typeof value==='number'&&isFinite(value)&&value>=0&&Math.floor(value)===value&&value<=max;}
+function prefix(value,target){return typeof value==='string'&&value.length<target.length&&target.indexOf(value)===0?value:'';}
+function restore(){
+ if(preview)return;
+ try{var d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d||d.v!==1)return;
+  if(Array.isArray(d.rounds))state.rounds.forEach(function(r,i){var a=d.rounds[i];if(!a||!number(a.done,lessonTotal(i)))return;r.done=a.done;r.typed=r.done<lessonTotal(i)?prefix(a.typed,LESSONS[i].words[r.done].raw):'';});
+  if(number(d.level,2))state.level=d.level;
+  if(d.mail&&number(d.mail.sent,100000000)){
+   state.mail.sent=d.mail.sent;
+   if(d.mail.journey===2){
+    if(number(d.mail.seed,2147483647))state.mail.seed=d.mail.seed;
+    if(number(d.mail.done,49))state.mail.done=d.mail.done;
+    state.mail.typed=d.mail.delivering?'':prefix(d.mail.typed,routeWords(state.mail.sent)[state.mail.done].raw);
+   }
+  }
+  if(complete())state.screen=d.screen==='post'?'post':'invite';
+ }catch(e){}
+}
+function focusApp(){if(state.screen!=='invite')$('app').focus({preventScroll:true});}
+function status(text){feedback=text;$('status').textContent=text;}
+function stopTimer(){clearTimeout(timer);timer=0;busy=false;}
+function selectLesson(i){if(state.screen!=='practice')return;stopTimer();state.level=i;feedback='';save();render();focusApp();}
+function buildNav(){LESSONS.forEach(function(l,i){var b=document.createElement('button');b.className='lesson';b.dataset.level=i;b.innerHTML='<span class="number">0'+(i+1)+'</span><span><b>'+l.name+'</b></span><span class="tally"></span>';b.addEventListener('click',function(){selectLesson(i);});$('lessonNav').appendChild(b);});}
+var FINGERS=[['qaz','左手小指'],['wsx','左手无名指'],['edc','左手中指'],['rfvtgb','左手食指'],['yuhjnm','右手食指'],['ik','右手中指'],['ol','右手无名指'],['p','右手小指']];
+function buildKeyboard(){['qwertyuiop','asdfghjkl','zxcvbnm'].forEach(function(row){var line=document.createElement('div');line.className='key-row';row.split('').forEach(function(c){var k=document.createElement('span');k.className='key'+(c==='f'||c==='j'?' home':'');k.id='key-'+c;k.textContent=c.toUpperCase();line.appendChild(k);});$('keyboard').appendChild(line);});}
+function hint(){var c=busy||state.screen==='invite'||state.screen==='practice'&&state.rounds[state.level].done===lessonTotal(state.level)?'':word().raw[typed().length],finger='';FINGERS.forEach(function(f){if(c&&f[0].indexOf(c)!==-1)finger=f[1];});
+ document.querySelectorAll('.key').forEach(function(k){k.classList.toggle('active',k.id==='key-'+c);});document.querySelectorAll('.hand-finger').forEach(function(f){f.classList.toggle('active',f.getAttribute('data-finger')===finger);});
+ $('fingerHint').textContent=c?'下一键 '+c.toUpperCase()+' · '+finger:'';$('hands').setAttribute('aria-label',finger?finger+'按键提示':'双手指法');
+}
+
+function renderRoute(){
+ var view=currentJourney(),m=mission();
+ $('routeTitle').textContent=m.name+'邮路';
+ $('journeyGoal').textContent='';
+ $('parcelLabel').textContent='送往 · '+m.place;
+ $('routeProgress').innerHTML='<span class="route-track"><span style="width:'+((view.done+(motion?1:0))*2)+'%"></span></span>';
+ $('routeProgress').setAttribute('aria-label','本段完成 '+view.done+' / 50');
+}
+
+/* 生成的2.5D大地图与窄小径；人物和镜头沿同一条曲线前进。 */
+var MAP_ROUTE='M130 580 C220 600 680 570 730 460 C780 360 370 420 400 290 C450 220 720 220 850 125';
+var MAP_ROUTES={'medieval-village':'M150 530 C230 550 600 550 620 450 C620 410 350 410 400 330 C450 250 730 270 850 125','medieval-town':'M150 530 C220 550 420 530 420 450 C400 420 300 400 350 330 C420 260 730 280 850 125','medieval-city':'M150 530 C250 550 510 530 520 450 C520 420 380 410 400 330 C450 280 720 230 850 125',bamboo:'M130 580 C250 560 600 600 690 510 C740 440 320 460 350 330 C380 240 740 280 850 125',night:'M130 580 C230 590 650 580 700 500 C720 440 350 440 350 340 C500 290 650 240 850 125',forest:'M130 580 C190 500 420 510 430 440 C440 390 300 370 350 300 C420 220 700 230 850 125',city:'M130 580 C180 500 470 530 500 450 C530 400 260 390 290 300 C370 230 700 250 850 125'};
+function mapPoint(position){var path=$('mapRoute'),length=path.getTotalLength();return path.getPointAtLength(length*Math.max(0,Math.min(50,position))/50);}
+function routePosition(trip,done,partial){
+ var words=routeWords(trip),letters=0,total=0;
+ words.forEach(function(w,i){total+=w.raw.length;if(i<done)letters+=w.raw.length;});
+ return (letters+(partial?partial.length:0))/total*50;
+}
+function mapCamera(point){
+ var el=$('scene'),width=740,height=Math.min(620,el.clientHeight/el.clientWidth*width);
+ return {x:Math.max(0,Math.min(1000-width,point.x-width*.5)),y:Math.max(0,Math.min(667-height,point.y-height*.58)),width:width,height:height};
+}
+var walkFrame=0,mapPosition=0,mapTarget=0,gaitPhase=0,courierFacing=0,travelDirection=1;
+/* 只镜像人物；用局部切线判断朝向，接近竖直时保持，防止弯顶来回翻转。 */
+function faceAlongPath(position){
+ var path=$('mapRoute'),length=path.getTotalLength(),at=length*Math.max(0,Math.min(50,position))/50;
+ var before=path.getPointAtLength(Math.max(0,at-2)),after=path.getPointAtLength(Math.min(length,at+2));
+ var dx=(after.x-before.x)*travelDirection,dy=after.y-before.y,magnitude=Math.sqrt(dx*dx+dy*dy);
+ if(!courierFacing||magnitude&&Math.abs(dx)/magnitude>.16){
+  var facing=dx<0?-1:1;
+  if(facing!==courierFacing){courierFacing=facing;$('courierArt').setAttribute('transform','scale('+facing+' 1)');$('courierArt').setAttribute('data-facing',facing<0?'left':'right');}
+ }
+}
+function setCourierPose(frame){$('courierFrame').setAttribute('x',String(-128*frame));$('courierArt').setAttribute('data-pose',String(frame));}
+function setMapFrame(position,stepping){
+ if(stepping&&Math.abs(position-mapPosition)>.000001)travelDirection=position>mapPosition?1:-1;
+ faceAlongPath(position);
+ if(stepping){gaitPhase+=Math.abs(position-mapPosition)*$('mapRoute').getTotalLength()/50/1.5;setCourierPose(Math.floor(gaitPhase)%4);}
+ var point=mapPoint(position),c=mapCamera(point);
+ $('journeySvg').setAttribute('viewBox',c.x+' '+c.y+' '+c.width+' '+c.height);
+ $('courier').setAttribute('transform','translate('+point.x+' '+point.y+')');
+ $('journeyWorld').setAttribute('data-camera',String(position*110));
+ mapPosition=position;
+}
+function moveOnMap(target){
+ if(Math.abs(target-mapTarget)<.00001)return;
+ cancelAnimationFrame(walkFrame);mapTarget=target;
+ var from=mapPosition,begun=performance.now();
+ function frame(now){var t=Math.min(1,(now-begun)/140),ease=1-Math.pow(1-t,3);setMapFrame(from+(target-from)*ease,true);if(t<1)walkFrame=requestAnimationFrame(frame);else{walkFrame=0;setCourierPose(Math.floor(gaitPhase)%4<2?0:2);}}
+ walkFrame=requestAnimationFrame(frame);
+}
+
+function drawJourney(){
+ var view=currentJourney(),t=mission(),key='map-'+view.trip,target=motion?routePosition(view.trip,view.done+1,''):routePosition(view.trip,view.done,state.mail.typed);
+ $('scene').setAttribute('aria-label',t.name+'邮路');$('scene').style.background=t.sky;
+ if(lastScene!==key){
+  lastScene=key;cancelAnimationFrame(walkFrame);
+  var image='assets/pinyin-post/'+t.kind+'.webp',route=MAP_ROUTES[t.kind]||MAP_ROUTE;
+  var pathColor=t.kind==='snow'?'#f6f5e8':t.kind==='city'?'#ddd0b8':t.kind==='night'?'#c4bfa3':'#d8c5a2';
+  $('landscape').innerHTML='<svg id="journeySvg" viewBox="0 0 1000 667" preserveAspectRatio="xMidYMid slice" role="img" aria-label="'+t.name+'立体地图与送件小哥"><defs><filter id="courierShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".16"/></filter></defs><g id="journeyWorld"><image href="'+image+'" xlink:href="'+image+'" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="667" preserveAspectRatio="none"/><path d="'+route+'" fill="none" stroke="#5f6544" stroke-opacity=".055" stroke-width="12" stroke-linecap="round" transform="translate(0 2)"/><path id="mapRoute" d="'+route+'" fill="none" stroke="'+pathColor+'" stroke-width="9" stroke-linecap="round"/><path d="'+route+'" fill="none" stroke="#fff6df" stroke-opacity=".10" stroke-width="2" stroke-linecap="round"/><circle cx="850" cy="125" r="8" fill="#fff4c6" stroke="#b79260" stroke-width="2"/><g id="courier"><ellipse cy="1" rx="11" ry="4" fill="#263e3640"/><g id="courierArt"><svg x="-23" y="-53" width="46" height="56" viewBox="0 0 128 192" preserveAspectRatio="xMidYMax meet" overflow="hidden"><image id="courierFrame" class="courier-body" href="assets/pinyin-post/courier-walk.webp" xlink:href="assets/pinyin-post/courier-walk.webp" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="512" height="192" preserveAspectRatio="none"/></svg></g></g></g></svg>';
+  gaitPhase=0;courierFacing=0;travelDirection=1;setCourierPose(0);mapTarget=target;setMapFrame(target);
+  /* 当前地图加载完成后，空闲时只预取下一张，避免抢占首屏带宽。 */
+  $('journeyWorld').querySelector('image').addEventListener('load',function(){
+   function preloadNext(){
+    if(lastScene!==key||navigator.connection&&navigator.connection.saveData)return;
+    var nextMap=new Image();nextMap.decoding='async';nextMap.src='assets/pinyin-post/'+SCENES[sceneIndex(view.trip+1)].kind+'.webp';
+   }
+   if(window.requestIdleCallback)window.requestIdleCallback(preloadNext,{timeout:1800});else setTimeout(preloadNext,600);
+  },{once:true});
+ }
+ moveOnMap(target);
+}
+window.addEventListener('resize',function(){if(state.screen==='post')setMapFrame(mapPosition);});
+
+function landscape(){if(state.screen==='post'){drawJourney();return;}var post=state.screen==='post',station=Math.floor(state.mail.sent/5)+1,index=post?Math.floor((state.mail.sent-(state.mail.delivering?1:0))/5)%4:0,t=THEMES[index],key=post?String(index):'base';
+ $('scene').setAttribute('aria-label',t.name);$('scene').style.background=t.sky;
+ if(lastScene===key)return;lastScene=key;
+ var decorations=index===1?'<path d="M0 285 Q60 265 120 285 T240 285 T360 285 T500 285 V370 H0Z" fill="#77b9c1"/><path d="M12 290 Q50 278 88 290 M260 298 Q300 286 340 298" fill="none" stroke="#d5f0ef" stroke-width="4"/>':index===2?'<path d="M0 240 L85 120 168 240 246 97 365 240 430 160 500 240Z" fill="#b9cdd6"/><path d="M65 150 L85 120 110 156 85 148Z M220 135 L246 97 280 141 248 130Z" fill="#fff"/>':index===3?'<g fill="#fce6ad"><circle cx="80" cy="90" r="2"/><circle cx="242" cy="70" r="2"/><circle cx="355" cy="133" r="2"/><circle cx="420" cy="55" r="3"/><circle cx="148" cy="141" r="2"/></g>':'';
+ var trees='';for(var i=0;i<5;i++){var x=20+i*112;trees+='<g transform="translate('+x+' '+(190+(i%2)*18)+')"><path d="M0 80 V10" stroke="#78936d" stroke-width="7"/><path d="M-29 35 L0 -30 29 35Z M-35 62 L0 -5 35 62Z" fill="'+(index===2?'#f5f7ed':index===3?'#48634c':'#8aaf7b')+'"/></g>';}
+ $('landscape').innerHTML='<svg viewBox="0 0 500 370" preserveAspectRatio="xMidYMax slice" role="img" aria-label="'+t.name+'的邮局、小屋与邮车"><rect width="500" height="370" fill="'+t.sky+'"/><circle cx="391" cy="96" r="27" fill="'+(t.night?'#fff1c7':'#f6d58e')+'"/><path d="M0 224 Q105 155 223 217 T500 199 V370 H0Z" fill="'+t.hill+'"/>'+decorations+trees+'<path d="M0 300 Q250 260 500 304 V370 H0Z" fill="'+t.ground+'"/><path d="M-30 340 Q160 289 530 343" fill="none" stroke="#ede1bc" stroke-width="30"/>'+
+ '<g transform="translate(62 191)"><rect width="152" height="107" rx="6" fill="#fff1ca"/><path d="M-13 4 L74 -60 165 4Z" fill="#c57049"/><path d="M17 3 H135" stroke="#e19c6b" stroke-width="7"/><rect x="61" y="52" width="35" height="55" rx="14" fill="#537d63"/><circle cx="86" cy="83" r="2" fill="#edcf7f"/><rect x="15" y="41" width="30" height="31" rx="5" fill="#b9d3b7"/><path d="M30 42 V70 M15 57 H45" stroke="#fff4db" stroke-width="3"/><rect x="108" y="39" width="29" height="20" rx="3" fill="#d9a05d"/><path d="M111 42 L122 50 134 42" fill="none" stroke="#fff7df" stroke-width="2"/><rect x="42" y="7" width="70" height="26" rx="4" fill="#fffaf0"/><text x="77" y="25" font-size="13" font-weight="bold" text-anchor="middle" fill="#58735a">森林邮局</text></g>'+
+ '<g transform="translate(346 211)"><rect width="93" height="79" rx="4" fill="'+t.house+'"/><path d="M-9 3 L47 -45 103 3Z" fill="#728c70"/><rect x="34" y="35" width="27" height="44" rx="10" fill="#8c9a76"/><rect x="12" y="21" width="18" height="22" rx="3" fill="'+(t.night?'#ffe6a3':'#fff3c9')+'"/><rect x="65" y="21" width="18" height="22" rx="3" fill="#fff3c9"/></g>'+
+ '<g class="delivery-van" transform="translate(0 0)"><g transform="translate(205 282)"><rect x="0" y="-8" width="63" height="41" rx="7" fill="#cf6b45"/><path d="M63 1 H80 L95 20 V33 H63Z" fill="#e18c59"/><path d="M68 5 H78 L87 19 H68Z" fill="#e2ecda"/><rect x="14" y="3" width="29" height="19" rx="3" fill="#fff2d6"/><path d="M17 6 L28 13 40 6" stroke="#cc805a" stroke-width="2" fill="none"/><circle cx="19" cy="34" r="10" fill="#445c51"/><circle cx="78" cy="34" r="10" fill="#445c51"/><circle cx="19" cy="34" r="4" fill="#ced7ba"/><circle cx="78" cy="34" r="4" fill="#ced7ba"/></g></g></svg>';
+}
+function render(){
+ var post=state.screen==='post',invite=state.screen==='invite',r=state.rounds[state.level],w=word(),done=!post&&r.done===lessonTotal(state.level);
+ $('app').classList.toggle('journey-on',post);$('parcelLabel').hidden=!post;$('journeyGoal').hidden=!post;$('lessonNav').hidden=post;$('routes').hidden=!post;$('invitation').hidden=!invite;
+ $('headerCount').innerHTML=post?'已送达 <strong>'+state.mail.sent+'</strong> 件':'已完成练习 <strong>'+state.rounds.reduce(function(n,a){return n+a.done;},0)+'</strong> / '+TOTAL;
+ document.querySelectorAll('.lesson').forEach(function(b,i){b.classList.toggle('active',i===state.level);b.classList.toggle('done',state.rounds[i].done===lessonTotal(i));b.querySelector('.tally').textContent=state.rounds[i].done===lessonTotal(i)?'✓ 完成':state.rounds[i].done+' / '+lessonTotal(i);b.setAttribute('aria-current',i===state.level?'step':'false');});
+ if(post){renderRoute();} $('roundLabel').textContent=post?(currentJourney().done+(motion?1:0))+' / 50':(done?lessonTotal(state.level)+' / '+lessonTotal(state.level)+' · 已完成':(r.done+1)+' / '+lessonTotal(state.level));
+ if($('wordName').textContent!==w.name)$('wordName').textContent=w.name;var icon=post?'':w.icon;if($('wordIcon').textContent!==icon)$('wordIcon').textContent=icon;if($('pinyin').textContent!==w.tone)$('pinyin').textContent=w.tone;
+ $('tokens').classList.remove('wrong');
+ if(!$('tokens').children.length){for(var t=0;t<TOKEN_SLOTS;t++)$('tokens').appendChild(document.createElement('span'));}
+ for(var i=0;i<TOKEN_SLOTS;i++){
+  var span=$('tokens').children[i],letter=w.raw[i]||'',unused=i>=w.raw.length;
+  span.className='token'+(unused?' unused':done||busy||i<typed().length?' correct':i===typed().length?' current':'');
+  if(span.textContent!==letter)span.textContent=letter;
+  span.setAttribute('aria-hidden',unused?'true':'false');
+ }
+ $('tokens').setAttribute('aria-label','需要输入 '+w.raw+'，已输入 '+typed());
+ $('nextLesson').hidden=!done;$('nextLesson').textContent='下一关';$('stamp').hidden=!busy||post;$('workspace').classList.toggle('delivering',busy&&post);
+ $('status').textContent=feedback;landscape();hint();
+ if(invite)$('enterPost').focus({preventScroll:true});
+}
+function finishWord(){
+ sound('done');
+ busy=true;feedback='';
+ if(state.screen==='post'){motion={trip:state.mail.sent,done:state.mail.done};state.mail.done++;if(state.mail.done===50){state.mail.sent++;state.mail.done=0;}state.mail.typed='';state.mail.delivering=true;}
+ else{var r=state.rounds[state.level];r.done++;r.typed='';if(complete())state.screen='invite';}
+ save();
+ if(state.screen==='invite'){busy=false;render();return;}
+ render();
+ timer=setTimeout(function(){busy=false;if(state.screen==='post'){state.mail.delivering=false;motion=null;}feedback='';save();render();focusApp();},state.screen==='post'?180:650);
+}
+function accept(e){
+ if(e.ctrlKey||e.altKey||e.metaKey)return;
+ if(state.screen==='invite'){if(e.key==='Tab'){e.preventDefault();$('enterPost').focus();}return;}
+ if(e.isComposing||e.key==='Process'||e.key==='Unidentified'){status('请切换到英文输入。');return;}
+ if(e.key===' '||e.key==='Enter'||e.key==='Backspace')e.preventDefault();
+ if(e.repeat||busy||state.screen==='practice'&&state.rounds[state.level].done===lessonTotal(state.level))return;
+ if(e.key==='Backspace'){setTyped(typed().slice(0,-1));feedback='';save();render();return;}
+ if(!/^[a-zA-Z]$/.test(e.key))return;e.preventDefault();var key=e.key.toLowerCase(),w=word();
+ if(key!==w.raw[typed().length]){sound('wrong');status('请按 '+w.raw[typed().length].toUpperCase());$('tokens').classList.add('wrong');return;}
+ setTyped(typed()+key);feedback='';if(typed()===w.raw){finishWord();return;}sound('tap');save();render();
+}
+$('nextLesson').addEventListener('click',function(){var i=state.rounds.findIndex(function(r,i){return r.done<lessonTotal(i);});if(i>=0)selectLesson(i);});
+$('enterPost').addEventListener('click',function(){if(!complete())return;stopTimer();state.screen='post';feedback='';save();render();focusApp();});
+document.addEventListener('keydown',accept);window.addEventListener('focus',focusApp);document.addEventListener('visibilitychange',function(){if(!document.hidden)focusApp();});$('workspace').addEventListener('pointerdown',focusApp);
+restore();
+if(preview){state.mail.seed=17;state.rounds.forEach(function(r,i){r.done=lessonTotal(i);r.typed='';});state.screen=params.get('post')==='1'?'post':'invite';var station=parseInt(params.get('station'),10);if(number(station,SCENES.length)&&station>0){var order=shuffled(SCENES.map(function(s,i){return i;}),state.mail.seed);state.mail.sent=order.indexOf(station-1);}var step=parseInt(params.get('step'),10);if(number(step,49))state.mail.done=step;}
+
+/* 独立入口直接送件；只读写自己的存档，保留原邮局的练习和隐藏关。 */
+state.screen='post';state.rounds.forEach(function(r,i){r.done=lessonTotal(i);r.typed='';});save();
+buildNav();buildKeyboard();render();focusApp();
+/* 只读快照供课堂自检使用，不绕过键盘操作。 */
+window.__post={snapshot:function(){return JSON.parse(JSON.stringify(state));},target:function(){return word().raw;},mission:function(){return mission();},scenes:SCENES,routeWords:routeWords,sceneIndex:sceneIndex,lessons:LESSONS};
+})();
+</script>
+</body>
+</html>

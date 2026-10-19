@@ -2408,6 +2408,51 @@ add({name:'拼音邮局-资源加载-隐藏',page:'拼音小邮局.html?post=1&s
  if(!first||!next||next.startTime<first.responseEnd)throw new Error('下一张地图抢占当前地图带宽');
  return JSON.stringify({assets:urls.length,mapBytes:first.decodedBodySize,courierPixels:[courier.naturalWidth,courier.naturalHeight],deferred:true});
 `),shot:true}]});
+/* 独立送件页：新入口直接玩，自己的存档与原邮局完全隔离。 */
+add({name:'独立拼音送件-准备',page:'index.html',steps:[{label:'保留原邮局的基础练习现场，独立页面有目录入口',js:wrap(`
+ const original=JSON.stringify({v:1,level:1,screen:'practice',rounds:[{done:12,typed:''},{done:8,typed:''},{done:3,typed:''}],mail:{journey:2,seed:42,sent:7,done:9,typed:'',delivering:false}});
+ localStorage.setItem('pinyinPost.progress.v1',original);localStorage.setItem('qa.courierOriginal',original);localStorage.removeItem('pinyinCourier.progress.v1');
+ if(!__$('a[href="拼音送件小哥.html"]'))throw new Error('目录无独立入口');return 'ok';
+`)}]});
+add({name:'独立拼音送件-直接进入',page:'拼音送件小哥.html',viewport:[1024,768],steps:[{label:'无需解锁，直接打字送件；不读取原练习或送件成绩',js:wrap(postHelpers+`
+ if(snap().screen!=='post'||snap().mail.sent!==0||snap().mail.done!==0||!__$('#lessonNav').hidden||!__$('#invitation').hidden||window.__post.scenes.length!==15)throw new Error('未独立直接开玩');
+ if(__$$('a').length||!__$('h1').textContent.includes('拼音送件小哥'))throw new Error('独立入口或离页链接错误');
+ const initial=JSON.parse(localStorage.getItem('pinyinCourier.progress.v1'));if(!initial||initial.mail.seed!==snap().mail.seed)throw new Error('首次打开未保存路线');
+ type(window.__post.target().slice(0,2));
+ const saved=JSON.parse(localStorage.getItem('pinyinCourier.progress.v1'));
+ if(!saved||saved.mail.typed!==snap().mail.typed||!saved.mail.typed)throw new Error('独立输入未保存');
+ if(localStorage.getItem('pinyinPost.progress.v1')!==localStorage.getItem('qa.courierOriginal'))throw new Error('污染原邮局');
+ localStorage.setItem('qa.courierResume',JSON.stringify({mail:snap().mail,target:window.__post.target(),scene:window.__post.mission().name}));return JSON.stringify(snap().mail);
+`),shot:true}]});
+add({name:'独立拼音送件-刷新与送达',page:'拼音送件小哥.html',steps:[{label:'刷新接着半词输入，完成50词才送达，换地图后保存现场',js:wrap(postHelpers+`
+ const prior=JSON.parse(localStorage.getItem('qa.courierResume'));
+ if(JSON.stringify(snap().mail)!==JSON.stringify(prior.mail)||window.__post.target()!==prior.target||window.__post.mission().name!==prior.scene)throw new Error('刷新丢现场');
+ const realTimer=window.setTimeout;window.setTimeout=(fn,ms,...args)=>realTimer(fn,ms===180?0:ms,...args);window.AudioContext=undefined;window.webkitAudioContext=undefined;
+ try{for(let i=0;i<50;i++){finish();await __wait(5);if(i<49&&snap().mail.sent)throw new Error('提前送达');}}finally{window.setTimeout=realTimer;}
+ if(snap().mail.sent!==1||snap().mail.done!==0||window.__post.mission().name===prior.scene)throw new Error('未进入下一次送件');
+ type(window.__post.target().slice(0,2));localStorage.setItem('qa.courierResume',JSON.stringify({mail:snap().mail,target:window.__post.target(),scene:window.__post.mission().name}));
+ if(localStorage.getItem('pinyinPost.progress.v1')!==localStorage.getItem('qa.courierOriginal'))throw new Error('独立送达修改原页进度');return JSON.stringify(snap().mail);
+`),shot:true}]});
+add({name:'独立拼音送件-原课件保持',page:'拼音小邮局.html',steps:[{label:'原基础练习、隐藏解锁要求与原存档仍保持原状',js:wrap(`
+ const saved=JSON.parse(localStorage.getItem('qa.courierOriginal')),s=window.__post.snapshot();
+ if(s.screen!=='practice'||s.level!==saved.level||JSON.stringify(s.rounds)!==JSON.stringify(saved.rounds)||JSON.stringify(s.mail)!==JSON.stringify(saved.mail)||__$('#lessonNav').hidden||!__$('#invitation').hidden)throw new Error('原课件行为被改变');
+ if(localStorage.getItem('pinyinPost.progress.v1')!==localStorage.getItem('qa.courierOriginal'))throw new Error('原存档变化');return 'ok';
+`),shot:true}]});
+add({name:'独立拼音送件-再次续玩与防误触',page:'拼音送件小哥.html',steps:[{label:'原页打开后独立成绩仍在，右键放行输入框，误退不卸载',js:wrap(postHelpers+`
+ const prior=JSON.parse(localStorage.getItem('qa.courierResume'));
+ if(JSON.stringify(snap().mail)!==JSON.stringify(prior.mail)||window.__post.target()!==prior.target||window.__post.mission().name!==prior.scene)throw new Error('独立成绩被原页影响');
+ let seen=false;document.body.addEventListener('contextmenu',()=>seen=true,{once:true});const e=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});document.body.dispatchEvent(e);if(!e.defaultPrevented||!seen)throw new Error('右键传播异常');
+ const input=document.createElement('input');document.body.appendChild(input);const n=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});input.dispatchEvent(n);input.remove();if(n.defaultPrevented)throw new Error('输入框未放行');
+ window.__courierProbe='kept';const path=location.pathname;history.back();await __wait(150);history.forward();await __wait(150);if(window.__courierProbe!=='kept'||location.pathname!==path)throw new Error('误退卸载页面');
+ return 'ok';
+`)}]});
+add({name:'独立拼音送件-预览隔离',page:'拼音送件小哥.html?preview=1&station=3&step=25',viewport:[1024,768],steps:[{label:'预览直接进入指定地图与路程，不写两份学生档案',js:wrap(postHelpers+`
+ const mine=localStorage.getItem('pinyinCourier.progress.v1'),original=localStorage.getItem('pinyinPost.progress.v1');
+ if(snap().screen!=='post'||window.__post.mission().name!=='海滩'||snap().mail.done!==25||__$('#courierArt').getAttribute('data-facing')!=='left')throw new Error('预览入口或朝向错误');
+ finish();await __wait(230);
+ if(localStorage.getItem('pinyinCourier.progress.v1')!==mine||localStorage.getItem('pinyinPost.progress.v1')!==original)throw new Error('预览写入进度');
+ if(__$('#keyboardPanel').getBoundingClientRect().bottom>innerHeight)throw new Error('独立页面溢出');return 'ok';
+`),shot:true}]});
 add({name:'拼音邮局-清档',page:'index.html',steps:[{label:'旧版关闭提示的空进度也必须显示指法',js:wrap(`localStorage.setItem('${postKey}',JSON.stringify({v:1,hints:false}));return 'ok';`)}]});
 add({name:'拼音邮局-基础输入',page:'拼音小邮局.html',viewport:[1024,768],steps:[
  {label:'只有三关，隐藏关未解锁；错键、长按、组合键不计入；退格可纠正',js:wrap(postHelpers+`
