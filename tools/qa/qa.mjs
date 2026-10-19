@@ -2336,6 +2336,29 @@ const postHelpers=`
   const type=text=>{for(const c of text)key(c);};
   const finish=()=>{const s=snap(),prefix=s.screen==='post'?s.mail.typed:s.rounds[s.level].typed;type(window.__post.target().slice(prefix.length));};
 `;
+for(const size of [[1024,768],[1920,1080],[390,844]])add({name:'拼音邮局-布局稳定-隐藏-'+size.join('x'),page:'拼音小邮局.html?post=1&station=13',viewport:size,steps:[{label:'错键、输入法提示和50个长短词不改变舞台、输入区、反馈行、键盘的位置尺寸',js:wrap(postHelpers+`
+ const selectors=['#workspace','#scene','#task','.word','#wordName','#pinyin','#tokens','#tokens .token:first-child','#status','#keyboardPanel','.keyboard-head','#keyboard'];
+ const measure=()=>selectors.map(sel=>{const r=__$(sel).getBoundingClientRect();return [r.x,r.y,r.width,r.height];});
+ const base=measure(),nodes=[...__$('#tokens').children],realTimer=window.setTimeout;
+ const check=()=>{const now=measure();now.forEach((r,i)=>r.forEach((n,j)=>{if(Math.abs(n-base[i][j])>.5)throw new Error('布局变化：'+selectors[i]+' '+base[i]+' -> '+r);}));if(nodes.some((node,i)=>node!==__$('#tokens').children[i]))throw new Error('重复重建字母节点');};
+ window.AudioContext=undefined;window.webkitAudioContext=undefined;window.setTimeout=(fn,ms,...args)=>realTimer(fn,ms===180?0:ms,...args);
+ try{
+  key('!');key(window.__post.target()[0]==='z'?'x':'z');check();
+  key('Process',{isComposing:true});check();
+  for(let i=0;i<50;i++){
+   key(window.__post.target()[0]);check();key('Backspace');check();finish();check();await __wait(5);check();
+  }
+ }finally{window.setTimeout=realTimer;}
+ if(innerWidth>=1024&&__$('#keyboardPanel').getBoundingClientRect().bottom>innerHeight)throw new Error('键盘超出视口');
+ return JSON.stringify({words:50,stable:true,slots:nodes.length});
+`),shot:true}]});
+add({name:'拼音邮局-布局稳定-基础',page:'拼音小邮局.html',viewport:[1024,768],steps:[{label:'基础练习、错误提示、忙碌状态及下一关按钮预留空间',js:wrap(postHelpers+`
+ const rect=()=>['#workspace','#tokens','#status','#keyboardPanel'].map(sel=>{const r=__$(sel).getBoundingClientRect();return [r.x,r.y,r.width,r.height];}),base=rect();
+ const check=()=>{if(JSON.stringify(rect())!==JSON.stringify(base))throw new Error('基础布局晃动');};
+ const realTimer=window.setTimeout;window.setTimeout=(fn,ms,...args)=>realTimer(fn,ms===650?0:ms,...args);window.AudioContext=undefined;window.webkitAudioContext=undefined;
+ try{for(let i=0;i<50;i++){key('z');check();finish();check();await __wait(5);check();}}finally{window.setTimeout=realTimer;}
+ if(__$('#nextLesson').hidden||__$('#keyboardPanel').getBoundingClientRect().bottom>innerHeight)throw new Error('下一关按钮或键盘未完整显示');return 'ok';
+`),shot:true}]});
 add({name:'拼音邮局-行走动画',page:'拼音小邮局.html?post=1&station=13',steps:[{label:'逐字母迈腿换帧，停止后站稳，无旋转摇晃且持续输入不回退',js:wrap(postHelpers+`
  const poses=new Set(),positions=[];
  for(let i=0;i<3;i++){

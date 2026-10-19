@@ -108,3 +108,9 @@ node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-资源加载
 ```powershell
 node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-行走动画
 ```
+
+布局稳定（桌面/宽屏/窄屏50词切换、错键/输入法反馈、字母节点复用、基础关完成按钮）：
+
+```powershell
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-布局稳定
+```
