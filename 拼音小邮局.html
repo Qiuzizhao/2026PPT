@@ -604,7 +604,23 @@ document.addEventListener('keydown',accept);window.addEventListener('focus',focu
 restore();
 if(preview){state.mail.seed=17;state.rounds.forEach(function(r,i){r.done=lessonTotal(i);r.typed='';});state.screen=params.get('post')==='1'?'post':'invite';var station=parseInt(params.get('station'),10);if(number(station,SCENES.length)&&station>0){var order=shuffled(SCENES.map(function(s,i){return i;}),state.mail.seed);state.mail.sent=order.indexOf(station-1);}var step=parseInt(params.get('step'),10);if(number(step,49))state.mail.done=step;}
 
-buildNav();buildKeyboard();render();focusApp();
+/* 基础练习期间利用空闲网络逐张暖缓存；进入送件后交回按需加载。 */
+function warmPracticeMaps(){
+ var connection=navigator.connection;
+ if(preview||document.hidden||state.screen==='post'||connection&&(connection.saveData||/^(slow-)?2g$/.test(connection.effectiveType)))return;
+ var queue=SCENES.map(function(s,i){return SCENES[sceneIndex(state.mail.sent+i)].kind;}),index=0;
+ function schedule(){if(window.requestIdleCallback)window.requestIdleCallback(next,{timeout:5000});else setTimeout(next,1200);}
+ function next(){
+  if(state.screen==='post'||index>=queue.length)return;
+  if(document.hidden){setTimeout(schedule,3000);return;}
+  if(navigator.connection&&navigator.connection.saveData)return;
+  var im=new Image();im.decoding='async';
+  im.onload=im.onerror=function(){index++;setTimeout(schedule,1200);};
+  im.src='assets/pinyin-post/'+queue[index]+'.webp';
+ }
+ setTimeout(schedule,2000);
+}
+buildNav();buildKeyboard();render();focusApp();warmPracticeMaps();
 /* 只读快照供课堂自检使用，不绕过键盘操作。 */
 window.__post={snapshot:function(){return JSON.parse(JSON.stringify(state));},target:function(){return word().raw;},mission:function(){return mission();},scenes:SCENES,routeWords:routeWords,sceneIndex:sceneIndex,lessons:LESSONS};
 })();

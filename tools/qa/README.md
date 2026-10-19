@@ -133,3 +133,10 @@ node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 独立拼音送件
 ```powershell
 node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 独立拼音聚焦布局
 ```
+
+地图加载优化（小邮局基础关延迟串行预载、独立版预览→高清→下一站，检查请求顺序与大小）：
+
+```powershell
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-资源加载
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 独立拼音加载
+```

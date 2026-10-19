@@ -2393,8 +2393,8 @@ add({name:'拼音邮局-行走动画',page:'拼音小邮局.html?post=1&station=
  if(['scale(1 1)','scale(-1 1)'].indexOf(__$('#courierArt').getAttribute('transform'))===-1||getComputedStyle(__$('#courierFrame')).animationName!=='none')throw new Error('人物存在整体摇晃');
  return JSON.stringify({poses:[...poses],stable:true});
 `),shot:true}]});
-add({name:'拼音邮局-资源加载-基础',page:'拼音小邮局.html',steps:[{label:'基础练习不下载隐藏地图和角色',js:wrap(`
- await __wait(300);const assets=performance.getEntriesByType('resource').filter(r=>r.name.includes('/assets/pinyin-post/'));if(assets.length)throw new Error('基础练习提前加载了隐藏素材');return 'ok';
+add({name:'拼音邮局-资源加载-基础',page:'拼音小邮局.html',steps:[{label:'基础首屏不争抢地图，随后串行预载高清地图',js:wrap(`
+ await __wait(300);const assets=()=>performance.getEntriesByType('resource').filter(r=>r.name.includes('/assets/pinyin-post/'));if(assets().some(r=>r.startTime<1900))throw new Error('首屏抢占带宽');await __wait(6500);const maps=assets();if(maps.length<2||maps.length>=15||maps.some(r=>r.name.includes('courier-walk')||r.name.includes('/previews/')))throw new Error('后台队列没有逐张预载');for(let i=1;i<maps.length;i++)if(maps[i].startTime<maps[i-1].responseEnd+1100)throw new Error('地图预载过密');return JSON.stringify({preloaded:maps.length,sequential:true});
 `)}]});
 add({name:'拼音邮局-资源加载-隐藏',page:'拼音小邮局.html?post=1&station=13',viewport:[1024,768],steps:[{label:'只请求当前和下一张WebP，角色保持透明小尺寸，预取不抢当前地图',js:wrap(`
  const load=src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('图片加载失败：'+src));im.src=src;});
@@ -2407,6 +2407,19 @@ add({name:'拼音邮局-资源加载-隐藏',page:'拼音小邮局.html?post=1&s
  const first=entries.filter(r=>r.name.endsWith(current)).sort((a,b)=>a.startTime-b.startTime)[0],next=entries.find(r=>!r.name.endsWith(current)&&!r.name.endsWith('/courier-walk.webp'));
  if(!first||!next||next.startTime<first.responseEnd)throw new Error('下一张地图抢占当前地图带宽');
  return JSON.stringify({assets:urls.length,mapBytes:first.decodedBodySize,courierPixels:[courier.naturalWidth,courier.naturalHeight],deferred:true});
+`),shot:true}]});
+add({name:'独立拼音加载-渐进地图',page:'拼音送件小哥.html?preview=1&station=13',viewport:[1024,768],steps:[{label:'小图先显示，高清覆盖和下一站串行加载',js:wrap(`
+ await __wait(3000);
+ const base=__$('#journeyWorld image'),detail=__$('#mapDetail');
+ if(!base.getAttribute('href').includes('/previews/')||!detail||detail.getAttribute('href').includes('/previews/'))throw new Error('渐进地图层丢失');
+ const entries=performance.getEntriesByType('resource').filter(r=>r.name.includes('/assets/pinyin-post/'));
+ const urls=[...new Set(entries.map(r=>r.name))];
+ if(urls.length!==5)throw new Error('未限制为当前、下一站与角色：'+urls);
+ const preview=entries.find(r=>r.name.endsWith('/previews/medieval-city.webp')),full=entries.find(r=>r.name.endsWith('/pinyin-post/medieval-city.webp'));
+ if(!preview||preview.decodedBodySize>120000||!full||full.startTime<preview.responseEnd)throw new Error('高清抢占预览或预览过大');
+ const nextPreview=entries.find(r=>r.name.includes('/previews/')&&r!==preview),nextFull=entries.find(r=>!r.name.includes('/previews/')&&!r.name.includes('courier-walk')&&r!==full);
+ if(!nextPreview||nextPreview.startTime<full.responseEnd||!nextFull||nextFull.startTime<nextPreview.responseEnd)throw new Error('下一站抢占当前地图');
+ return JSON.stringify({previewBytes:preview.decodedBodySize,fullBytes:full.decodedBodySize,assets:urls.length,progressive:true});
 `),shot:true}]});
 for(const size of [[1024,768],[1920,1080],[390,844]])add({name:'独立拼音聚焦布局-'+size.join('x'),page:'拼音送件小哥.html?preview=1&station=13',viewport:size,steps:[{label:'汉字拼音在字母正上方，放大集中显示；50词和错键不引起面板晃动',js:wrap(postHelpers+`
  const word=__$('.word').getBoundingClientRect(),tokens=__$('#tokens').getBoundingClientRect(),name=__$('#wordName').getBoundingClientRect(),pinyin=__$('#pinyin').getBoundingClientRect();
