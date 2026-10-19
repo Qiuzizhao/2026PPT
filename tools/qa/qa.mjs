@@ -2359,6 +2359,27 @@ add({name:'拼音邮局-布局稳定-基础',page:'拼音小邮局.html',viewpor
  try{for(let i=0;i<50;i++){key('z');check();finish();check();await __wait(5);check();}}finally{window.setTimeout=realTimer;}
  if(__$('#nextLesson').hidden||__$('#keyboardPanel').getBoundingClientRect().bottom>innerHeight)throw new Error('下一关按钮或键盘未完整显示');return 'ok';
 `),shot:true}]});
+add({name:'拼音邮局-转弯刷新朝向',page:'拼音小邮局.html?post=1&station=3&step=25',steps:[{label:'直接恢复到朝左路段时，人物立即朝左，不用再按字母',js:wrap(`
+ if(__$('#courierArt').getAttribute('data-facing')!=='left'||__$('#courierArt').getAttribute('transform')!=='scale(-1 1)')throw new Error('恢复路程时朝向错误');return 'ok';
+`),shot:true}]});
+add({name:'拼音邮局-转弯朝向',page:'拼音小邮局.html?post=1&station=3',steps:[{label:'沿完整S形小径向左右转身，近竖直处不反复翻转；退格回退也跟随方向',js:wrap(postHelpers+`
+ const realTimer=window.setTimeout;window.setTimeout=(fn,ms,...args)=>realTimer(fn,ms===180?0:ms,...args);window.AudioContext=undefined;window.webkitAudioContext=undefined;
+ const facings=new Set();let turns=0,last=__$('#courierArt').getAttribute('data-facing');
+ const at=()=>{const m=__$('#courier').transform.baseVal.getItem(0).matrix;return {x:m.e,y:m.f};};
+ const check=()=>{
+  const path=__$('#mapRoute'),distance=Number(__$('#journeyWorld').getAttribute('data-camera'))/110/50*path.getTotalLength(),a=path.getPointAtLength(Math.max(0,distance-2)),b=path.getPointAtLength(Math.min(path.getTotalLength(),distance+2));
+  const face=__$('#courierArt').getAttribute('data-facing');facings.add(face);if(face!==last){turns++;last=face;}
+  if(Math.abs(b.x-a.x)/Math.hypot(b.x-a.x,b.y-a.y)>.3&&face!==(b.x<a.x?'left':'right'))throw new Error('角色朝向与小径方向相反');
+ };
+ try{
+  for(let i=0;i<49;i++){finish();await __wait(170);check();}
+  if(facings.size!==2||turns!==2)throw new Error('未正确转弯或发生反复翻转：'+turns);
+  const before=at();key(window.__post.target()[0]);await __wait(170);const forward=at();key('Backspace');await __wait(170);const backward=at();
+  if(backward.x>=forward.x||__$('#courierArt').getAttribute('data-facing')!=='left')throw new Error('回退时朝向错误');
+  if(Math.abs(backward.x-before.x)>.1||Math.abs(backward.y-before.y)>.1)throw new Error('转身改变位置');
+ }finally{window.setTimeout=realTimer;}
+ return JSON.stringify({directions:[...facings],turns,reverse:true});
+`),shot:true}]});
 add({name:'拼音邮局-行走动画',page:'拼音小邮局.html?post=1&station=13',steps:[{label:'逐字母迈腿换帧，停止后站稳，无旋转摇晃且持续输入不回退',js:wrap(postHelpers+`
  const poses=new Set(),positions=[];
  for(let i=0;i<3;i++){
@@ -2369,7 +2390,7 @@ add({name:'拼音邮局-行走动画',page:'拼音小邮局.html?post=1&station=
  if(poses.size<2)throw new Error('只有平移，没有迈步换帧');
  if(positions.some((p,i)=>i&&p<positions[i-1]-.001))throw new Error('持续输入位置回退');
  const still=__$('#courierFrame').getAttribute('x');await __wait(250);if(__$('#courierFrame').getAttribute('x')!==still)throw new Error('停下还在晃动');
- if(__$('#courierArt').getAttribute('transform')||getComputedStyle(__$('#courierFrame')).animationName!=='none')throw new Error('人物存在整体摇晃');
+ if(['scale(1 1)','scale(-1 1)'].indexOf(__$('#courierArt').getAttribute('transform'))===-1||getComputedStyle(__$('#courierFrame')).animationName!=='none')throw new Error('人物存在整体摇晃');
  return JSON.stringify({poses:[...poses],stable:true});
 `),shot:true}]});
 add({name:'拼音邮局-资源加载-基础',page:'拼音小邮局.html',steps:[{label:'基础练习不下载隐藏地图和角色',js:wrap(`

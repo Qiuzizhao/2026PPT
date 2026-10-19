@@ -114,3 +114,9 @@ node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-行走动画
 ```powershell
 node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-布局稳定
 ```
+
+转弯朝向（完整S形邮路两次转身、弯顶防反复翻转、退格时方向与位置一致）：
+
+```powershell
+node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局-转弯朝向
+```

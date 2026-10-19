@@ -495,9 +495,21 @@ function mapCamera(point){
  var el=$('scene'),width=740,height=Math.min(620,el.clientHeight/el.clientWidth*width);
  return {x:Math.max(0,Math.min(1000-width,point.x-width*.5)),y:Math.max(0,Math.min(667-height,point.y-height*.58)),width:width,height:height};
 }
-var walkFrame=0,mapPosition=0,mapTarget=0,gaitPhase=0;
+var walkFrame=0,mapPosition=0,mapTarget=0,gaitPhase=0,courierFacing=0,travelDirection=1;
+/* 只镜像人物；用局部切线判断朝向，接近竖直时保持，防止弯顶来回翻转。 */
+function faceAlongPath(position){
+ var path=$('mapRoute'),length=path.getTotalLength(),at=length*Math.max(0,Math.min(50,position))/50;
+ var before=path.getPointAtLength(Math.max(0,at-2)),after=path.getPointAtLength(Math.min(length,at+2));
+ var dx=(after.x-before.x)*travelDirection,dy=after.y-before.y,magnitude=Math.sqrt(dx*dx+dy*dy);
+ if(!courierFacing||magnitude&&Math.abs(dx)/magnitude>.16){
+  var facing=dx<0?-1:1;
+  if(facing!==courierFacing){courierFacing=facing;$('courierArt').setAttribute('transform','scale('+facing+' 1)');$('courierArt').setAttribute('data-facing',facing<0?'left':'right');}
+ }
+}
 function setCourierPose(frame){$('courierFrame').setAttribute('x',String(-128*frame));$('courierArt').setAttribute('data-pose',String(frame));}
 function setMapFrame(position,stepping){
+ if(stepping&&Math.abs(position-mapPosition)>.000001)travelDirection=position>mapPosition?1:-1;
+ faceAlongPath(position);
  if(stepping){gaitPhase+=Math.abs(position-mapPosition)*$('mapRoute').getTotalLength()/50/1.5;setCourierPose(Math.floor(gaitPhase)%4);}
  var point=mapPoint(position),c=mapCamera(point);
  $('journeySvg').setAttribute('viewBox',c.x+' '+c.y+' '+c.width+' '+c.height);
@@ -521,7 +533,7 @@ function drawJourney(){
   var image='assets/pinyin-post/'+t.kind+'.webp',route=MAP_ROUTES[t.kind]||MAP_ROUTE;
   var pathColor=t.kind==='snow'?'#f6f5e8':t.kind==='city'?'#ddd0b8':t.kind==='night'?'#c4bfa3':'#d8c5a2';
   $('landscape').innerHTML='<svg id="journeySvg" viewBox="0 0 1000 667" preserveAspectRatio="xMidYMid slice" role="img" aria-label="'+t.name+'立体地图与送件小哥"><defs><filter id="courierShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".16"/></filter></defs><g id="journeyWorld"><image href="'+image+'" xlink:href="'+image+'" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="667" preserveAspectRatio="none"/><path d="'+route+'" fill="none" stroke="#5f6544" stroke-opacity=".055" stroke-width="12" stroke-linecap="round" transform="translate(0 2)"/><path id="mapRoute" d="'+route+'" fill="none" stroke="'+pathColor+'" stroke-width="9" stroke-linecap="round"/><path d="'+route+'" fill="none" stroke="#fff6df" stroke-opacity=".10" stroke-width="2" stroke-linecap="round"/><circle cx="850" cy="125" r="8" fill="#fff4c6" stroke="#b79260" stroke-width="2"/><g id="courier"><ellipse cy="1" rx="11" ry="4" fill="#263e3640"/><g id="courierArt"><svg x="-23" y="-53" width="46" height="56" viewBox="0 0 128 192" preserveAspectRatio="xMidYMax meet" overflow="hidden"><image id="courierFrame" class="courier-body" href="assets/pinyin-post/courier-walk.webp" xlink:href="assets/pinyin-post/courier-walk.webp" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="512" height="192" preserveAspectRatio="none"/></svg></g></g></g></svg>';
-  gaitPhase=0;setCourierPose(0);mapTarget=target;setMapFrame(target);
+  gaitPhase=0;courierFacing=0;travelDirection=1;setCourierPose(0);mapTarget=target;setMapFrame(target);
   /* 当前地图加载完成后，空闲时只预取下一张，避免抢占首屏带宽。 */
   $('journeyWorld').querySelector('image').addEventListener('load',function(){
    function preloadNext(){
