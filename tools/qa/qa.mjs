@@ -2402,7 +2402,7 @@ add({name:'拼音邮局-隐藏关持续送信',page:'拼音小邮局.html',steps
  {label:'发车后刷新不重复得分，满五封切换新邮路，持续出新信',js:wrap(postHelpers+`
   if(snap().mail.sent!==1||snap().mail.delivering||snap().mail.typed)throw new Error('发车刷新重复奖励');
   for(let i=0;i<4;i++){finish();await __wait(1170);}
-  if(snap().mail.sent!==5||!__$('#routeTitle').textContent.includes('第 2 站')||!__$('#sceneTitle').textContent.includes('海边'))throw new Error('未切换邮路');
+  if(snap().mail.sent!==5||!__$('#routeTitle').textContent.includes('第 2 站')||!__$('#scene').getAttribute('aria-label').includes('海边'))throw new Error('未切换邮路');
   finish();await __wait(1170);if(snap().mail.sent!==6||window.__post.target()!=='haixing')throw new Error('没有持续刷新信件');
   if(__$$('.delivery-van').length!==1||__$$('#tokens .token').length>11)throw new Error('图形节点累积');
   return JSON.stringify({sent:snap().mail.sent,route:__$('#routeTitle').textContent,target:window.__post.target()});
@@ -2423,7 +2423,7 @@ for(const item of [{name:'雪山',station:3},{name:'夜晚',station:4},{name:'�
   finish();await __wait(1170);if(localStorage.getItem('${postKey}')!==before)throw new Error('预览污染存档');
   const task=__$('#workspace').getBoundingClientRect(),keys=__$('#keyboardPanel').getBoundingClientRect();
   if(document.documentElement.scrollWidth>innerWidth||task.left<0||task.right>innerWidth||keys.bottom>innerHeight)throw new Error('1024布局不完整');
-  return JSON.stringify({station:${item.station},title:__$('#sceneTitle').textContent});
+  return JSON.stringify({station:${item.station},title:__$('#scene').getAttribute('aria-label')});
  `),shot:true}
 ]});
 add({name:'拼音邮局-宽屏预览',page:'拼音小邮局.html?post=1&station=4',viewport:[1920,1080],steps:[{label:'宽屏布局与焦点正常',js:wrap(`if(document.documentElement.scrollWidth>innerWidth||__$('#keyboardPanel').getBoundingClientRect().bottom>innerHeight)throw new Error('宽屏溢出');return 'ok';`),shot:true}]});
