@@ -683,3 +683,8 @@ node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 太空补给站
 - `pinyinPost.progress.v1` 保存 `{v,level,screen,hints,rounds:[{done,typed}],mail:{sent,typed,delivering}}`，每次正确字母、退格、切关、切换指法、发车均保存。先保存已送达数量再播放动画，刷新不重复奖励；发车中刷新直接进入下一封。
 - `?finale=1` 预览邀请函，`?post=1&station=4` 预览隐藏关指定邮站；预览不读写学生存档，参数不写进课堂界面。字体、插画和双手SVG均在HTML内，无远程依赖，离线打开可练习。
 - 自检与截图：`node tools/qa/qa.mjs http://127.0.0.1:8765/ .qa-out 拼音邮局`、`node tools/qa/shots.mjs http://127.0.0.1:8765/ .qa-shots 拼音邮局`。
+
+### 拼音小邮局提示音
+
+- 提示音默认开启，用 Web Audio 本地合成，正确字母轻响、完整拼音三音奖励、错键柔和提醒；不加载远程音频。只在用户按键或点击后创建/恢复 AudioContext，遵循浏览器播放限制；节点播放结束即断开。
+- 键盘提示区提供「提示音：开/关」，保存为同一进度存档的 `sound` 布尔字段，兼容缺失字段的旧存档。隐藏关同样生效，静音不影响练习和指法。

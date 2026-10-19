@@ -44,6 +44,7 @@ html.no-flexgap .scene-note>*:not(:last-child){margin-right:8px}
 .next-button{border:0;border-radius:8px;padding:8px 14px;background:var(--green);color:#fff}
 .keyboard-panel{display:grid;grid-template-columns:60% 40%;margin-top:13px;border:1px solid var(--line);border-radius:18px;padding:12px 18px 8px;background:#fafbf5;align-items:center}
 .keyboard-head{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:8px;color:var(--muted)}.keyboard-head b{color:var(--green);font-weight:700}
+.keyboard-actions{display:flex;gap:12px;align-items:center}html.no-flexgap .keyboard-actions>*:not(:last-child){margin-right:12px}
 .hints-toggle{border:0;background:none;font-size:11px;color:var(--muted);text-decoration:underline;padding:3px 2px}
 .key-row{display:flex;justify-content:center;gap:5px;margin-bottom:5px}html.no-flexgap .key-row>*:not(:last-child){margin-right:5px}
 .key{width:35px;height:29px;border:1px solid #d6dfd1;border-bottom-width:3px;border-radius:6px;background:#f1f4e9;font:14px Consolas,monospace;text-align:center;line-height:25px;color:#7a8b76}
@@ -139,7 +140,7 @@ html.no-flexgap .scene-note>*:not(:last-child){margin-right:8px}
 <div class="task-foot"><span id="taskFoot">打完自动盖章 · 打错不扣分</span><button class="next-button" id="nextLesson" hidden>下一关</button></div>
 <div class="stamp" id="stamp" hidden>投递成功<br><small>✉</small></div>
 </div></section>
-<section class="keyboard-panel" id="keyboardPanel" aria-label="键盘指法提示"><div><div class="keyboard-head"><b id="fingerHint">下一键</b><button class="hints-toggle" id="hintsToggle" aria-pressed="true">隐藏键位提示</button></div><div id="keyboard"></div></div>
+<section class="keyboard-panel" id="keyboardPanel" aria-label="键盘指法提示"><div><div class="keyboard-head"><b id="fingerHint">下一键</b><span class="keyboard-actions"><button class="hints-toggle" id="soundToggle" aria-pressed="true">提示音：开</button><button class="hints-toggle" id="hintsToggle" aria-pressed="true">隐藏键位提示</button></span></div><div id="keyboard"></div></div>
 <svg class="hands" id="hands" viewBox="0 0 660 190" role="img" aria-label="双手指法">
 <g>
 <rect class="hand-palm" x="72" y="93" width="157" height="70" rx="30"/>
@@ -198,8 +199,28 @@ var THEMES=[{name:'森林邮路',sky:'#dcebd8',hill:'#bed3aa',ground:'#93b48c',h
 {name:'雪山邮路',sky:'#e4edf2',hill:'#c4d5df',ground:'#eef2ee',house:'#c7c2d1',ink:'#55778b',night:false},
 {name:'夜晚邮路',sky:'#303f5b',hill:'#435573',ground:'#556650',house:'#a4acb8',ink:'#edf3cd',night:true}];
 var KEY='pinyinPost.progress.v1',params=new URLSearchParams(location.search),preview=params.get('finale')==='1'||params.get('post')==='1';
-var state={v:1,level:0,screen:'practice',hints:true,rounds:[{done:0,typed:''},{done:0,typed:''},{done:0,typed:''}],mail:{sent:0,typed:'',delivering:false}};
+var state={v:1,level:0,screen:'practice',hints:true,sound:true,rounds:[{done:0,typed:''},{done:0,typed:''},{done:0,typed:''}],mail:{sent:0,typed:'',delivering:false}};
 var busy=false,timer=0,feedback='',lastScene='';
+/* 提示音离线合成；仅在按键或点击后创建/恢复音频上下文。 */
+var audio=null;
+function sound(kind){
+ if(!state.sound)return;
+ try{
+  if(!audio){var Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;audio=new Context();}
+  function play(){
+   if(!state.sound||audio.state!=='running')return;
+   var notes=kind==='wrong'?[220]:kind==='done'?[523.25,659.25,783.99]:[660];
+   notes.forEach(function(f,i){
+    var osc=audio.createOscillator(),gain=audio.createGain(),at=audio.currentTime+i*.085,duration=kind==='tap' ? .075 : kind==='wrong' ? .1 : .17;
+    osc.type='sine';osc.frequency.setValueAtTime(f,at);
+    gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(kind==='tap' ? .045 : .075,at+.008);gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
+    osc.connect(gain);gain.connect(audio.destination);osc.start(at);osc.stop(at+duration+.02);
+    osc.onended=function(){osc.disconnect();gain.disconnect();};
+   });
+  }
+  if(audio.state==='suspended'){var resumed=audio.resume();if(resumed&&resumed.then)resumed.then(play).catch(function(){});else play();}else play();
+ }catch(e){}
+}
 function complete(){return state.rounds.every(function(r){return r.done===8;});}
 function word(){if(state.screen==='post')return MAIL[(state.mail.sent-(state.mail.delivering?1:0))%MAIL.length];var r=state.rounds[state.level];return LESSONS[state.level].words[Math.min(7,r.done-(busy&&r.done>0?1:0))];}
 function typed(){return state.screen==='post'?state.mail.typed:state.rounds[state.level].typed;}
@@ -211,7 +232,7 @@ function restore(){
  if(preview)return;
  try{var d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d||d.v!==1)return;
   if(Array.isArray(d.rounds))state.rounds.forEach(function(r,i){var a=d.rounds[i];if(!a||!number(a.done,8))return;r.done=a.done;r.typed=r.done<8?prefix(a.typed,LESSONS[i].words[r.done].raw):'';});
-  if(number(d.level,2))state.level=d.level;if(typeof d.hints==='boolean')state.hints=d.hints;
+  if(number(d.level,2))state.level=d.level;if(typeof d.hints==='boolean')state.hints=d.hints;if(typeof d.sound==='boolean')state.sound=d.sound;
   if(d.mail&&number(d.mail.sent,100000000)){state.mail.sent=d.mail.sent;state.mail.typed=d.mail.delivering?'':prefix(d.mail.typed,MAIL[d.mail.sent%MAIL.length].raw);}
   if(complete())state.screen=d.screen==='post'?'post':'invite';
  }catch(e){}
@@ -226,7 +247,7 @@ function buildKeyboard(){['qwertyuiop','asdfghjkl','zxcvbnm'].forEach(function(r
 function hint(){var c=busy||state.screen==='invite'||state.screen==='practice'&&state.rounds[state.level].done===8?'':word().raw[typed().length],finger='';FINGERS.forEach(function(f){if(c&&f[0].indexOf(c)!==-1)finger=f[1];});
  document.querySelectorAll('.key').forEach(function(k){k.classList.toggle('active',k.id==='key-'+c);});document.querySelectorAll('.hand-finger').forEach(function(f){f.classList.toggle('active',f.getAttribute('data-finger')===finger);});
  $('fingerHint').textContent=c?(state.hints?'下一键 '+c.toUpperCase()+' · '+finger:'按拼音继续输入'):'这一封，写好啦';$('hands').setAttribute('aria-label',state.hints&&finger?finger+'按键提示':'双手指法');
- $('keyboardPanel').classList.toggle('hint-off',!state.hints);$('hintsToggle').textContent=state.hints?'隐藏键位提示':'显示键位提示';$('hintsToggle').setAttribute('aria-pressed',String(state.hints));
+ $('keyboardPanel').classList.toggle('hint-off',!state.hints);$('hintsToggle').textContent=state.hints?'隐藏键位提示':'显示键位提示';$('hintsToggle').setAttribute('aria-pressed',String(state.hints));$('soundToggle').textContent=state.sound?'提示音：开':'提示音：关';$('soundToggle').setAttribute('aria-pressed',String(state.sound));
 }
 function landscape(){var post=state.screen==='post',station=Math.floor(state.mail.sent/5)+1,index=post?Math.floor((state.mail.sent-(state.mail.delivering?1:0))/5)%4:0,t=THEMES[index],key=post?String(index):'base';
  $('sceneTitle').textContent=post?t.name:'今天，也有一封信在等你';$('sceneKicker').textContent=post?'第 '+(Math.floor((state.mail.sent-(state.mail.delivering?1:0))/5)+1)+' 站 · 每送达 5 封信，开启新邮路':'FOREST POST OFFICE';
@@ -255,6 +276,7 @@ function render(){
  if(invite)$('enterPost').focus({preventScroll:true});
 }
 function finishWord(){
+ sound('done');
  busy=true;feedback=state.screen==='post'?'盖好邮戳，邮车出发！':'写对啦！又收集到一枚邮票。';
  if(state.screen==='post'){state.mail.sent++;state.mail.delivering=true;}
  else{var r=state.rounds[state.level];r.done++;r.typed='';if(complete())state.screen='invite';}
@@ -271,11 +293,12 @@ function accept(e){
  if(e.repeat||busy||state.screen==='practice'&&state.rounds[state.level].done===8)return;
  if(e.key==='Backspace'){setTyped(typed().slice(0,-1));feedback='';save();render();return;}
  if(!/^[a-zA-Z]$/.test(e.key))return;e.preventDefault();var key=e.key.toLowerCase(),w=word();
- if(key!==w.raw[typed().length]){status('没关系，下一键是 '+w.raw[typed().length].toUpperCase()+'，再试一次。');$('tokens').classList.remove('wrong');void $('tokens').offsetWidth;$('tokens').classList.add('wrong');return;}
- setTyped(typed()+key);feedback='';if(typed()===w.raw){finishWord();return;}save();render();
+ if(key!==w.raw[typed().length]){sound('wrong');status('没关系，下一键是 '+w.raw[typed().length].toUpperCase()+'，再试一次。');$('tokens').classList.remove('wrong');void $('tokens').offsetWidth;$('tokens').classList.add('wrong');return;}
+ setTyped(typed()+key);feedback='';if(typed()===w.raw){finishWord();return;}sound('tap');save();render();
 }
 $('nextLesson').addEventListener('click',function(){var i=state.rounds.findIndex(function(r){return r.done<8;});if(i>=0)selectLesson(i);});
 $('enterPost').addEventListener('click',function(){if(!complete())return;stopTimer();state.screen='post';feedback='';save();render();focusApp();});
+$('soundToggle').addEventListener('click',function(){state.sound=!state.sound;save();hint();if(state.sound)sound('done');focusApp();});
 $('hintsToggle').addEventListener('click',function(){state.hints=!state.hints;save();hint();focusApp();});
 document.addEventListener('keydown',accept);window.addEventListener('focus',focusApp);document.addEventListener('visibilitychange',function(){if(!document.hidden)focusApp();});$('workspace').addEventListener('pointerdown',focusApp);
 restore();
